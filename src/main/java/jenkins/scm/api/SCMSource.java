@@ -131,7 +131,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * but the call must always check the validity of any intermediary caches.
      *
      * @param observer an optional observer of interim results.
-     * @param listener the task listener.
+     * @param listener the task listener (cf. {@link #defaultListener})
      * @return the provided observer.
      */
     @NonNull
@@ -143,7 +143,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Fetches the current list of heads. Implementers are free to cache intermediary results
      * but the call must always check the validity of any intermediary caches.
      *
-     * @param listener the task listener.
+     * @param listener the task listener (cf. {@link #defaultListener})
      * @return the current list of heads.
      * @throws IOException
      */
@@ -156,7 +156,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Gets the current head revision of the specified head.
      *
      * @param head     the head.
-     * @param listener the task listener.
+     * @param listener the task listener (cf. {@link #defaultListener})
      * @return the revision hash (may be non-deterministic) or {@code null} if the head no longer exists.
      * @throws IOException
      */
