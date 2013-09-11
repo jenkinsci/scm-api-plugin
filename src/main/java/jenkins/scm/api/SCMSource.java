@@ -135,8 +135,24 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return the provided observer.
      */
     @NonNull
-    public abstract <O extends SCMHeadObserver> O fetch(@NonNull O observer,
+    public final <O extends SCMHeadObserver> O fetch(@NonNull O observer,
                                                         @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        retrieve(observer, defaultListener(listener));
+        return observer;
+    }
+
+    /**
+     * Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     *
+     * @param observer an optional observer of interim results.
+     * @param listener the task listener.
+     * @return the provided observer.
+     */
+    @NonNull
+    protected abstract void retrieve(@NonNull SCMHeadObserver observer,
+                                     @NonNull TaskListener listener)
             throws IOException, InterruptedException;
 
     /**
@@ -148,7 +164,20 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException
      */
     @NonNull
-    public Set<SCMHead> fetch(@CheckForNull TaskListener listener) throws IOException, InterruptedException {
+    public final Set<SCMHead> fetch(@CheckForNull TaskListener listener) throws IOException, InterruptedException {
+        return retrieve(defaultListener(listener));
+    }
+
+    /**
+     * Fetches the current list of heads. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     *
+     * @param listener the task listener (cf. {@link #defaultListener})
+     * @return the current list of heads.
+     * @throws IOException
+     */
+    @NonNull
+    protected Set<SCMHead> retrieve(@NonNull TaskListener listener) throws IOException, InterruptedException {
         return fetch(SCMHeadObserver.collect(), listener).result().keySet();
     }
 
@@ -161,7 +190,21 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException
      */
     @CheckForNull
-    public SCMRevision fetch(@NonNull SCMHead head, @CheckForNull TaskListener listener)
+    public final SCMRevision fetch(@NonNull SCMHead head, @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return retrieve(head, defaultListener(listener));
+    }
+
+    /**
+     * Gets the current head revision of the specified head.
+     *
+     * @param head     the head.
+     * @param listener the task listener (cf. {@link #defaultListener})
+     * @return the revision hash (may be non-deterministic) or {@code null} if the head no longer exists.
+     * @throws IOException
+     */
+    @CheckForNull
+    protected SCMRevision retrieve(@NonNull SCMHead head, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         return fetch(SCMHeadObserver.select(head), listener).result();
     }
