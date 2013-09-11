@@ -36,17 +36,6 @@ import java.util.TreeMap;
  * @author Stephen Connolly
  */
 public abstract class SCMHeadObserver {
-    /**
-     * Consumes a head and current revision.
-     *
-     * @param head     the head.
-     * @param revision the revision.
-     * @return {@code true} to continue consuming or {@code false} to signal that it is ok to stop early.
-     */
-    public boolean consume(@NonNull SCMHead head, @NonNull SCMRevision revision) {
-        observe(head, revision);
-        return isObserving();
-    }
 
     /**
      * Observes a head and current revision.
