@@ -59,9 +59,8 @@ public class NullSCMSource extends SCMSource {
      */
     @NonNull
     @Override
-    public <O extends SCMHeadObserver> O fetch(@NonNull O observer,
-                                               @CheckForNull TaskListener listener) throws IOException {
-        return observer;
+    protected void retrieve(@NonNull SCMHeadObserver observer,
+                            @NonNull TaskListener listener) throws IOException {
     }
 
     /**

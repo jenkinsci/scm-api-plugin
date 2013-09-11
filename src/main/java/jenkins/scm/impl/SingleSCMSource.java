@@ -89,15 +89,14 @@ public class SingleSCMSource extends SCMSource {
      */
     @NonNull
     @Override
-    public synchronized <O extends SCMHeadObserver> O fetch(@NonNull O observer,
-                                                            @CheckForNull TaskListener listener)
+    protected synchronized void retrieve(@NonNull SCMHeadObserver observer,
+                                         @NonNull TaskListener listener)
             throws IOException {
         if (head == null) {
             head = new SCMHead(name);
             revisionHash = new SCMRevisionImpl(head);
         }
         observer.observe(head, revisionHash);
-        return observer;
     }
 
     /**
