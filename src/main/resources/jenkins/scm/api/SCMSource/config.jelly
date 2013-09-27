@@ -26,5 +26,6 @@
   <f:invisibleEntry>
     <input type="hidden" name="id" value="${descriptor.getId(instance)}"/>
   </f:invisibleEntry>
+  <j:set var="sourceOwner" value="${sourceOwner?:it}"/>
   <st:include class="${descriptor.clazz}" page="config-detail.jelly" optional="true"/>
 </j:jelly>

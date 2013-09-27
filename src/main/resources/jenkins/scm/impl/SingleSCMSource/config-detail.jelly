@@ -29,7 +29,7 @@
   <j:set var="namePrefix" value="${h.generateId()}"/>
   <f:entry title="Source Code Management">
     <table width="100%">
-      <j:set var="scms" value="${descriptor.getSCMDescriptors()}" />
+      <j:set var="scms" value="${descriptor.getSCMDescriptors(sourceOwner)}" />
       <j:forEach var="descriptor" items="${scms}" varStatus="loop">
         <j:set var="scmd" value="${descriptor}" /><!-- backward compatibility with <1.238 -->
         <f:radioBlock name="${namePrefix}.scm" value="${loop.index}" title="${scmd.displayName}" checked="${instance.getSCM().descriptor==scmd}">
