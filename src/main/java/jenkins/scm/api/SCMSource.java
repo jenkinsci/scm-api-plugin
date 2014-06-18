@@ -33,6 +33,8 @@ import hudson.util.LogTaskListener;
 import net.jcip.annotations.GuardedBy;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -165,6 +167,43 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @NonNull
     public final Set<SCMHead> fetch(@CheckForNull TaskListener listener) throws IOException, InterruptedException {
         return retrieve(defaultListener(listener));
+    }
+
+    /**
+     * Looks up the immediate parent revision(s) of the specified revision within the specified head.
+     *
+     * @param head     the head to look up the parent revision(s) within.
+     * @param revision the revision to lookup the immediate parent(s) of.
+     * @param listener the task listener.
+     * @return a set of immediate parent revisions of the specified revision. An empty set indicates either that the
+     *         parents are unknown or that the revision is a root revision. Where the backing SCM supports merge
+     *         tracking there is the potential for multiple parent revisions reflecting that the specified revision
+     *         was a merge of more than one revision and thus has more than one parent.
+     * @since 0.3
+     */
+    @NonNull
+    public Set<SCMRevision> parentRevisions(@NonNull SCMHead head, @NonNull SCMRevision revision,
+                                            @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Collections.emptySet();
+    }
+
+    /**
+     * Looks up the immediate parent heads of the specified head within the specified source.
+     *
+     * @param head     the head to look up the parent head(s) within.
+     * @param listener the task listener.
+     * @return a map of immediate parent heads of the specified head where the heads are the keys and the revisions
+     *         at which the parent relationship was established are the values. An empty map indicates either that the
+     *         parents are unknown or that the head is a root head. Where the backing SCM supports merge
+     *         tracking there is the potential for multiple parent heads reflecting that the specified head
+     *         was a merge of more than one head and thus has more than one parent.
+     * @since 0.3
+     */
+    @NonNull
+    public Map<SCMHead, SCMRevision> parentHeads(@NonNull SCMHead head, @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Collections.emptyMap();
     }
 
     /**
