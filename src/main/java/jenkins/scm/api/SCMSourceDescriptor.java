@@ -128,7 +128,11 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> {
     public static List<SCMSourceDescriptor> forOwner(Class<? extends SCMSourceOwner> clazz,
                                                      boolean onlyUserInstantiable) {
         List<SCMSourceDescriptor> result = new ArrayList<SCMSourceDescriptor>();
-        for (Descriptor<SCMSource> d : Jenkins.getInstance().getDescriptorList(SCMSource.class)) {
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return result;
+        }
+        for (Descriptor<SCMSource> d : j.getDescriptorList(SCMSource.class)) { // TODO 1.572+ ExtensionList.lookup
             if (d instanceof SCMSourceDescriptor) {
                 SCMSourceDescriptor descriptor = (SCMSourceDescriptor) d;
                 if (descriptor.isApplicable(clazz) && (!onlyUserInstantiable || descriptor.isUserInstantiable())) {

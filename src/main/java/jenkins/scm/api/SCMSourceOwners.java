@@ -29,6 +29,7 @@ import hudson.ExtensionPoint;
 import jenkins.model.Jenkins;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -66,7 +67,11 @@ public abstract class SCMSourceOwners implements ExtensionPoint, Iterable<SCMSou
          * {@inheritDoc}
          */
         public Iterator<SCMSourceOwner> iterator() {
-            return Jenkins.getInstance().getAllItems(SCMSourceOwner.class).iterator();
+            Jenkins j = Jenkins.getInstance();
+            if (j == null) {
+                return Collections.emptyIterator();
+            }
+            return j.getAllItems(SCMSourceOwner.class).iterator();
         }
     }
 
@@ -78,7 +83,11 @@ public abstract class SCMSourceOwners implements ExtensionPoint, Iterable<SCMSou
          * {@inheritDoc}
          */
         public Iterator<SCMSourceOwner> iterator() {
-            return new IteratorImpl(Jenkins.getInstance().getExtensionList(Enumerator.class));
+            Jenkins j = Jenkins.getInstance();
+            if (j == null) {
+                return Collections.emptyIterator();
+            }
+            return new IteratorImpl(j.getExtensionList(Enumerator.class)); // TODO 1.572+ ExtensionList.lookup
         }
 
         /**
