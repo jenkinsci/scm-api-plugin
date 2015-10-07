@@ -24,7 +24,6 @@
 package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.util.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.WebApp;
 
@@ -33,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import org.apache.commons.io.IOUtils;
 
 /**
  * A file/directory inspected by {@link SCMFileSystem}.
@@ -109,8 +109,7 @@ public abstract class SCMFile {
      */
     @NonNull
     public String contentAsString() throws IOException {
-        // TODO move back to contentEncoding() once basing on a Jenkins Core with IOUtils.toString(InputStream,Charset)
-        return IOUtils.toString(content(), contentEncoding().name());
+        return IOUtils.toString(content(), contentEncoding());
     }
 
     /**
