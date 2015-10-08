@@ -33,7 +33,9 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 /**
- * Defines how we can scan for the presence of repositories.
+ * An API for discovering new and navigating already discovered {@link SCMSource}s within an organization.
+ * An implementation does not need to cache existing discoveries, but some form of caching is strongly recommended
+ * where the backing provider of repositories has a rate limiter on API calls.
  */
 public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator> implements ExtensionPoint {
 
