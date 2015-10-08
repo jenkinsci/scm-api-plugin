@@ -27,13 +27,10 @@ package jenkins.scm.impl;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
 import hudson.Extension;
-import hudson.model.TaskListener;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.SCMSourceOwner;
+import jenkins.scm.api.SCMSourceObserver;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -60,8 +57,12 @@ public class SingleSCMNavigator extends SCMNavigator {
         return sources;
     }
 
-    @Override public Map<String,? extends List<? extends SCMSource>> discoverSources(SCMSourceOwner context, TaskListener listener) throws IOException, InterruptedException {
-        return Collections.singletonMap(name, sources);
+    @Override public void visitSources(SCMSourceObserver observer) throws IOException, InterruptedException {
+        SCMSourceObserver.ProjectObserver projectObserver = observer.observe(name);
+        for (SCMSource source : sources) {
+            projectObserver.addSource(source);
+        }
+        projectObserver.complete();
     }
 
     @Extension public static class DescriptorImpl extends SCMNavigatorDescriptor {

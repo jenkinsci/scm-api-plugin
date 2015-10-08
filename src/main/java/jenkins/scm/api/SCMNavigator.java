@@ -26,10 +26,7 @@ package jenkins.scm.api;
 
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.TaskListener;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import javax.annotation.Nonnull;
 
 /**
@@ -44,15 +41,12 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
 
     /**
      * Looks for SCM sources in a configured place.
-     * @param context who is asking
-     * @param listener a listener to be notified of progress
-     * @return a map from project names, to a list of potential SCM sources as in {@code MultiBranchProject.getSCMSources}; do not call {@link SCMSource#setOwner} on them
+     * After this method completes, no further calls may be made to the {@code observer} or its child callbacks.
+     * @param observer a recipient of progress notifications and a source of contextual information
      * @throws IOException if scanning fails
      * @throws InterruptedException if scanning is interrupted
      */
-    public abstract @Nonnull Map<String,? extends List<? extends SCMSource>> discoverSources(@Nonnull SCMSourceOwner context, @Nonnull TaskListener listener) throws IOException, InterruptedException;
-
-    // TODO this probably needs some way of customizing projects that get created, for example to add a link to GitHub in the description
+    public abstract void visitSources(@Nonnull SCMSourceObserver observer) throws IOException, InterruptedException;
 
     @Override public SCMNavigatorDescriptor getDescriptor() {
         return (SCMNavigatorDescriptor) super.getDescriptor();
