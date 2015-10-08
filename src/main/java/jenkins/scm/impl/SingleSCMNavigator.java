@@ -38,6 +38,9 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+/**
+ * Degenerate navigator which only ever returns a single repository.
+ */
 @Restricted(NoExternalUse.class)
 public class SingleSCMNavigator extends SCMNavigator {
 
