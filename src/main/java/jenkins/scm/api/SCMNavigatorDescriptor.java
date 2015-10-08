@@ -28,6 +28,10 @@ import hudson.model.Descriptor;
 import hudson.model.TopLevelItemDescriptor;
 import javax.annotation.CheckForNull;
 
+/**
+ * Definition of a kind of {@link SCMNavigator}.
+ * @since FIXME
+ */
 public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
 
     protected SCMNavigatorDescriptor() {}
