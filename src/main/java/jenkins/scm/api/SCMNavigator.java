@@ -48,7 +48,8 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      */
     public abstract void visitSources(@Nonnull SCMSourceObserver observer) throws IOException, InterruptedException;
 
-    @Override public SCMNavigatorDescriptor getDescriptor() {
+    @Override
+    public SCMNavigatorDescriptor getDescriptor() {
         return (SCMNavigatorDescriptor) super.getDescriptor();
     }
 

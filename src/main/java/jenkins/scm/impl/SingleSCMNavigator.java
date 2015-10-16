@@ -44,7 +44,8 @@ public class SingleSCMNavigator extends SCMNavigator {
     private final String name;
     private final List<SCMSource> sources;
 
-    @DataBoundConstructor public SingleSCMNavigator(String name, List<SCMSource> sources) {
+    @DataBoundConstructor
+    public SingleSCMNavigator(String name, List<SCMSource> sources) {
         this.name = name;
         this.sources = sources;
     }
@@ -57,7 +58,8 @@ public class SingleSCMNavigator extends SCMNavigator {
         return sources;
     }
 
-    @Override public void visitSources(SCMSourceObserver observer) throws IOException, InterruptedException {
+    @Override
+    public void visitSources(SCMSourceObserver observer) throws IOException, InterruptedException {
         SCMSourceObserver.ProjectObserver projectObserver = observer.observe(name);
         for (SCMSource source : sources) {
             projectObserver.addSource(source);
@@ -65,9 +67,11 @@ public class SingleSCMNavigator extends SCMNavigator {
         projectObserver.complete();
     }
 
-    @Extension public static class DescriptorImpl extends SCMNavigatorDescriptor {
+    @Extension
+    public static class DescriptorImpl extends SCMNavigatorDescriptor {
 
-        @Override public String getDisplayName() {
+        @Override
+        public String getDisplayName() {
             return "Single Repository";
         }
 
