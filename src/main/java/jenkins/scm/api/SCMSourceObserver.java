@@ -39,13 +39,15 @@ public abstract class SCMSourceObserver {
      * Indicates who is asking for sources.
      * @return a contextual item, typically a {@code OrganizationFolder}
      */
-    public abstract @Nonnull SCMSourceOwner getContext();
+    @Nonnull
+    public abstract SCMSourceOwner getContext();
 
     /**
      * Provides a way of reporting progress.
      * @return a logger
      */
-    public abstract @Nonnull TaskListener getListener();
+    @Nonnull
+    public abstract TaskListener getListener();
 
     /**
      * Declare that a new “project” such as a source repository has been found.
@@ -53,14 +55,15 @@ public abstract class SCMSourceObserver {
      * @return a secondary callback to customize the project, on which you must call {@link ProjectObserver#complete}
      * @throws IllegalArgumentException if this {@code projectName} has already been encountered
      */
-    public abstract @Nonnull ProjectObserver observe(@Nonnull String projectName) throws IllegalArgumentException;
+    @Nonnull
+    public abstract ProjectObserver observe(@Nonnull String projectName) throws IllegalArgumentException;
 
     /**
      * Adds extra metadata about the overall organization.
      * Currently no metadata keys are defined; placeholder for description, icon, URL, etc.
      * @param key a predefined attribute name
-     * @param value some value, of a type defined by the attribute
-     * @throws IllegalArgumentException if the attribute name is unrecognized
+     * @param value some value, of a type defined by the attribute, perhaps null if allowed by the attribute documentation
+     * @throws IllegalArgumentException if the attribute name is unrecognized, or this attribute was already added
      * @throws ClassCastException if the attribute value is inappropriate for its type
      */
     public abstract void addAttribute(@Nonnull String key, @Nullable Object value) throws IllegalArgumentException, ClassCastException;
@@ -80,8 +83,8 @@ public abstract class SCMSourceObserver {
          * Adds extra metadata about a specific project.
          * Currently no metadata keys are defined; placeholder for description, icon, URL, etc.
          * @param key a predefined attribute name
-         * @param value some value, of a type defined by the attribute
-         * @throws IllegalArgumentException if the attribute name is unrecognized
+         * @param value some value, of a type defined by the attribute, perhaps null if allowed by the attribute documentation
+         * @throws IllegalArgumentException if the attribute name is unrecognized, or this attribute was already added
          * @throws ClassCastException if the attribute value is inappropriate for its type
          */
         public abstract void addAttribute(@Nonnull String key, @Nullable Object value) throws IllegalArgumentException, ClassCastException;

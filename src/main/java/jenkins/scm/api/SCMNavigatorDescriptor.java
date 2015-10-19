@@ -47,6 +47,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      * @param name a name supplied by the user which may be used as a hint for preconfiguration
      * @return a navigator with a default configuration, or null if it should not be advertised this way
      */
-    public abstract @CheckForNull SCMNavigator newInstance(@CheckForNull String name);
+    @CheckForNull
+    public abstract SCMNavigator newInstance(@CheckForNull String name);
 
 }

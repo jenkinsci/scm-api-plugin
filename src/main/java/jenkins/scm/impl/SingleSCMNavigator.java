@@ -75,7 +75,8 @@ public class SingleSCMNavigator extends SCMNavigator {
             return "Single Repository";
         }
 
-        @Override public SCMNavigator newInstance(String name) {
+        @Override
+        public SCMNavigator newInstance(String name) {
             return null;
         }
 
