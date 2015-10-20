@@ -102,7 +102,11 @@ public abstract class SCMFileSystem {
     public static SCMFileSystem of(@NonNull SCM scm, @CheckForNull SCMRevision rev) {
         scm.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
-        for (Builder b : Jenkins.getInstance().getExtensionList(Builder.class)) {
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return fallBack;
+        }
+        for (Builder b : j.getExtensionList(Builder.class)) { // TODO 1.572+ ExtensionList.lookup
             SCMFileSystem inspector = b.build(scm, rev);
             if (inspector != null) {
                 if (inspector.isFixedRevision()) {
@@ -144,7 +148,11 @@ public abstract class SCMFileSystem {
                                    @CheckForNull SCMRevision rev) {
         source.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
-        for (Builder b : Jenkins.getInstance().getExtensionList(Builder.class)) {
+        Jenkins j = Jenkins.getInstance();
+        if (j == null) {
+            return fallBack;
+        }
+        for (Builder b : j.getExtensionList(Builder.class)) { // TODO 1.572+ ExtensionList.lookup
             SCMFileSystem inspector = b.build(source, head, rev);
             if (inspector != null) {
                 if (inspector.isFixedRevision()) {

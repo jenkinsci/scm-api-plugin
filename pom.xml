@@ -29,7 +29,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.466</version>
+    <version>1.568</version>
     <!-- This should be the highest common parent of the common SCM impls, e.g. Git, SVN, Hg, etc-->
   </parent>
 
