@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 
 /**
  * Callback used by {@link SCMNavigator}.
- * @since FIXME
+ * @since 0.3-beta-1
  */
 public abstract class SCMSourceObserver {
 

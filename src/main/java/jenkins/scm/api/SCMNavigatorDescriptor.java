@@ -30,7 +30,7 @@ import javax.annotation.CheckForNull;
 
 /**
  * Definition of a kind of {@link SCMNavigator}.
- * @since FIXME
+ * @since 0.3-beta-1
  */
 public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
 
