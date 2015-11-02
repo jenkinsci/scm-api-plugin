@@ -23,9 +23,13 @@
  */
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-
+import hudson.ExtensionPoint;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
 import java.io.Serializable;
+import jenkins.model.Jenkins;
 
 /**
  * Represents a named SCM branch, tag or mainline.
@@ -110,4 +114,42 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
         sb.append(name).append("'}");
         return sb.toString();
     }
+
+    /**
+     * Means of locating a head given an item.
+     * @since FIXME
+     */
+    public static abstract class HeadByItem implements ExtensionPoint {
+
+        /**
+         * Checks whether a given item corresponds to a particular SCM head.
+         * @param item such as a {@linkplain ItemGroup#getItems child} of an {@link SCMSourceOwner}
+         * @return a corresponding SCM head, or null if this information is unavailable
+         * @since FIXME
+         */
+        @CheckForNull
+        public abstract SCMHead getHead(Item item);
+
+        /**
+         * Runs all registered implementations.
+         * @param item an item, such as a branch project
+         * @return the corresponding head, if known
+         */
+        @CheckForNull
+        public static SCMHead findHead(Item item) {
+            Jenkins j = Jenkins.getInstance();
+            if (j == null) {
+                return null;
+            }
+            for (HeadByItem ext : j.getExtensionList(HeadByItem.class)) { // TODO 1.572+ ExtensionList.lookup
+                SCMHead head = ext.getHead(item);
+                if (head != null) {
+                    return head;
+                }
+            }
+            return null;
+        }
+
+    }
+
 }
