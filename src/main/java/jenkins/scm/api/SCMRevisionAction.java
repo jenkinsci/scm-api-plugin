@@ -66,6 +66,7 @@ public class SCMRevisionAction extends InvisibleAction {
     /**
      * Gets the {@link SCMRevision} from the specified {@link Actionable}.
      *
+     * @param actionable {@link Actionable} containing a possible {@link SCMRevisionAction}.
      * @return the {@link SCMRevision}.
      */
     @CheckForNull

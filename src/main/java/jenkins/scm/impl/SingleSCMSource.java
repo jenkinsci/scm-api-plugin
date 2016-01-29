@@ -73,6 +73,7 @@ public class SingleSCMSource extends SCMSource {
     /**
      * Our constructor.
      *
+     * @param id   source id.
      * @param name the name of the branch.
      * @param scm  the configuration.
      */

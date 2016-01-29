@@ -23,6 +23,7 @@
  */
 package jenkins.scm.api;
 
+import com.google.common.collect.Iterators;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -69,7 +70,7 @@ public abstract class SCMSourceOwners implements ExtensionPoint, Iterable<SCMSou
         public Iterator<SCMSourceOwner> iterator() {
             Jenkins j = Jenkins.getInstance(); // TODO 1.590+ getActiveInstance
             if (j == null) {
-                return Collections.emptyIterator();
+                return Iterators.emptyIterator();
             }
             return j.getAllItems(SCMSourceOwner.class).iterator();
         }
@@ -85,7 +86,7 @@ public abstract class SCMSourceOwners implements ExtensionPoint, Iterable<SCMSou
         public Iterator<SCMSourceOwner> iterator() {
             Jenkins j = Jenkins.getInstance();
             if (j == null) {
-                return Collections.emptyIterator();
+                return Iterators.emptyIterator();
             }
             return new IteratorImpl(j.getExtensionList(Enumerator.class)); // TODO 1.572+ ExtensionList.lookup
         }

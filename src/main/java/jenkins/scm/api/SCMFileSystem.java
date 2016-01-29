@@ -50,6 +50,8 @@ public abstract class SCMFileSystem {
      * returns that revision. Otherwise null, indicating
      * that the inspector is looking at just the latest state
      * of the repository.
+     *
+     * @return the revision of the commit the inspector is looking at, or null if none.
      */
     @CheckForNull
     public SCMRevision getRevision() {
@@ -58,15 +60,20 @@ public abstract class SCMFileSystem {
 
     /**
      * Whether this inspector is looking at the specific commit.
-     * <p/>
-     * Short for {@code getRevision()!=null}.
+     * <p>Short for {@code getRevision()!=null}.</p>.
+     *
+     * @return true if this inspector is looking at the specific commit.
      */
     public final boolean isFixedRevision() {
         return getRevision() != null;
     }
 
     /**
-     * Short for {@code getRoot().get(path)}
+     * Short for {@code getRoot().get(path)}.
+     *
+     * @param path Path of the SCMFile to obtain from the root of the repository.
+     * @return null if there's no file/directory at the requested path.
+     * @throws IOException if an error occurs while performing the operation.
      */
     @CheckForNull
     public final SCMFile get(@NonNull String path) throws IOException {
@@ -75,6 +82,9 @@ public abstract class SCMFileSystem {
 
     /**
      * Returns the {@link SCMFile} object that represents the root directory of the repository.
+     *
+     * @return the root directory of the repository.
+     * @throws IOException if an error occurs while performing the operation.
      */
     @NonNull
     public abstract SCMFile getRoot() throws IOException;

@@ -43,8 +43,9 @@ import org.apache.commons.io.IOUtils;
 public abstract class SCMFile {
     /**
      * Gets the file name of this file without any path portion, such as just "foo.txt"
-     * <p/>
-     * This method is the equivalent of {@link File#getName()}
+     * <p>This method is the equivalent of {@link File#getName()}.</p>
+     *
+     * @return the file name of this file without any path portion.
      */
     @NonNull
     public abstract String getName();
@@ -52,33 +53,39 @@ public abstract class SCMFile {
     /**
      * Gets a child/descendant path relative from this object.
      *
+     * @param path Relative path of the child to return.
      * @return null if there's no file/directory at the path represented by it.
+     * @throws IOException if an error occurs while performing the operation.
      */
     @CheckForNull
     public abstract SCMFile get(String path) throws IOException;
 
     /**
      * If this object represents a directory, lists up all the immediate children.
-     * <p/>
-     * This method is the equivalent of {@link File#listFiles()}.
+     * <p>This method is the equivalent of {@link File#listFiles()}.</p>
      *
      * @return Always non-null. If this method is not a directory, this method returns
      *         an empty iterable.
+     * @throws IOException if an error occurs while performing the operation.
      */
     @NonNull
     public abstract Iterable<SCMFile> children() throws IOException;
 
     /**
      * Returns true if this object represents a file.
-     * <p/>
-     * This method is the equivalent of {@link File#isFile()}
+     * <p>This method is the equivalent of {@link File#isFile()}.</p>
+     *
+     * @return true if this object represents a file.
+     * @throws IOException if an error occurs while performing the operation.
      */
     public abstract boolean isFile() throws IOException;
 
     /**
      * Returns true if this object represents a directory.
-     * <p/>
-     * This method is the equivalent of {@link File#isDirectory()}
+     * <p>This method is the equivalent of {@link File#isDirectory()}.</p>
+     *
+     * @return true if this object represents a directory.
+     * @throws IOException if an error occurs while performing the operation.
      */
     public boolean isDirectory() throws IOException {
         return !isFile();
@@ -87,6 +94,7 @@ public abstract class SCMFile {
     /**
      * Reads the content of this file.
      *
+     * @return an open stream to read the file content. The caller must close the stream.
      * @throws IOException if this object represents a directory.
      */
     @NonNull
@@ -95,29 +103,43 @@ public abstract class SCMFile {
     /**
      * A convenience method that reads the content and then turns it into a byte array.
      *
+     * @return the file content as a byte array.
      * @throws IOException if this object represents a directory.
      */
     @NonNull
     public byte[] contentAsBytes() throws IOException {
-        return IOUtils.toByteArray(content());
+        final InputStream is = content();
+        try {
+            return IOUtils.toByteArray(is);
+        } finally {
+            IOUtils.closeQuietly(is);
+        }
     }
 
     /**
      * A convenience method that reads the content and then turns it into a string.
      *
+     * @return the file content as a string.
      * @throws IOException if this object represents a directory.
      */
     @NonNull
     public String contentAsString() throws IOException {
-        return IOUtils.toString(content(), contentEncoding());
+        final InputStream is = content();
+        try {
+            return IOUtils.toString(is, contentEncoding());
+        } finally {
+            IOUtils.closeQuietly(is);
+        }
     }
 
     /**
      * Returns the MIME type of this file.
-     * <p/>
-     * The default implementation infers this based on the file name, but
+     * <p>The default implementation infers this based on the file name, but
      * sophisticated server might provide this information from different sources,
-     * such as "svn:mime-type" in Subversion.
+     * such as "svn:mime-type" in Subversion.</p>
+     *
+     * @return the MIME type of this file.
+     * @throws IOException if an error occurs while performing the operation.
      */
     @NonNull
     public String contentMimeType() throws IOException {
@@ -126,9 +148,11 @@ public abstract class SCMFile {
 
     /**
      * Checks if this file is a binary file.
-     * <p/>
-     * What exactly is a binary file is up to the implementation. Some SCMs (such as Subversion)
-     * has a way of letting users mark files as binaries.
+     * <p>What exactly is a binary file is up to the implementation. Some SCMs (such as Subversion)
+     * has a way of letting users mark files as binaries.</p>
+     *
+     * @return true if this file is a binary file.
+     * @throws IOException if an error occurs while performing the operation.
      */
     public boolean isContentBinary() throws IOException {
         return !isContentText();
@@ -136,6 +160,9 @@ public abstract class SCMFile {
 
     /**
      * The opposite of {@link #isContentBinary()}
+     *
+     * @return true if this file is not a binary file.
+     * @throws IOException if an error occurs while performing the operation.
      */
     public boolean isContentText() throws IOException {
         return StringUtils.startsWithIgnoreCase(contentMimeType(), "text/");
@@ -143,12 +170,13 @@ public abstract class SCMFile {
 
     /**
      * Encoding of this file.
-     * <p/>
-     * This is used to interpret text files.
-     * <p/>
-     * Some SCM implementations allow users to mark content encoding of files, and this method
+     * <p>This is used to interpret text files.</p>
+     * <p>Some SCM implementations allow users to mark content encoding of files, and this method
      * may provide those. As a fallback, the default implementation returns the platform
-     * default encoding.
+     * default encoding.</p>
+     *
+     * @return the encoding of this file.
+     * @throws IOException if an error occurs while performing the operation.
      */
     @NonNull
     public Charset contentEncoding() throws IOException {
