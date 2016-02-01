@@ -25,6 +25,7 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -137,11 +138,7 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
          */
         @CheckForNull
         public static SCMHead findHead(Item item) {
-            Jenkins j = Jenkins.getInstance();
-            if (j == null) {
-                return null;
-            }
-            for (HeadByItem ext : j.getExtensionList(HeadByItem.class)) { // TODO 1.572+ ExtensionList.lookup
+            for (HeadByItem ext : ExtensionList.lookup(HeadByItem.class)) {
                 SCMHead head = ext.getHead(item);
                 if (head != null) {
                     return head;

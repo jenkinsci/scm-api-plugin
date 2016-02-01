@@ -25,6 +25,7 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.SCM;
 import jenkins.model.Jenkins;
@@ -112,11 +113,7 @@ public abstract class SCMFileSystem {
     public static SCMFileSystem of(@NonNull SCM scm, @CheckForNull SCMRevision rev) {
         scm.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
-        Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return fallBack;
-        }
-        for (Builder b : j.getExtensionList(Builder.class)) { // TODO 1.572+ ExtensionList.lookup
+        for (Builder b : ExtensionList.lookup(Builder.class)) {
             SCMFileSystem inspector = b.build(scm, rev);
             if (inspector != null) {
                 if (inspector.isFixedRevision()) {
@@ -158,11 +155,7 @@ public abstract class SCMFileSystem {
                                    @CheckForNull SCMRevision rev) {
         source.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
-        Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return fallBack;
-        }
-        for (Builder b : j.getExtensionList(Builder.class)) { // TODO 1.572+ ExtensionList.lookup
+        for (Builder b : ExtensionList.lookup(Builder.class)) {
             SCMFileSystem inspector = b.build(source, head, rev);
             if (inspector != null) {
                 if (inspector.isFixedRevision()) {
