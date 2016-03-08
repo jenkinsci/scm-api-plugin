@@ -271,6 +271,34 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
+     * Enables a source to request that an alternative revision be used to obtain security-sensitive build instructions.
+     * <p>Normally it is assumed that revisions in the SCM represented by this source
+     * come from principals operating with the same authorization as the principal creating the job,
+     * or at least with authorization to create a similar job.
+     * <p>A source may however collect revisions from untrusted third parties and submit them for builds.
+     * If the project type performing the build loads instructions from the same revision,
+     * this might allow the job to be subverted to perform unauthorized build steps or steal credentials.
+     * <p>By replacing the supplied revision with a trusted variant, a source can defend against such attacks.
+     * It is up to the project type to determine which files should come from a trusted replacement.
+     * Regular project sources should come from the original;
+     * Jenkins-specific scripting commands or configuration should come from the replacement, unless easily sandboxed;
+     * scripts for external build tools should come from the original if possible.
+     * @param revision a revision (produced by one of the {@code retrieve} overloads)
+     *                 which may or may not come from a trustworthy source
+     * @param listener a way to explain possible substitutions
+     * @return by default, {@code revision};
+     *         may be overridden to provide an alternate revision from the same or a different head
+     * @throws IOException in case the implementation must call {@link #fetch(SCMHead, TaskListener)} or similar
+     * @throws InterruptedException in case the implementation must call {@link #fetch(SCMHead, TaskListener)} or similar
+     * @since FIXME
+     */
+    @NonNull
+    public SCMRevision getTrustedRevision(@NonNull SCMRevision revision, @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return revision;
+    }
+
+    /**
      * Turns a possibly {@code null} {@link TaskListener} reference into a guaranteed non-null reference.
      *
      * @param listener a possibly {@code null} {@link TaskListener} reference.
