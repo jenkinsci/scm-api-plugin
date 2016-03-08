@@ -25,18 +25,34 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.model.TransientActionFactory;
+import jenkins.scm.api.actions.ChangeRequestAction;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents a named SCM branch, tag or mainline.
  *
  * @author Stephen Connolly
  */
+@ExportedBean
 public class SCMHead implements Comparable<SCMHead>, Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(SCMHead.class.getName());
 
     /**
      * Ensure consistent serialization.
@@ -64,6 +80,7 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
      *
      * @return the name.
      */
+    @Exported
     @NonNull
     public String getName() {
         return name;
@@ -113,6 +130,54 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
         final StringBuilder sb = new StringBuilder("SCMHead{'");
         sb.append(name).append("'}");
         return sb.toString();
+    }
+
+    /**
+     * Gets all actions used to decorate the behavior of this branch.
+     * May be overridden to create a new list, perhaps with additions.
+     * @return a list of all actions associated with this branch (by default, an unmodifiable list searching {@link TransientActionFactory}s)
+     * @see Actionable#getAllActions
+     * @since FIXME
+     */
+    @NonNull
+    @Exported(name="actions")
+    public List<? extends Action> getAllActions() {
+        List<Action> actions = new ArrayList<Action>();
+        Jenkins j = Jenkins.getInstance(); // TODO 1.572+ ExtensionList.lookup
+        if (j != null) {
+            for (TransientActionFactory<?> taf : j.getExtensionList(TransientActionFactory.class)) {
+                if (taf.type().isInstance(this)) {
+                    try {
+                        actions.addAll(createFor(taf));
+                    } catch (Exception e) {
+                        LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+                    }
+                }
+            }
+        }
+        return Collections.unmodifiableList(actions);
+    }
+    private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
+        return taf.createFor(taf.type().cast(this));
+    }
+
+    /**
+     * Gets a specific action used to decorate the behavior of this branch.
+     * May be overridden but suffices to override {@link #getAllActions}.
+     * @param <T> a desired action type to query, such as {@link ChangeRequestAction}
+     * @param type type token
+     * @return an instance of that action interface (by default, filters {@link #getAllActions})
+     * @see Actionable#getAction(Class)
+     * @since FIXME
+     */
+    @CheckForNull
+    public <T extends Action> T getAction(@NonNull Class<T> type) {
+        for (Action action : getAllActions()) {
+            if (type.isInstance(action)) {
+                return type.cast(action);
+            }
+        }
+        return null;
     }
 
     /**
