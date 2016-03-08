@@ -27,6 +27,7 @@ package jenkins.scm.api.actions;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.InvisibleAction;
 import hudson.model.TaskListener;
+import java.io.Serializable;
 import java.net.URL;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadObserver;
@@ -47,7 +48,9 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @since FIXME
  */
 @ExportedBean
-public abstract class ChangeRequestAction extends InvisibleAction {
+public abstract class ChangeRequestAction extends InvisibleAction implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * Identifier of this change request.
