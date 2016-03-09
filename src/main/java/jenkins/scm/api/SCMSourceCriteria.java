@@ -44,6 +44,7 @@ public interface SCMSourceCriteria extends Serializable {
      *                 rejected
      * @return {@code true} iff the candidate should be included in the list of heads
      *         built by Jenkins.
+     * @throws IOException if an error occurs while performing the operation.
      */
     boolean isHead(@NonNull Probe probe, @NonNull TaskListener listener) throws IOException;
 
@@ -81,10 +82,9 @@ public interface SCMSourceCriteria extends Serializable {
         /**
          * Returns the {@link SCMFile} of the root of this head candidate if such deep introspection can be
          * cheaply provided by the version control system in question.
-         * <p/>
-         * When available, this provides more capabilities to analyze what's in the repository.
+         * <p>When available, this provides more capabilities to analyze what's in the repository.
          * Given the frequency of {@link SCMSourceCriteria#isHead(SCMSourceCriteria.Probe,
-         * hudson.model.TaskListener)} call, this method needs to be used with caution.
+         * hudson.model.TaskListener)} call, this method needs to be used with caution.</p>
          *
          * @return the {@link SCMFile} of the root of this head candidate or {@code null} if this is not available
          *         or would require remote network calls.

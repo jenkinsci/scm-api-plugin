@@ -132,9 +132,12 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
      * but the call must always check the validity of any intermediary caches.
      *
+     * @param <O> Observer type.
      * @param observer an optional observer of interim results.
      * @param listener the task listener
      * @return the provided observer.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      */
     @NonNull
     public final <O extends SCMHeadObserver> O fetch(@NonNull O observer,
@@ -150,6 +153,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @param observer an optional observer of interim results.
      * @param listener the task listener.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      */
     @NonNull
     protected abstract void retrieve(@NonNull SCMHeadObserver observer,
@@ -162,7 +167,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @param listener the task listener
      * @return the current list of heads.
-     * @throws IOException
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      */
     @NonNull
     public final Set<SCMHead> fetch(@CheckForNull TaskListener listener) throws IOException, InterruptedException {
@@ -180,6 +186,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *         tracking there is the potential for multiple parent revisions reflecting that the specified revision
      *         was a merge of more than one revision and thus has more than one parent.
      * @since 0.3
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      */
     @NonNull
     public Set<SCMRevision> parentRevisions(@NonNull SCMHead head, @NonNull SCMRevision revision,
@@ -199,6 +207,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *         tracking there is the potential for multiple parent heads reflecting that the specified head
      *         was a merge of more than one head and thus has more than one parent.
      * @since 0.3
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      */
     @NonNull
     public Map<SCMHead, SCMRevision> parentHeads(@NonNull SCMHead head, @CheckForNull TaskListener listener)
@@ -212,7 +222,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @param listener the task listener
      * @return the current list of heads.
-     * @throws IOException
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      */
     @NonNull
     protected Set<SCMHead> retrieve(@NonNull TaskListener listener) throws IOException, InterruptedException {
@@ -225,7 +236,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @param head     the head.
      * @param listener the task listener
      * @return the revision hash (may be non-deterministic) or {@code null} if the head no longer exists.
-     * @throws IOException
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      */
     @CheckForNull
     public final SCMRevision fetch(@NonNull SCMHead head, @CheckForNull TaskListener listener)
@@ -239,7 +251,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @param head     the head.
      * @param listener the task listener
      * @return the revision hash (may be non-deterministic) or {@code null} if the head no longer exists.
-     * @throws IOException
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      */
     @CheckForNull
     protected SCMRevision retrieve(@NonNull SCMHead head, @NonNull TaskListener listener)
