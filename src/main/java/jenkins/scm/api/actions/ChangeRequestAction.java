@@ -45,7 +45,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * (as opposed to, say, mergeability status).
  * Should also be restricted to short metadata which can be quickly retrieved during {@link SCMSource#retrieve(SCMHeadObserver, TaskListener)}.
  * @see SCMHead#getAllActions
- * @since FIXME
+ * @since 1.1
  */
 @ExportedBean
 public abstract class ChangeRequestAction extends InvisibleAction implements Serializable {

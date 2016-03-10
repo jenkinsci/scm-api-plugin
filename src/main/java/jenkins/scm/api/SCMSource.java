@@ -303,7 +303,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *         may be overridden to provide an alternate revision from the same or a different head
      * @throws IOException in case the implementation must call {@link #fetch(SCMHead, TaskListener)} or similar
      * @throws InterruptedException in case the implementation must call {@link #fetch(SCMHead, TaskListener)} or similar
-     * @since FIXME
+     * @since 1.1
      */
     @NonNull
     public SCMRevision getTrustedRevision(@NonNull SCMRevision revision, @NonNull TaskListener listener)

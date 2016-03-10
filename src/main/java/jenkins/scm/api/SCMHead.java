@@ -137,7 +137,7 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
      * May be overridden to create a new list, perhaps with additions.
      * @return a list of all actions associated with this branch (by default, an unmodifiable list searching {@link TransientActionFactory}s)
      * @see Actionable#getAllActions
-     * @since FIXME
+     * @since 1.1
      */
     @NonNull
     @Exported(name="actions")
@@ -168,7 +168,7 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
      * @param type type token
      * @return an instance of that action interface (by default, filters {@link #getAllActions})
      * @see Actionable#getAction(Class)
-     * @since FIXME
+     * @since 1.1
      */
     @CheckForNull
     public <T extends Action> T getAction(@NonNull Class<T> type) {
@@ -182,7 +182,7 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
 
     /**
      * Means of locating a head given an item.
-     * @since FIXME
+     * @since 0.3-beta-2
      */
     public static abstract class HeadByItem implements ExtensionPoint {
 
@@ -190,7 +190,6 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
          * Checks whether a given item corresponds to a particular SCM head.
          * @param item such as a {@linkplain ItemGroup#getItems child} of an {@link SCMSourceOwner}
          * @return a corresponding SCM head, or null if this information is unavailable
-         * @since FIXME
          */
         @CheckForNull
         public abstract SCMHead getHead(Item item);
