@@ -25,8 +25,8 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -128,16 +128,10 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> {
     public static List<SCMSourceDescriptor> forOwner(Class<? extends SCMSourceOwner> clazz,
                                                      boolean onlyUserInstantiable) {
         List<SCMSourceDescriptor> result = new ArrayList<SCMSourceDescriptor>();
-        Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return result;
-        }
-        for (Descriptor<SCMSource> d : j.getDescriptorList(SCMSource.class)) { // TODO 1.572+ ExtensionList.lookup
-            if (d instanceof SCMSourceDescriptor) {
-                SCMSourceDescriptor descriptor = (SCMSourceDescriptor) d;
-                if (descriptor.isApplicable(clazz) && (!onlyUserInstantiable || descriptor.isUserInstantiable())) {
-                    result.add(descriptor);
-                }
+        for (SCMSourceDescriptor d : ExtensionList.lookup(SCMSourceDescriptor.class)) {
+            SCMSourceDescriptor descriptor = (SCMSourceDescriptor) d;
+            if (descriptor.isApplicable(clazz) && (!onlyUserInstantiable || descriptor.isUserInstantiable())) {
+                result.add(descriptor);
             }
         }
         return result;

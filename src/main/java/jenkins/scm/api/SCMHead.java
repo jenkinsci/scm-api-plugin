@@ -38,7 +38,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
 import jenkins.scm.api.actions.ChangeRequestAction;
 import org.kohsuke.stapler.export.Exported;
@@ -143,15 +142,12 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
     @Exported(name="actions")
     public List<? extends Action> getAllActions() {
         List<Action> actions = new ArrayList<Action>();
-        Jenkins j = Jenkins.getInstance(); // TODO 1.572+ ExtensionList.lookup
-        if (j != null) {
-            for (TransientActionFactory<?> taf : j.getExtensionList(TransientActionFactory.class)) {
-                if (taf.type().isInstance(this)) {
-                    try {
-                        actions.addAll(createFor(taf));
-                    } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
-                    }
+        for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
+            if (taf.type().isInstance(this)) {
+                try {
+                    actions.addAll(createFor(taf));
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
                 }
             }
         }
