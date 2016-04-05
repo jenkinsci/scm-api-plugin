@@ -40,6 +40,12 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
         super(clazz);
     }
 
+    public abstract String getDescription();
+
+    public abstract String getCategoryId();
+
+    public abstract String getIconFilePathPattern();
+
     /**
      * Creates a default navigator, if there should be one displayed.
      * May be interpreted by {@code jenkins.branch.SpecificDescriptor}.

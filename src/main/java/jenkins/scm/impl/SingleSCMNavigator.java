@@ -76,6 +76,21 @@ public class SingleSCMNavigator extends SCMNavigator {
         }
 
         @Override
+        public String getDescription() {
+            return null;
+        }
+
+        @Override
+        public String getCategoryId() {
+            return null;
+        }
+
+        @Override
+        public String getIconFilePathPattern() {
+            return null;
+        }
+
+        @Override
         public SCMNavigator newInstance(String name) {
             return null;
         }
