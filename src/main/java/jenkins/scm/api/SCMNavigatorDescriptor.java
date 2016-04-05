@@ -50,7 +50,10 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      * @since TODO
      */
     @Nonnull
-    public abstract String getDescription();
+    public String getDescription() {
+        // TODO Design a default implementation.
+        return "";
+    }
 
     /**
      * Used to categorize this kind of {@link SCMNavigator}.
