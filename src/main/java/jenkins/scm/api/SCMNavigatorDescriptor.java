@@ -51,8 +51,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      */
     @Nonnull
     public String getDescription() {
-        // TODO Design a default implementation.
-        return "";
+        return Messages.SCMNavigator_Description();
     }
 
     /**
