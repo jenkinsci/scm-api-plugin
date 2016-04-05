@@ -60,7 +60,9 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      * @since TODO
      */
     @Nonnull
-    public abstract String getCategoryId();
+    public String getCategoryId() {
+        return "uncategorized";
+    }
 
     /**
      * Represents a file path pattern to get the Item icon in different sizes.
@@ -73,7 +75,9 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      * @since TODO
      */
     @CheckForNull
-    public abstract String getIconFilePathPattern();
+    public String getIconFilePathPattern() {
+        return null;
+    }
 
     /**
      * Creates a default navigator, if there should be one displayed.
