@@ -27,6 +27,7 @@ package jenkins.scm.api;
 import hudson.model.Descriptor;
 import hudson.model.TopLevelItemDescriptor;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Definition of a kind of {@link SCMNavigator}.
@@ -40,10 +41,38 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
         super(clazz);
     }
 
+    /**
+     * A description of this kind of {@link SCMNavigator}. This description can contain HTML code but it is recommend
+     * to use text plain in order to avoid how it should be represented.
+     *
+     * @return A string, by default the value from newInstanceDetail view is taken.
+     *
+     * @since TODO
+     */
+    @Nonnull
     public abstract String getDescription();
 
+    /**
+     * Used to categorize this kind of {@link SCMNavigator}.
+     *
+     * @return A string with the category identifier.
+     *
+     * @since TODO
+     */
+    @Nonnull
     public abstract String getCategoryId();
 
+    /**
+     * Represents a file path pattern to get the Item icon in different sizes.
+     *
+     * For example: plugin/plugin-shortname/images/:size/item.png, where {@code :size} represents the different
+     * icon sizes used commonly in Jenkins project: 16x16, 24x24, 32x32 or 48x48
+     *
+     * @return A string or null if it is not defined.
+     *
+     * @since TODO
+     */
+    @CheckForNull
     public abstract String getIconFilePathPattern();
 
     /**
