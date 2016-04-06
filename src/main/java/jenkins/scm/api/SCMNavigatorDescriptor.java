@@ -47,7 +47,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      *
      * @return A string, by default the value from newInstanceDetail view is taken.
      *
-     * @since TODO
+     * @since 1.2
      */
     @Nonnull
     public String getDescription() {
@@ -59,7 +59,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      *
      * @return A string with the category identifier.
      *
-     * @since TODO
+     * @since 1.2
      */
     @Nonnull
     public String getCategoryId() {
@@ -74,7 +74,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      *
      * @return A string or null if it is not defined.
      *
-     * @since TODO
+     * @since 1.2
      */
     @CheckForNull
     public String getIconFilePathPattern() {
