@@ -72,7 +72,7 @@ public class SingleSCMNavigator extends SCMNavigator {
 
         @Override
         public String getDisplayName() {
-            return "Single Repository";
+            return Messages.SingleSCMSource_DisplayName();
         }
 
         @Override
