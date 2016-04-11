@@ -76,11 +76,6 @@ public class SingleSCMNavigator extends SCMNavigator {
         }
 
         @Override
-        public String getDescription() {
-            return Messages.SingleSCMSource_Description();
-        }
-
-        @Override
         public SCMNavigator newInstance(String name) {
             return null;
         }

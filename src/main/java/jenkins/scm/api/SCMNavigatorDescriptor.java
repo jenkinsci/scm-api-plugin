@@ -42,12 +42,12 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
     }
 
     /**
-     * A description of this kind of {@link SCMNavigator}. This description can contain HTML code but it is recommend
+     * A description of this kind of {@link SCMNavigator}. This description can contain HTML code but it is recommended
      * to use text plain in order to avoid how it should be represented.
      *
-     * @return A string, by default the value from newInstanceDetail view is taken.
+     * @return A string with the description.
      *
-     * @since TODO
+     * @since 1.2
      */
     @Nonnull
     public String getDescription() {
@@ -59,11 +59,11 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      *
      * @return A string with the category identifier.
      *
-     * @since TODO
+     * @since 1.2
      */
     @Nonnull
     public String getCategoryId() {
-        return "uncategorized";
+        return "nested-projects";
     }
 
     /**
@@ -74,7 +74,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      *
      * @return A string or null if it is not defined.
      *
-     * @since TODO
+     * @since 1.2
      */
     @CheckForNull
     public String getIconFilePathPattern() {
