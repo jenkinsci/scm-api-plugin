@@ -45,7 +45,8 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      * A description of this kind of {@link SCMNavigator}. This description can contain HTML code but it is recommended
      * to use text plain in order to avoid how it should be represented.
      *
-     * @return A string with the description.
+     * @return A string with the description. {@code TopLevelItemDescriptor#getDescription()}.
+     * TODO: Replace to @link when the baseline is upgraded to 2.x
      *
      * @since 1.2
      */
@@ -57,7 +58,8 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
     /**
      * Used to categorize this kind of {@link SCMNavigator}.
      *
-     * @return A string with the category identifier.
+     * @return A string with the category identifier. {@code TopLevelItemDescriptor#getCategoryId()}
+     * TODO: Replace to @link when the baseline is upgraded to 2.x
      *
      * @since 1.2
      */
@@ -72,7 +74,8 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      * For example: plugin/plugin-shortname/images/:size/item.png, where {@code :size} represents the different
      * icon sizes used commonly in Jenkins project: 16x16, 24x24, 32x32 or 48x48
      *
-     * @return A string or null if it is not defined.
+     * @return A string or null if it is not defined. {@code TopLevelItemDescriptor#getIconFilePathPattern()}
+     * TODO: Replace to @link when the baseline is upgraded to 2.x
      *
      * @since 1.2
      */
