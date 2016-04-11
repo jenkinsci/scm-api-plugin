@@ -86,11 +86,12 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
 
     /**
      * Creates a default navigator, if there should be one displayed.
-     * May be interpreted by {@code jenkins.branch.SpecificDescriptor}.
-     * If returning non-null, you may also provide a {@code newInstanceDetail} view as per {@link TopLevelItemDescriptor}
-     * and implement {@link SCMNavigatorDescriptor#getDescription()}.
+     * May be interpreted by {@code jenkins.branch.CustomOrganizationFolderDescriptor}.
+     *
+     * If returning non-null, you should also provide a {@link #getDescription()} implementation
      *
      * @param name a name supplied by the user which may be used as a hint for preconfiguration
+     *
      * @return a navigator with a default configuration, or null if it should not be advertised this way
      */
     @CheckForNull
