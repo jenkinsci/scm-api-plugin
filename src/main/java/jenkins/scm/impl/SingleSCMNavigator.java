@@ -72,7 +72,7 @@ public class SingleSCMNavigator extends SCMNavigator {
 
         @Override
         public String getDisplayName() {
-            return Messages.SingleSCMSource_DisplayName();
+            return Messages.SingleSCMNavigator_DisplayName();
         }
 
         @Override
