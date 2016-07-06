@@ -23,6 +23,9 @@
  -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:description>
+    <j:out value="${%blurb}"/>
+  </f:description>
   <f:entry title="${%Name}" field="name">
     <f:textbox/>
   </f:entry>
