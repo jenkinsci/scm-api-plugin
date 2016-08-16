@@ -86,6 +86,14 @@ public class SingleSCMSource extends SCMSource {
         this.scm = scm;
     }
 
+    public String getName() {
+        return name;
+    }
+    
+    public SCM getScm() {
+        return scm;
+    }
+
     private synchronized void makeHead() {
         if (head == null) {
             head = new SCMHead(name);
