@@ -34,6 +34,7 @@ import net.jcip.annotations.GuardedBy;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -305,6 +306,42 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             }
         }, listener);
         return result.get();
+    }
+
+    /**
+     * Looks up suggested revisions that could be passed to {@link #fetch(String, TaskListener)}.
+     * There is no guarantee that all returned revisions are in fact valid, nor that all valid revisions are returned.
+     * Delegates to {@link #retrieveRevisions}.
+     * @param listener the task listener
+     * @return a possibly empty set of revision names suggested by the implementation
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since FIXME
+     */
+    @NonNull
+    public final Set<String> fetchRevisions(@CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return retrieveRevisions(defaultListener(listener));
+    }
+
+    /**
+     * Looks up suggested revisions that could be passed to {@link #fetch(String, TaskListener)}.
+     * There is no guarantee that all returned revisions are in fact valid, nor that all valid revisions are returned.
+     * By default, calls {@link #retrieve(TaskListener)}, thus typically returning only branch names.
+     * @param listener the task listener
+     * @return a possibly empty set of revision names suggested by the implementation
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since FIXME
+     */
+    @NonNull
+    protected Set<String> retrieveRevisions(@NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        Set<String> revisions = new HashSet<String>();
+        for (SCMHead head : retrieve(listener)) {
+            revisions.add(head.getName());
+        }
+        return revisions;
     }
 
     /**
