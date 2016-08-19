@@ -29,7 +29,8 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>2.3</version>
+    <version>2.12</version>
+    <relativePath/>
   </parent>
 
   <artifactId>scm-api</artifactId>
@@ -44,7 +45,7 @@
   <licenses>
     <license>
       <name>The MIT license</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <url>https://opensource.org/licenses/MIT</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -57,29 +58,27 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/scm-api-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/scm-api-plugin.git</developerConnection>
-    <url>http://github.com/jenkinsci/scm-api-plugin</url>
+    <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <tag>HEAD</tag>
   </scm>
 
   <properties>
-    <!-- This should be the highest common parent of the common SCM impls, e.g. Git, SVN, Hg, etc-->
-    <!-- Under this criteria, using p4-plugin's version. -->
-    <jenkins.version>1.596.1</jenkins.version>
+    <jenkins.version>1.609.3</jenkins.version>
     <java.level>6</java.level>
   </properties>
 
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
+      <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
+      <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
 
@@ -95,6 +94,12 @@
           <artifactId>hamcrest-core</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>git</artifactId>
+      <version>2.5.3</version> <!-- 2.4.x does not work since it lacks https://github.com/jenkinsci/git-plugin/pull/402 -->
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
