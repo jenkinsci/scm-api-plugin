@@ -30,7 +30,7 @@
     <f:textbox/>
   </f:entry>
   <!-- Known to work from CpsScmFlowDefinition/config.jelly: -->
-  <f:dropdownDescriptorSelector field="scm" title="${%Source Code Management}"/>
+  <f:dropdownDescriptorSelector field="scm" title="${%Source Code Management}" descriptors="${descriptor.getSCMDescriptors(sourceOwner)}"/>
   <!-- Presumably cribbed from /lib/hudson/project/config-scm.jelly but does not work for reasons TBD (and radio buttons take too much space anyway):
   <j:set var="namePrefix" value="${h.generateId()}"/>
   <f:entry title="Source Code Management">
