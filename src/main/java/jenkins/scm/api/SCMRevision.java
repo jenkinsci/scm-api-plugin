@@ -63,6 +63,15 @@ public abstract class SCMRevision implements Serializable {
     public abstract int hashCode();  // force implementers to implement.
 
     /**
+     * Should provide a concise, human-readable summary of this revision in an implementation-dependent format.
+     * <p>{@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
+    /**
      * Returns {@code true} if and only if this revision is deterministic, in other words that repeated checkouts of
      * this revision will result in the exact same files being checked out. Most modern SCM systems have a deterministic
      * revision, however some of the older ones do not have a deterministic revision for all types of head.
