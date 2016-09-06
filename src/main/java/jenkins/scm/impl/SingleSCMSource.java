@@ -28,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.scm.NullSCM;
@@ -94,13 +93,6 @@ public class SingleSCMSource extends SCMSource {
         return scm;
     }
 
-    private synchronized void makeHead() {
-        if (head == null) {
-            head = new SCMHead(name);
-            revisionHash = new SCMRevisionImpl(head);
-        }
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -109,22 +101,11 @@ public class SingleSCMSource extends SCMSource {
     protected synchronized void retrieve(@NonNull SCMHeadObserver observer,
                                          @NonNull TaskListener listener)
             throws IOException {
-        makeHead();
+        if (head == null) {
+            head = new SCMHead(name);
+            revisionHash = new SCMRevisionImpl(head);
+        }
         observer.observe(head, revisionHash);
-    }
-
-    /**
-     * Unconditionally returns the single nondeterministic revision.
-     * The {@code revision} argument is ignored.
-     * For the result of {@link #build(SCMHead, SCMRevision)} to be useful,
-     * ensure that {@link #scm} includes some parameterized fields,
-     * and that {@link Run#getEnvironment(TaskListener)} defines corresponding variables.
-     */
-    @NonNull
-    @Override
-    protected SCMRevision retrieve(String revision, TaskListener listener) throws IOException, InterruptedException {
-        makeHead();
-        return revisionHash;
     }
 
     /**
