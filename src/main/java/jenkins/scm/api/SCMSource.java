@@ -270,7 +270,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 1.3
      */
     @CheckForNull
     public final SCMRevision fetch(@NonNull String revision, @CheckForNull TaskListener listener)
@@ -287,7 +287,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 1.3
      */
     @CheckForNull
     protected SCMRevision retrieve(@NonNull final String revision, @NonNull TaskListener listener)
@@ -316,7 +316,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return a possibly empty set of revision names suggested by the implementation
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 1.3
      */
     @NonNull
     public final Set<String> fetchRevisions(@CheckForNull TaskListener listener)
@@ -332,7 +332,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return a possibly empty set of revision names suggested by the implementation
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 1.3
      */
     @NonNull
     protected Set<String> retrieveRevisions(@NonNull TaskListener listener)
