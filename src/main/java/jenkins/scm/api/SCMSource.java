@@ -34,9 +34,11 @@ import net.jcip.annotations.GuardedBy;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -258,6 +260,88 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     protected SCMRevision retrieve(@NonNull SCMHead head, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         return fetch(SCMHeadObserver.select(head), listener).result();
+    }
+
+    /**
+     * Looks up a specific revision based on some SCM-specific set of permissible syntaxes.
+     * Delegates to {@link #retrieve(String, TaskListener)}.
+     * @param revision might be a branch name, a tag name, a cryptographic hash, a revision number, etc.
+     * @param listener the task listener (optional)
+     * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since FIXME
+     */
+    @CheckForNull
+    public final SCMRevision fetch(@NonNull String revision, @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return retrieve(revision, defaultListener(listener));
+    }
+
+    /**
+     * Looks up a specific revision based on some SCM-specific set of permissible syntaxes.
+     * The default implementation uses {@link #retrieve(SCMHeadObserver, TaskListener)}
+     * and looks for {@link SCMHead#getName} matching the argument (so typically only supporting branch names).
+     * @param revision might be a branch name, a tag name, a cryptographic hash, a revision number, etc.
+     * @param listener the task listener
+     * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since FIXME
+     */
+    @CheckForNull
+    protected SCMRevision retrieve(@NonNull final String revision, @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        final AtomicReference<SCMRevision> result = new AtomicReference<SCMRevision>();
+        retrieve(new SCMHeadObserver() {
+            @Override
+            public void observe(SCMHead head, SCMRevision rev) {
+                if (head.getName().equals(revision)) {
+                    result.set(rev);
+                }
+            }
+            @Override
+            public boolean isObserving() {
+                return result.get() == null;
+            }
+        }, listener);
+        return result.get();
+    }
+
+    /**
+     * Looks up suggested revisions that could be passed to {@link #fetch(String, TaskListener)}.
+     * There is no guarantee that all returned revisions are in fact valid, nor that all valid revisions are returned.
+     * Delegates to {@link #retrieveRevisions}.
+     * @param listener the task listener
+     * @return a possibly empty set of revision names suggested by the implementation
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since FIXME
+     */
+    @NonNull
+    public final Set<String> fetchRevisions(@CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return retrieveRevisions(defaultListener(listener));
+    }
+
+    /**
+     * Looks up suggested revisions that could be passed to {@link #fetch(String, TaskListener)}.
+     * There is no guarantee that all returned revisions are in fact valid, nor that all valid revisions are returned.
+     * By default, calls {@link #retrieve(TaskListener)}, thus typically returning only branch names.
+     * @param listener the task listener
+     * @return a possibly empty set of revision names suggested by the implementation
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since FIXME
+     */
+    @NonNull
+    protected Set<String> retrieveRevisions(@NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        Set<String> revisions = new HashSet<String>();
+        for (SCMHead head : retrieve(listener)) {
+            revisions.add(head.getName());
+        }
+        return revisions;
     }
 
     /**
