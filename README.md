@@ -86,4 +86,6 @@ The [getCriteria()](https://github.com/jenkinsci/scm-api-plugin/blob/c06684f6e25
 [(doc)](http://javadoc.jenkins.io/scm-api/jenkins/scm/api/SCMSource.html#getCriteria)
 method provides criteria (such as the presence of a Jenkinsfile in the
 root of the repository branch) used to select which branches should
-have jobs created for them.
+have jobs created for them.  Refer to
+[AbstractGitSCMSource](https://github.com/jenkinsci/git-plugin/blob/1b555c8d995413160f3eea80b3f6926e7b411369/src/main/java/jenkins/plugins/git/AbstractGitSCMSource.java#L313)
+as the reference implementation
