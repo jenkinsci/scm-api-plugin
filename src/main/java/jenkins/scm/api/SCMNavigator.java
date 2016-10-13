@@ -24,10 +24,10 @@
 
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import java.io.IOException;
-import javax.annotation.Nonnull;
 
 /**
  * An API for discovering new and navigating already discovered {@link SCMSource}s within an organization.
@@ -46,7 +46,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * @throws IOException if scanning fails
      * @throws InterruptedException if scanning is interrupted
      */
-    public abstract void visitSources(@Nonnull SCMSourceObserver observer) throws IOException, InterruptedException;
+    public abstract void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException;
 
     @Override
     public SCMNavigatorDescriptor getDescriptor() {

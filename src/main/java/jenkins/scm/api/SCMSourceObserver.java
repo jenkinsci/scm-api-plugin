@@ -24,10 +24,10 @@
 
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Item;
 import hudson.model.TaskListener;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Callback used by {@link SCMNavigator}.
@@ -39,14 +39,14 @@ public abstract class SCMSourceObserver {
      * Indicates who is asking for sources.
      * @return a contextual item, typically a {@code OrganizationFolder}
      */
-    @Nonnull
+    @NonNull
     public abstract SCMSourceOwner getContext();
 
     /**
      * Provides a way of reporting progress.
      * @return a logger
      */
-    @Nonnull
+    @NonNull
     public abstract TaskListener getListener();
 
     /**
@@ -55,8 +55,8 @@ public abstract class SCMSourceObserver {
      * @return a secondary callback to customize the project, on which you must call {@link ProjectObserver#complete}
      * @throws IllegalArgumentException if this {@code projectName} has already been encountered
      */
-    @Nonnull
-    public abstract ProjectObserver observe(@Nonnull String projectName) throws IllegalArgumentException;
+    @NonNull
+    public abstract ProjectObserver observe(@NonNull String projectName) throws IllegalArgumentException;
 
     /**
      * Adds extra metadata about the overall organization.
@@ -66,7 +66,7 @@ public abstract class SCMSourceObserver {
      * @throws IllegalArgumentException if the attribute name is unrecognized, or this attribute was already added
      * @throws ClassCastException if the attribute value is inappropriate for its type
      */
-    public abstract void addAttribute(@Nonnull String key, @Nullable Object value) throws IllegalArgumentException, ClassCastException;
+    public abstract void addAttribute(@NonNull String key, @Nullable Object value) throws IllegalArgumentException, ClassCastException;
 
     /**
      * Nested callback produced by {@link #observe}.
@@ -77,7 +77,7 @@ public abstract class SCMSourceObserver {
          * Adds a source repository to be used from a new project.
          * @param source a potential SCM source as in {@code MultiBranchProject.getSCMSources}; do not call {@link SCMSource#setOwner} on it
          */
-        public abstract void addSource(@Nonnull SCMSource source);
+        public abstract void addSource(@NonNull SCMSource source);
 
         /**
          * Adds extra metadata about a specific project.
@@ -87,7 +87,7 @@ public abstract class SCMSourceObserver {
          * @throws IllegalArgumentException if the attribute name is unrecognized, or this attribute was already added
          * @throws ClassCastException if the attribute value is inappropriate for its type
          */
-        public abstract void addAttribute(@Nonnull String key, @Nullable Object value) throws IllegalArgumentException, ClassCastException;
+        public abstract void addAttribute(@NonNull String key, @Nullable Object value) throws IllegalArgumentException, ClassCastException;
 
         /**
          * To be called when finished defining one project.

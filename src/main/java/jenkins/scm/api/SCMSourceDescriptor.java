@@ -27,6 +27,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
+import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -39,7 +40,7 @@ import java.util.UUID;
  *
  * @author Stephen Connolly
  */
-public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> {
+public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implements IconSpec {
 
     /**
      * Return or generate the ID for a source instance.
@@ -137,4 +138,12 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> {
         return result;
     }
 
+    /**
+     * Used to categorize this kind of {@link SCMSource}
+     * @return The Icon class specification e.g. 'icon-notepad'.
+     */
+    @Override
+    public String getIconClassName() {
+        return null;
+    }
 }

@@ -24,16 +24,16 @@
 
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor;
-import hudson.model.TopLevelItemDescriptor;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import org.jenkins.ui.icon.IconSpec;
 
 /**
  * Definition of a kind of {@link SCMNavigator}.
  * @since 0.3-beta-1
  */
-public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
+public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> implements IconSpec {
 
     protected SCMNavigatorDescriptor() {}
 
@@ -50,7 +50,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      *
      * @since 1.2
      */
-    @Nonnull
+    @NonNull
     public String getDescription() {
         return Messages.SCMNavigator_Description();
     }
@@ -63,7 +63,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      *
      * @since 1.2
      */
-    @Nonnull
+    @NonNull
     public String getCategoryId() {
         return "nested-projects";
     }
@@ -81,6 +81,11 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> {
      */
     @CheckForNull
     public String getIconFilePathPattern() {
+        return null;
+    }
+
+    @CheckForNull
+    public String getIconClassName() {
         return null;
     }
 
