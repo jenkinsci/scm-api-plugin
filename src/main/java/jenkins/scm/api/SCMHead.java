@@ -31,6 +31,7 @@ import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.util.AlternativeUiTextProvider;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,6 +52,17 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean
 public class SCMHead implements Comparable<SCMHead>, Serializable {
 
+    /**
+     * Replaceable pronoun of that points to a {@link SCMHead}. Defaults to {@code null} depending on the context.
+     *
+     * @since FIXME
+     */
+    public static final AlternativeUiTextProvider.Message<SCMHead> PRONOUN
+            = new AlternativeUiTextProvider.Message<SCMHead>();
+
+    /**
+     * Our logger.
+     */
     private static final Logger LOGGER = Logger.getLogger(SCMHead.class.getName());
 
     /**
@@ -83,6 +95,17 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
     @NonNull
     public String getName() {
         return name;
+    }
+
+    /**
+     * Get the term used in the UI to represent this kind of {@link SCMHead}. Must start with a capital letter.
+     *
+     * @return the term or {@code null} to fall back to the calling context's default.
+     * @since FIXME
+     */
+    @CheckForNull
+    public String getPronoun() {
+        return AlternativeUiTextProvider.get(PRONOUN, this, null);
     }
 
     /**

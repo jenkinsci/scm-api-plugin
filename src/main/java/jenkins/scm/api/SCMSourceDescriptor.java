@@ -27,6 +27,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
+import hudson.model.Item;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -144,6 +145,17 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
      */
     @Override
     public String getIconClassName() {
+        return null;
+    }
+
+    /**
+     * Get the term used in the UI to represent this kind of {@link SCMSource}. Must start with a capital letter.
+     *
+     * @return the term or {@code null} to fall back to the calling context's default.
+     * @since FIXME
+     */
+    @CheckForNull
+    public String getPronoun() {
         return null;
     }
 }
