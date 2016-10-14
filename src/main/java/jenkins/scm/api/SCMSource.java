@@ -27,8 +27,11 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.AbstractItem;
+import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
+import hudson.util.AlternativeUiTextProvider;
 import hudson.util.LogTaskListener;
 import net.jcip.annotations.GuardedBy;
 
@@ -60,6 +63,13 @@ import java.util.logging.Logger;
  */
 public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
         implements ExtensionPoint {
+
+    /**
+     * Replaceable pronoun of that points to a {@link SCMSource}. Defaults to {@code null} depending on the context.
+     * @since FIXME
+     */
+    public static final AlternativeUiTextProvider.Message<SCMSource> PRONOUN
+            = new AlternativeUiTextProvider.Message<SCMSource>();
 
     /**
      * The ID of this source.
@@ -449,6 +459,25 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
         sb.append("{id='").append(id).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SCMSourceDescriptor getDescriptor() {
+        return (SCMSourceDescriptor) super.getDescriptor();
+    }
+
+    /**
+     * Get the term used in the UI to represent this kind of {@link SCMSource}. Must start with a capital letter.
+     *
+     * @return the term or {@code null} to fall back to the calling context's default.
+     * @since FIXME
+     */
+    @CheckForNull
+    public String getPronoun() {
+        return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getPronoun());
     }
 
 }

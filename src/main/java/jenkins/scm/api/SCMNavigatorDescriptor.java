@@ -84,8 +84,25 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
         return null;
     }
 
+    /**
+     * Get the Item's Icon class specification e.g. 'icon-notepad'.
+     * Note: do <strong>NOT</strong> include icon size specifications (such as 'icon-sm').
+     *
+     * @return The Icon class specification e.g. 'icon-notepad'.
+     */
     @CheckForNull
     public String getIconClassName() {
+        return null;
+    }
+
+    /**
+     * Get the term used in the UI to represent this kind of {@link SCMNavigator}. Must start with a capital letter.
+     *
+     * @return the term or {@code null} to fall back to the calling context's default.
+     * @since FIXME
+     */
+    @CheckForNull
+    public String getPronoun() {
         return null;
     }
 

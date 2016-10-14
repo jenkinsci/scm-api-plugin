@@ -24,9 +24,11 @@
 
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
+import hudson.util.AlternativeUiTextProvider;
 import java.io.IOException;
 
 /**
@@ -36,6 +38,14 @@ import java.io.IOException;
  * @since 0.3-beta-1
  */
 public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator> implements ExtensionPoint {
+
+    /**
+     * Replaceable pronoun of that points to a {@link SCMNavigator}. Defaults to {@code null} depending on the context.
+     *
+     * @since FIXME
+     */
+    public static final AlternativeUiTextProvider.Message<SCMNavigator> PRONOUN
+            = new AlternativeUiTextProvider.Message<SCMNavigator>();
 
     protected SCMNavigator() {}
 
@@ -53,4 +63,14 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
         return (SCMNavigatorDescriptor) super.getDescriptor();
     }
 
+    /**
+     * Get the term used in the UI to represent this kind of {@link SCMNavigator}. Must start with a capital letter.
+     *
+     * @return the term or {@code null} to fall back to the calling context's default.
+     * @since FIXME
+     */
+    @CheckForNull
+    public String getPronoun() {
+        return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getPronoun());
+    }
 }
