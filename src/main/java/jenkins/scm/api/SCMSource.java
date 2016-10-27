@@ -426,6 +426,52 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
+     * Tests if this {@link SCMSource} can instantiate a {@link SCMSourceCriteria.Probe}
+     * @return {@code true} if and only if {@link #createProbe(SCMHead, SCMRevision)} has been implemented.
+     * @since FIXME
+     */
+    public boolean canProbe() {
+        return Util.isOverridden(SCMSource.class, getClass(), "createProbe", SCMHead.class, SCMRevision.class);
+    }
+
+    /**
+     * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}.
+     *
+     * Public exposed API for {@link #createProbe(SCMHead, SCMRevision)}.
+     * @param revision the {@link SCMRevision}.
+     * @return the {@link SCMSourceCriteria.Probe}.
+     * @throws IllegalArgumentException if the {@link SCMRevision#getHead()} is not equal to the supplied {@link SCMHead}
+     * @throws IOException if the probe creation failed due to an IO exception.
+     * @see #canProbe()
+     * @since FIXME
+     */
+    @NonNull
+    public final SCMProbe newProbe(@NonNull SCMHead head, @CheckForNull SCMRevision revision) throws IOException {
+        if (revision != null && !revision.getHead().equals(head)) {
+            throw new IllegalArgumentException("Mismatched head and revision");
+        }
+        try {
+            return createProbe(head, revision);
+        } catch (AbstractMethodError e) {
+            throw new UnsupportedOperationException(e);
+        }
+    }
+
+    /**
+     * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}.
+     *
+     * @param revision the {@link SCMRevision}.
+     * @return the {@link SCMSourceCriteria.Probe} or {@code null} if this source cannot be probed.
+     * @throws IOException if the probe creation failed due to an IO exception.
+     * @see #canProbe()
+     * @see #newProbe(SCMHead, SCMRevision)
+     * @since FIXME
+     */
+    @CheckForNull
+    protected abstract SCMProbe createProbe(@NonNull SCMHead head, @CheckForNull SCMRevision revision)
+            throws IOException;
+
+    /**
      * {@inheritDoc}
      */
     @Override
