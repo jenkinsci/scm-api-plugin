@@ -76,8 +76,22 @@ public interface SCMSourceCriteria extends Serializable {
          * @param path the path.
          * @return {@code true} iff the path exists (may be a file or a directory or a symlink or whatever).
          * @throws IOException if a remote network call failed and the result is therefore indeterminate.
+         * @deprecated use {@link #stat(String)}
          */
+        @Deprecated
         public abstract boolean exists(@NonNull String path) throws IOException;
+
+        /**
+         * Checks if the path, relative to the head candidate root, exists or not. The results of this method should
+         * be cached where possible but can involve a remote network call.
+         *
+         * @param path the path.
+         * @return The results of the check.
+         * @throws IOException if a remote network call failed and the result is therefore indeterminate.
+         */
+        public SCMProbeStat stat(@NonNull String path) throws IOException {
+            return exists(path) ? SCMProbeStat.found(SCMProbeStat.Type.UNKNOWN) : SCMProbeStat.missing();
+        }
 
         /**
          * Returns the {@link SCMFile} of the root of this head candidate if such deep introspection can be
@@ -86,8 +100,7 @@ public interface SCMSourceCriteria extends Serializable {
          * Given the frequency of {@link SCMSourceCriteria#isHead(SCMSourceCriteria.Probe,
          * hudson.model.TaskListener)} call, this method needs to be used with caution.</p>
          *
-         * @return the {@link SCMFile} of the root of this head candidate or {@code null} if this is not available
-         *         or would require remote network calls.
+         * @return the {@link SCMFile} of the root of this head candidate or {@code null} if this is not available.
          */
         @CheckForNull
         public SCMFile getRoot() {
