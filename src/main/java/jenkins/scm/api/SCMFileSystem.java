@@ -28,8 +28,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.SCM;
-import jenkins.model.Jenkins;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -37,13 +37,19 @@ import java.io.IOException;
  *
  * @author Stephen Connolly
  */
-public abstract class SCMFileSystem {
+public abstract class SCMFileSystem implements Closeable {
 
     @CheckForNull
     private final SCMRevision rev;
 
     protected SCMFileSystem(@CheckForNull SCMRevision rev) {
         this.rev = rev;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void close() throws IOException {
+        // no-op
     }
 
     /**
@@ -70,25 +76,23 @@ public abstract class SCMFileSystem {
     }
 
     /**
-     * Short for {@code getRoot().get(path)}.
+     * Short for {@code getRoot().child(path)}.
      *
      * @param path Path of the SCMFile to obtain from the root of the repository.
      * @return null if there's no file/directory at the requested path.
-     * @throws IOException if an error occurs while performing the operation.
      */
-    @CheckForNull
-    public final SCMFile get(@NonNull String path) throws IOException {
-        return getRoot().get(path);
+    @NonNull
+    public final SCMFile child(@NonNull String path) {
+        return getRoot().child(path);
     }
 
     /**
      * Returns the {@link SCMFile} object that represents the root directory of the repository.
      *
      * @return the root directory of the repository.
-     * @throws IOException if an error occurs while performing the operation.
      */
     @NonNull
-    public abstract SCMFile getRoot() throws IOException;
+    public abstract SCMFile getRoot();
 
     /**
      * Given a {@link SCM} this method will try to retrieve a corresponding {@link SCMFileSystem} instance.

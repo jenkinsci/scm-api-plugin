@@ -23,16 +23,15 @@
  */
 package jenkins.scm.api;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.WebApp;
-
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.WebApp;
 
 /**
  * A file/directory inspected by {@link SCMFileSystem}.
@@ -51,14 +50,13 @@ public abstract class SCMFile {
     public abstract String getName();
 
     /**
-     * Gets a child/descendant path relative from this object.
+     * Constructs a child/descendant {@link SCMFile} instance path relative from this object.
      *
      * @param path Relative path of the child to return.
-     * @return null if there's no file/directory at the path represented by it.
-     * @throws IOException if an error occurs while performing the operation.
+     * @return The instance.
      */
-    @CheckForNull
-    public abstract SCMFile get(String path) throws IOException;
+    @NonNull
+    public abstract SCMFile child(String path);
 
     /**
      * If this object represents a directory, lists up all the immediate children.
@@ -76,6 +74,8 @@ public abstract class SCMFile {
      * <p>This method is the equivalent of {@link File#isFile()}.</p>
      *
      * @return true if this object represents a file.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if an error occurs while performing the operation.
      */
     public abstract boolean isFile() throws IOException;
@@ -85,6 +85,8 @@ public abstract class SCMFile {
      * <p>This method is the equivalent of {@link File#isDirectory()}.</p>
      *
      * @return true if this object represents a directory.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if an error occurs while performing the operation.
      */
     public boolean isDirectory() throws IOException {
@@ -95,6 +97,8 @@ public abstract class SCMFile {
      * Reads the content of this file.
      *
      * @return an open stream to read the file content. The caller must close the stream.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if this object represents a directory.
      */
     @NonNull
@@ -104,6 +108,8 @@ public abstract class SCMFile {
      * A convenience method that reads the content and then turns it into a byte array.
      *
      * @return the file content as a byte array.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if this object represents a directory.
      */
     @NonNull
@@ -120,6 +126,8 @@ public abstract class SCMFile {
      * A convenience method that reads the content and then turns it into a string.
      *
      * @return the file content as a string.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if this object represents a directory.
      */
     @NonNull
@@ -139,6 +147,8 @@ public abstract class SCMFile {
      * such as "svn:mime-type" in Subversion.</p>
      *
      * @return the MIME type of this file.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if an error occurs while performing the operation.
      */
     @NonNull
@@ -152,6 +162,8 @@ public abstract class SCMFile {
      * has a way of letting users mark files as binaries.</p>
      *
      * @return true if this file is a binary file.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if an error occurs while performing the operation.
      */
     public boolean isContentBinary() throws IOException {
@@ -162,6 +174,8 @@ public abstract class SCMFile {
      * The opposite of {@link #isContentBinary()}
      *
      * @return true if this file is not a binary file.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if an error occurs while performing the operation.
      */
     public boolean isContentText() throws IOException {
@@ -176,6 +190,8 @@ public abstract class SCMFile {
      * default encoding.</p>
      *
      * @return the encoding of this file.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if an error occurs while performing the operation.
      */
     @NonNull
