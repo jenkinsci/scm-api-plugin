@@ -25,6 +25,7 @@
 package jenkins.scm.impl;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCategory;
@@ -49,6 +50,7 @@ public final class UncategorizedSCMSourceCategory extends SCMSourceCategory {
      *
      * @param displayName the display name for change requests.
      */
+    @SuppressFBWarnings("NP_METHOD_PARAMETER_TIGHTENS_ANNOTATION")
     public UncategorizedSCMSourceCategory(@NonNull Localizable displayName) {
         super(displayName);
     }

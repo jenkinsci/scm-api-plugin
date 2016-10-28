@@ -25,6 +25,7 @@
 package jenkins.scm.impl;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.scm.api.ChangeRequestSCMHead;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
@@ -50,6 +51,7 @@ public final class ChangeRequestSCMHeadCategory extends SCMHeadCategory {
      *
      * @param displayName the display name for change requests.
      */
+    @SuppressFBWarnings("NP_METHOD_PARAMETER_TIGHTENS_ANNOTATION")
     public ChangeRequestSCMHeadCategory(@NonNull Localizable displayName) {
         super("change-requests", displayName);
     }
