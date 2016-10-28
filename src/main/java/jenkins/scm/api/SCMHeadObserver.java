@@ -105,10 +105,22 @@ public abstract class SCMHeadObserver {
      *
      * @param headName the head to watch out for.
      * @return an observer that selects the revision of a specific head.
+     * @since FIXME
      */
     @NonNull
     public static Named named(@NonNull String headName) {
         return new Named(headName);
+    }
+
+    /**
+     * Creates an observer that selects the first revision it finds. Also useful for quick checks of non-empty.
+     *
+     * @return an observer that selects the first revision of a any head.
+     * @since FIXME
+     */
+    @NonNull
+    public static Any any() {
+        return new Any();
     }
 
     /**
@@ -357,5 +369,42 @@ public abstract class SCMHeadObserver {
 
     }
 
+    /**
+     * An observer that picks the first revision it can find.
+     */
+    public static class Any extends SCMHeadObserver {
+        /**
+         * Any {@link SCMRevision}.
+         */
+        @CheckForNull
+        private SCMRevision revision;
+
+        /**
+         * Constructor.
+         */
+        public Any() {
+        }
+
+        public SCMRevision getRevision() {
+            return revision;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
+            this.revision = revision;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isObserving() {
+            return revision == null;
+        }
+
+    }
 
 }
