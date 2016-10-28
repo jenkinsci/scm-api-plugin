@@ -101,6 +101,17 @@ public abstract class SCMHeadObserver {
     }
 
     /**
+     * Creates an observer that selects the revision of a specific head.
+     *
+     * @param headName the head to watch out for.
+     * @return an observer that selects the revision of a specific head.
+     */
+    @NonNull
+    public static Named named(@NonNull String headName) {
+        return new Named(headName);
+    }
+
+    /**
      * An observer that wraps multiple observers and keeps observing as long as one of the wrapped observers wants to.
      */
     public static class AllFinished extends SCMHeadObserver {
@@ -277,6 +288,61 @@ public abstract class SCMHeadObserver {
         @Override
         public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
             if (this.head.equals(head)) {
+                this.revision = revision;
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isObserving() {
+            return revision == null;
+        }
+
+    }
+
+    /**
+     * An observer that collects the {@link SCMRevision} of a named {@link SCMHead} and then stops observing.
+     */
+    public static class Named extends SCMHeadObserver {
+        /**
+         * The {@link SCMHead#getName()} we are waiting for.
+         */
+        @NonNull
+        private final String head;
+        /**
+         * The corresponding {@link SCMRevision}.
+         */
+        @CheckForNull
+        private SCMRevision revision;
+
+        /**
+         * Constructor.
+         *
+         * @param head the {@link SCMHead#getName()} to get the {@link SCMRevision} of.
+         */
+        public Named(@NonNull String head) {
+            head.getClass(); // fail fast if null
+            this.head = head;
+        }
+
+        /**
+         * Returns the result.
+         *
+         * @return the result.
+         */
+        @CheckForNull
+        public SCMRevision result() {
+            return revision;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
+            if (this.head.equals(head.getName())) {
                 this.revision = revision;
             }
         }

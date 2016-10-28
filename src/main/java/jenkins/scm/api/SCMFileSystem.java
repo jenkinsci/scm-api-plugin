@@ -28,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.SCM;
-
 import java.io.Closeable;
 import java.io.IOException;
 
@@ -50,7 +49,9 @@ public abstract class SCMFileSystem implements Closeable {
         this.rev = rev;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void close() throws IOException {
         // no-op
@@ -135,17 +136,41 @@ public abstract class SCMFileSystem implements Closeable {
         scm.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
-            SCMFileSystem inspector = b.build(scm, rev);
-            if (inspector != null) {
-                if (inspector.isFixedRevision()) {
-                    return inspector;
-                }
-                if (fallBack == null) {
-                    fallBack = inspector;
+            if (b.supports(scm)) {
+                SCMFileSystem inspector = b.build(scm, rev);
+                if (inspector != null) {
+                    if (inspector.isFixedRevision()) {
+                        return inspector;
+                    }
+                    if (fallBack == null) {
+                        fallBack = inspector;
+                    }
                 }
             }
         }
         return fallBack;
+    }
+
+
+    /**
+     * Given a {@link SCM} this method will check if there is at least one {@link SCMFileSystem} provider capable
+     * of being instantiated. Returning {@code true} does not mean that {@link #of(SCM, SCMRevision)}
+     * will be able to instantiate a {@link SCMFileSystem} for any specific {@link SCMRevision},
+     * rather returning {@code false} indicates that there is absolutely no point in calling
+     * {@link #of(SCM, SCMRevision)} as it will always return {@code null}.
+     *
+     * @param scm the {@link SCMSource}.
+     * @return {@code true} if and only if the supplied {@link SCM} is supported by at least one {@link Builder}.
+     * @since FIXME
+     */
+    public static boolean supports(@NonNull SCM scm) {
+        scm.getClass(); // throw NPE if null
+        for (Builder b : ExtensionList.lookup(Builder.class)) {
+            if (b.supports(scm)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -177,13 +202,15 @@ public abstract class SCMFileSystem implements Closeable {
         source.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
-            SCMFileSystem inspector = b.build(source, head, rev);
-            if (inspector != null) {
-                if (inspector.isFixedRevision()) {
-                    return inspector;
-                }
-                if (fallBack == null) {
-                    fallBack = inspector;
+            if (b.supports(source)) {
+                SCMFileSystem inspector = b.build(source, head, rev);
+                if (inspector != null) {
+                    if (inspector.isFixedRevision()) {
+                        return inspector;
+                    }
+                    if (fallBack == null) {
+                        fallBack = inspector;
+                    }
                 }
             }
         }
@@ -191,10 +218,47 @@ public abstract class SCMFileSystem implements Closeable {
     }
 
     /**
+     * Given a {@link SCMSource} this method will check if there is at least one {@link SCMFileSystem} provider capable
+     * of being instantiated. Returning {@code true} does not mean that {@link #of(SCMSource, SCMHead, SCMRevision)}
+     * will be able to instantiate a {@link SCMFileSystem} for any specific {@link SCMHead} or {@link SCMRevision},
+     * rather returning {@code false} indicates that there is absolutely no point in calling
+     * {@link #of(SCMSource, SCMHead, SCMRevision)} as it will always return {@code null}.
+     *
+     * @param source the {@link SCMSource}.
+     * @return {@code true} if and only if the supplied {@link SCMSource} is supported by at least one {@link Builder}.
+     * @since FIXME
+     */
+    public static boolean supports(@NonNull SCMSource source) {
+        source.getClass(); // throw NPE if null
+        for (Builder b : ExtensionList.lookup(Builder.class)) {
+            if (b.supports(source)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Extension point that allows different plugins to implement {@link SCMFileSystem} classes for the same {@link SCM}
      * or {@link SCMSource} and let Jenkins pick the most capable for any specific {@link SCM} implementation.
      */
     public abstract static class Builder implements ExtensionPoint {
+
+        /**
+         * Checks if this {@link Builder} supports the supplied {@link SCM}.
+         *
+         * @param source the {@link SCM}.
+         * @return {@code true} if and only if the supplied {@link SCM} is supported by this {@link Builder}.
+         */
+        public abstract boolean supports(SCM source);
+
+        /**
+         * Checks if this {@link Builder} supports the supplied {@link SCMSource}.
+         *
+         * @param source the {@link SCMSource}.
+         * @return {@code true} if and only if the supplied {@link SCMSource} is supported by this {@link Builder}.
+         */
+        public abstract boolean supports(SCMSource source);
 
         /**
          * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that
@@ -205,7 +269,7 @@ public abstract class SCMFileSystem implements Closeable {
          * @param scm the {@link SCM}.
          * @param rev the specified {@link SCMRevision}.
          * @return the corresponding {@link SCMFileSystem} or {@code null} if this builder cannot create a {@link
-         *         SCMFileSystem} for the specified {@link SCM}.
+         * SCMFileSystem} for the specified {@link SCM}.
          */
         @CheckForNull
         public abstract SCMFileSystem build(@NonNull SCM scm, @CheckForNull SCMRevision rev);

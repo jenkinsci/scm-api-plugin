@@ -70,6 +70,26 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     public static final AlternativeUiTextProvider.Message<SCMSource> PRONOUN
             = new AlternativeUiTextProvider.Message<SCMSource>();
+    /**
+     * This thread local allows us to refactor the {@link SCMSource} API so that there are now implementations that
+     * explicitly pass the {@link SCMSourceCriteria} while legacy implementations can still continue to work
+     * without having to be rewritten.
+     *
+     * @since FIXME
+     */
+    private static final ThreadLocal<SCMSourceCriteria> compatibilityHack = new ThreadLocal<SCMSourceCriteria>();
+    /**
+     * A special marker value used by {@link #getCriteria()} and stored in {@link #compatibilityHack} to signal
+     * that {@link #getCriteria()} should return {@code null}.
+     *
+     * @since FIXME
+     */
+    private static final SCMSourceCriteria nullSCMSourceCriteria = new SCMSourceCriteria() {
+        @Override
+        public boolean isHead(@NonNull Probe probe, @NonNull TaskListener listener) throws IOException {
+            return true;
+        }
+    };
 
     /**
      * The ID of this source.
@@ -133,6 +153,10 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @CheckForNull
     protected final SCMSourceCriteria getCriteria() {
+        SCMSourceCriteria hack = compatibilityHack.get();
+        if (hack != null) {
+            return hack == nullSCMSourceCriteria ? null : hack;
+        }
         final SCMSourceOwner owner = getOwner();
         if (owner == null) {
             return null;
@@ -155,7 +179,27 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     public final <O extends SCMHeadObserver> O fetch(@NonNull O observer,
                                                         @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        retrieve(observer, defaultListener(listener));
+        _retrieve(getCriteria(), observer, defaultListener(listener));
+        return observer;
+    }
+
+    /**
+     * Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     *
+     * @param <O> Observer type.
+     * @param criteria the criteria to use.
+     * @param observer an optional observer of interim results.
+     * @param listener the task listener
+     * @return the provided observer.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     */
+    @NonNull
+    public final <O extends SCMHeadObserver> O fetch(@CheckForNull SCMSourceCriteria criteria, @NonNull O observer,
+                                                        @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        _retrieve(criteria, observer, defaultListener(listener));
         return observer;
     }
 
@@ -168,8 +212,64 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      */
-    @NonNull
-    protected abstract void retrieve(@NonNull SCMHeadObserver observer,
+    protected void retrieve(@NonNull SCMHeadObserver observer, @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        if (Util.isOverridden(SCMSource.class, getClass(), "retrieve", SCMSourceCriteria.class, SCMHeadObserver.class,
+                TaskListener.class)) {
+            retrieve(getCriteria(), observer, listener);
+        } else {
+            throw new AbstractMethodError("Implement retrieve(SCMSourceCriteria,SCMHeadObserver,TaskListener)");
+        }
+    }
+
+
+    /**
+     * Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     *
+     * @param observer an optional observer of interim results.
+     * @param listener the task listener.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     */
+    private void _retrieve(@CheckForNull SCMSourceCriteria criteria,
+                           @NonNull SCMHeadObserver observer,
+                           @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        if (Util.isOverridden(SCMSource.class, getClass(), "retrieve", SCMSourceCriteria.class, SCMHeadObserver.class, TaskListener.class)) {
+            // w00t this is a new implementation
+            retrieve(criteria, observer, listener);
+        } else if (Util.isOverridden(SCMSource.class, getClass(), "retrieve", SCMHeadObserver.class, TaskListener.class)){
+            // oh dear, legacy implementation
+            SCMSourceCriteria hopefullyNull = compatibilityHack.get();
+            compatibilityHack.set(criteria == null ? nullSCMSourceCriteria : criteria);
+            try {
+                retrieve(observer, listener);
+            } finally {
+                if (hopefullyNull != null) {
+                    // performance is going to be painful if you are nesting them
+                    compatibilityHack.set(hopefullyNull);
+                } else {
+                    compatibilityHack.remove();
+                }
+            }
+        } else {
+            throw new AbstractMethodError("Implement retrieve(SCMSourceCriteria,SCMHeadObserver,TaskListener)");
+        }
+    }
+
+    /**
+     * Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     *
+     * @param criteria the criteria to use.
+     * @param observer an optional observer of interim results.
+     * @param listener the task listener.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     */
+    protected abstract void retrieve(@CheckForNull SCMSourceCriteria criteria,
+                                     @NonNull SCMHeadObserver observer,
                                      @NonNull TaskListener listener)
             throws IOException, InterruptedException;
 
@@ -239,7 +339,22 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @NonNull
     protected Set<SCMHead> retrieve(@NonNull TaskListener listener) throws IOException, InterruptedException {
-        return fetch(SCMHeadObserver.collect(), listener).result().keySet();
+        return retrieve(getCriteria(), listener);
+    }
+
+    /**
+     * Fetches the current list of heads. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     *
+     * @param criteria the criteria to use for identifying heads.
+     * @param listener the task listener
+     * @return the current list of heads.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     */
+    @NonNull
+    protected Set<SCMHead> retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull TaskListener listener) throws IOException, InterruptedException {
+        return fetch(criteria, SCMHeadObserver.collect(), listener).result().keySet();
     }
 
     /**
@@ -269,30 +384,30 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @CheckForNull
     protected SCMRevision retrieve(@NonNull SCMHead head, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return fetch(SCMHeadObserver.select(head), listener).result();
+        return fetch(null, SCMHeadObserver.select(head), listener).result();
     }
 
     /**
-     * Looks up a specific revision based on some SCM-specific set of permissible syntaxes.
+     * Looks up a specific thingName based on some SCM-specific set of permissible syntaxes.
      * Delegates to {@link #retrieve(String, TaskListener)}.
-     * @param revision might be a branch name, a tag name, a cryptographic hash, a revision number, etc.
+     * @param thingName might be a branch name, a tag name, a cryptographic hash, a thingName number, etc.
      * @param listener the task listener (optional)
-     * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
+     * @return a valid thingName object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since 1.3
      */
     @CheckForNull
-    public final SCMRevision fetch(@NonNull String revision, @CheckForNull TaskListener listener)
+    public final SCMRevision fetch(@NonNull String thingName, @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        return retrieve(revision, defaultListener(listener));
+        return retrieve(thingName, defaultListener(listener));
     }
 
     /**
      * Looks up a specific revision based on some SCM-specific set of permissible syntaxes.
-     * The default implementation uses {@link #retrieve(SCMHeadObserver, TaskListener)}
+     * The default implementation uses {@link #retrieve(SCMSourceCriteria, SCMHeadObserver, TaskListener)}
      * and looks for {@link SCMHead#getName} matching the argument (so typically only supporting branch names).
-     * @param revision might be a branch name, a tag name, a cryptographic hash, a revision number, etc.
+     * @param thingName might be a branch name, a tag name, a cryptographic hash, a revision number, etc.
      * @param listener the task listener
      * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
      * @throws IOException if an error occurs while performing the operation.
@@ -300,22 +415,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @since 1.3
      */
     @CheckForNull
-    protected SCMRevision retrieve(@NonNull final String revision, @NonNull TaskListener listener)
+    protected SCMRevision retrieve(@NonNull final String thingName, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        final AtomicReference<SCMRevision> result = new AtomicReference<SCMRevision>();
-        retrieve(new SCMHeadObserver() {
-            @Override
-            public void observe(SCMHead head, SCMRevision rev) {
-                if (head.getName().equals(revision)) {
-                    result.set(rev);
-                }
-            }
-            @Override
-            public boolean isObserving() {
-                return result.get() == null;
-            }
-        }, listener);
-        return result.get();
+        return fetch(null, SCMHeadObserver.named(thingName), listener).result();
     }
 
     /**
@@ -458,18 +560,95 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
-     * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}.
+     * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}. The default implementation
+     * relies on {@link SCMFileSystem#of(SCMSource, SCMHead, SCMRevision)}. Implementations are encouraged to
+     * override this method if:
+     * <ul>
+     *     <li>They cannot implement {@link SCMFileSystem} but can perform probes</li>
+     *     <li>They can easily provide suggested alternative names for {@link SCMProbe#stat(String)}</li>
+     *     <li>They can provide a more efficient probe than would be created from the generic {@link SCMFileSystem}</li>
+     * </ul>
      *
+     * @param head the {@link SCMHead}.
      * @param revision the {@link SCMRevision}.
      * @return the {@link SCMSourceCriteria.Probe} or {@code null} if this source cannot be probed.
      * @throws IOException if the probe creation failed due to an IO exception.
      * @see #canProbe()
      * @see #newProbe(SCMHead, SCMRevision)
+     * @see SCMFileSystem#of(SCMSource, SCMHead, SCMRevision)
      * @since FIXME
      */
     @CheckForNull
-    protected abstract SCMProbe createProbe(@NonNull SCMHead head, @CheckForNull SCMRevision revision)
-            throws IOException;
+    protected SCMProbe createProbe(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision)
+            throws IOException {
+        return null;
+    }
+
+    /**
+     * Helper method for subclasses that have implemented a {@link SCMFileSystem.Builder} and want to use a simple
+     * non-caching {@link SCMProbe} based off of the {@link SCMFileSystem}.
+     *
+     * @param head the {@link SCMHead}.
+     * @param revision the {@link SCMRevision}.
+     * @return the {@link SCMSourceCriteria.Probe} or {@code null} if this source cannot be probed.
+     * @since FIXME
+     */
+    @CheckForNull
+    protected final SCMProbe fromSCMFileSystem(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision) {
+        final SCMFileSystem fileSystem = SCMFileSystem.of(this, head, revision);
+        if (fileSystem != null) {
+            // we can build a generic probe from the SCMFileSystem
+            //
+            return new SCMProbe() {
+                /**
+                 * {@inheritDoc}
+                 */
+                @NonNull
+                @Override
+                public SCMProbeStat stat(@NonNull String path) throws IOException {
+                    return SCMProbeStat.fromType(fileSystem.child(path).getType());
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public void close() throws IOException {
+                    fileSystem.close();
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public String name() {
+                    return head.getName();
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public long lastModified() {
+                    try {
+                        return fileSystem.lastModified();
+                    } catch (IOException e) {
+                        return 0L;
+                    }
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public SCMFile getRoot() {
+                    return fileSystem.getRoot();
+                }
+            };
+        } else {
+            return null;
+        }
+    }
 
     /**
      * {@inheritDoc}
