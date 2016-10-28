@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011-2013, CloudBees, Inc., Stephen Connolly.
+ * Copyright (c) 2011-2016, CloudBees, Inc., Stephen Connolly.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,43 +63,79 @@ public abstract class SCMFile {
      * <p>This method is the equivalent of {@link File#listFiles()}.</p>
      *
      * @return Always non-null. If this method is not a directory, this method returns
-     *         an empty iterable.
+     * an empty iterable.
      * @throws IOException if an error occurs while performing the operation.
      */
     @NonNull
     public abstract Iterable<SCMFile> children() throws IOException;
 
     /**
+     * Returns the time that the {@link SCMFile} was last modified.
+     *
+     * @return A <code>long</code> value representing the time the file was last modified, measured in milliseconds
+     * since the epoch (00:00:00 GMT, January 1, 1970) or {@code 0L} if the operation is unsupported.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     *                               created a nonexistent instance via {@link #child(String)})
+     * @throws IOException           if an error occurs while performing the operation.
+     */
+    public abstract long lastModified() throws IOException;
+
+    /**
+     * Returns true if this object represents something that exists.
+     * <p>This method is the equivalent of {@link File#exists()}.</p>
+     * <p>NOTE: Typically to minimize round trips, {@link #getType()} would be preferred</p>
+     *
+     * @return true if this object represents something that exists.
+     * @throws IOException if an error occurs while performing the operation.
+     * @see #getType()
+     */
+    public final boolean exists() throws IOException {
+        return !Type.NONEXISTENT.equals(getType());
+    }
+
+    /**
      * Returns true if this object represents a file.
      * <p>This method is the equivalent of {@link File#isFile()}.</p>
+     * <p>NOTE: Typically to minimize round trips, {@link #getType()} would be preferred</p>
      *
      * @return true if this object represents a file.
-     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     * created a nonexistent instance via {@link #child(String)})
      * @throws IOException if an error occurs while performing the operation.
+     * @see #getType()
      */
-    public abstract boolean isFile() throws IOException;
+    public final boolean isFile() throws IOException {
+        return Type.REGULAR_FILE.equals(getType());
+    }
 
     /**
      * Returns true if this object represents a directory.
      * <p>This method is the equivalent of {@link File#isDirectory()}.</p>
+     * <p>NOTE: Typically to minimize round trips, {@link #getType()} would be preferred</p>
      *
      * @return true if this object represents a directory.
-     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     * created a nonexistent instance via {@link #child(String)})
+     * @throws IOException if an error occurs while performing the operation.
+     * @see #getType()
+     */
+    public final boolean isDirectory() throws IOException {
+        return Type.DIRECTORY.equals(getType());
+    }
+
+    /**
+     * The type of this object.
+     *
+     * @return the {@link Type} of this object, specifically {@link Type#NONEXISTENT} if this {@link SCMFile} instance
+     * does not exist in the remote system (e.g. if you created a nonexistent instance via {@link #child(String)})
      * @throws IOException if an error occurs while performing the operation.
      */
-    public boolean isDirectory() throws IOException {
-        return !isFile();
-    }
+    @NonNull
+    public abstract Type getType() throws IOException;
 
     /**
      * Reads the content of this file.
      *
      * @return an open stream to read the file content. The caller must close the stream.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     * created a nonexistent instance via {@link #child(String)})
-     * @throws IOException if this object represents a directory.
+     *                               created a nonexistent instance via {@link #child(String)})
+     * @throws IOException           if this object represents a directory.
      */
     @NonNull
     public abstract InputStream content() throws IOException;
@@ -109,8 +145,8 @@ public abstract class SCMFile {
      *
      * @return the file content as a byte array.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     * created a nonexistent instance via {@link #child(String)})
-     * @throws IOException if this object represents a directory.
+     *                               created a nonexistent instance via {@link #child(String)})
+     * @throws IOException           if this object represents a directory.
      */
     @NonNull
     public byte[] contentAsBytes() throws IOException {
@@ -127,8 +163,8 @@ public abstract class SCMFile {
      *
      * @return the file content as a string.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     * created a nonexistent instance via {@link #child(String)})
-     * @throws IOException if this object represents a directory.
+     *                               created a nonexistent instance via {@link #child(String)})
+     * @throws IOException           if this object represents a directory.
      */
     @NonNull
     public String contentAsString() throws IOException {
@@ -148,8 +184,8 @@ public abstract class SCMFile {
      *
      * @return the MIME type of this file.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     * created a nonexistent instance via {@link #child(String)})
-     * @throws IOException if an error occurs while performing the operation.
+     *                               created a nonexistent instance via {@link #child(String)})
+     * @throws IOException           if an error occurs while performing the operation.
      */
     @NonNull
     public String contentMimeType() throws IOException {
@@ -163,8 +199,8 @@ public abstract class SCMFile {
      *
      * @return true if this file is a binary file.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     * created a nonexistent instance via {@link #child(String)})
-     * @throws IOException if an error occurs while performing the operation.
+     *                               created a nonexistent instance via {@link #child(String)})
+     * @throws IOException           if an error occurs while performing the operation.
      */
     public boolean isContentBinary() throws IOException {
         return !isContentText();
@@ -175,8 +211,8 @@ public abstract class SCMFile {
      *
      * @return true if this file is not a binary file.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     * created a nonexistent instance via {@link #child(String)})
-     * @throws IOException if an error occurs while performing the operation.
+     *                               created a nonexistent instance via {@link #child(String)})
+     * @throws IOException           if an error occurs while performing the operation.
      */
     public boolean isContentText() throws IOException {
         return StringUtils.startsWithIgnoreCase(contentMimeType(), "text/");
@@ -191,8 +227,8 @@ public abstract class SCMFile {
      *
      * @return the encoding of this file.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     * created a nonexistent instance via {@link #child(String)})
-     * @throws IOException if an error occurs while performing the operation.
+     *                               created a nonexistent instance via {@link #child(String)})
+     * @throws IOException           if an error occurs while performing the operation.
      */
     @NonNull
     public Charset contentEncoding() throws IOException {
@@ -228,4 +264,31 @@ public abstract class SCMFile {
         return mimeType;
     }
 
+    /**
+     * Represents the type of a {@link SCMFile}.
+     *
+     * @since FIXME
+     */
+    public enum Type {
+        /**
+         * The {@link SCMFile} does not exist.
+         */
+        NONEXISTENT,
+        /**
+         * The {@link SCMFile} is a regular file.
+         */
+        REGULAR_FILE,
+        /**
+         * The {@link SCMFile} is a regular directory.
+         */
+        DIRECTORY,
+        /**
+         * The {@link SCMFile} is a link.
+         */
+        LINK,
+        /**
+         * The {@link SCMFile} is something else, but it exists
+         */
+        OTHER
+    }
 }

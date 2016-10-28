@@ -53,6 +53,19 @@ public abstract class SCMFileSystem implements Closeable {
     }
 
     /**
+     * Returns the time that the {@link SCMFileSystem} was last modified. This should logically be equivalent to the
+     * maximum {@link SCMFile#lastModified()} that you would find if you were to do the horribly inefficient traversal
+     * of all the {@link SCMFile} instances from {@link #getRoot()}. Where implementers do not have an easy and quick
+     * way to get this information (such as by looking at the commit time of the {@link #getRevision()} HINT HINT)
+     * then just return {@code 0L}.
+     *
+     * @return A <code>long</code> value representing the time the {@link SCMFileSystem} was
+     * last modified, measured in milliseconds since the epoch
+     * (00:00:00 GMT, January 1, 1970) or {@code 0L} if the operation is unsupported.
+     */
+    public abstract long lastModified() throws IOException;
+
+    /**
      * If this inspector is looking at the specific commit,
      * returns that revision. Otherwise null, indicating
      * that the inspector is looking at just the latest state
