@@ -564,28 +564,21 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
-     * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}. The default implementation
-     * relies on {@link SCMFileSystem#of(SCMSource, SCMHead, SCMRevision)}. Implementations are encouraged to
-     * override this method if:
-     * <ul>
-     *     <li>They cannot implement {@link SCMFileSystem} but can perform probes</li>
-     *     <li>They can easily provide suggested alternative names for {@link SCMProbe#stat(String)}</li>
-     *     <li>They can provide a more efficient probe than would be created from the generic {@link SCMFileSystem}</li>
-     * </ul>
+     * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}.
      *
      * @param head the {@link SCMHead}.
      * @param revision the {@link SCMRevision}.
-     * @return the {@link SCMSourceCriteria.Probe} or {@code null} if this source cannot be probed.
+     * @return the {@link SCMSourceCriteria.Probe}.
      * @throws IOException if the probe creation failed due to an IO exception.
      * @see #canProbe()
      * @see #newProbe(SCMHead, SCMRevision)
-     * @see SCMFileSystem#of(SCMSource, SCMHead, SCMRevision)
+     * @see #fromSCMFileSystem(SCMHead, SCMRevision)
      * @since FIXME
      */
-    @CheckForNull
+    @NonNull
     protected SCMProbe createProbe(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision)
             throws IOException {
-        return null;
+        throw new AbstractMethodError();
     }
 
     /**
