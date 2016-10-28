@@ -262,7 +262,10 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
      * but the call must always check the validity of any intermediary caches.
      *
-     * @param criteria the criteria to use.
+     * @param criteria the criteria to use, if non-{@code null} them implementations <strong>must</strong>filter all
+     *                 {@link SCMHead} instances against the
+     *                 {@link SCMSourceCriteria#isHead(SCMSourceCriteria.Probe, TaskListener)}
+     *                 before passing through to the {@link SCMHeadObserver}.
      * @param observer an optional observer of interim results.
      * @param listener the task listener.
      * @throws IOException if an error occurs while performing the operation.

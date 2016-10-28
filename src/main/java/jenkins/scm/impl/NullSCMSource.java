@@ -34,6 +34,7 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
 import java.io.IOException;
+import jenkins.scm.api.SCMSourceCriteria;
 
 /**
  * A special {@link SCMSource} that does not fetch any {@link SCMHead} instances and will build instances of
@@ -57,10 +58,10 @@ public class NullSCMSource extends SCMSource {
     /**
      * {@inheritDoc}
      */
-    @NonNull
     @Override
-    protected void retrieve(@NonNull SCMHeadObserver observer,
-                            @NonNull TaskListener listener) throws IOException {
+    protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
+                            @NonNull TaskListener listener) throws IOException, InterruptedException {
+
     }
 
     /**

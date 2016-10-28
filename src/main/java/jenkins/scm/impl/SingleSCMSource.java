@@ -33,10 +33,14 @@ import hudson.model.TopLevelItemDescriptor;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import jenkins.scm.api.SCMFile;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadObserver;
+import jenkins.scm.api.SCMProbe;
+import jenkins.scm.api.SCMProbeStat;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import org.kohsuke.stapler.AncestorInPath;
@@ -101,10 +105,16 @@ public class SingleSCMSource extends SCMSource {
     protected synchronized void retrieve(@NonNull SCMHeadObserver observer,
                                          @NonNull TaskListener listener)
             throws IOException {
+    }
+
+    @Override
+    protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
+                            @NonNull TaskListener listener) throws IOException, InterruptedException {
         if (head == null) {
             head = new SCMHead(name);
             revisionHash = new SCMRevisionImpl(head);
         }
+        // we ignore the criteria as this was an explicitly called out SCM and thus it always matches
         observer.observe(head, revisionHash);
     }
 
