@@ -27,9 +27,13 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.util.AlternativeUiTextProvider;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * An API for discovering new and navigating already discovered {@link SCMSource}s within an organization.
@@ -57,6 +61,46 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * @throws InterruptedException if scanning is interrupted
      */
     public abstract void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException;
+
+    /**
+     * Returns the set of {@link SCMSourceCategory} that this {@link SCMNavigator} supports. There will always be
+     * exactly one {@link SCMCategory#isUncategorized()} instance in the returned set.
+     *
+     * @return the set of {@link SCMSourceCategory} that this {@link SCMNavigator} supports.
+     * @since FIXME
+     */
+    @NonNull
+    public final Set<? extends SCMSourceCategory> getCategories() {
+        Set<? extends SCMSourceCategory> result = getDescriptor().getCategories();
+        if (result.size() > 1
+                && Util.isOverridden(SCMNavigator.class, getClass(), "isCategoryEnabled", SCMSourceCategory.class)) {
+            // if result has only one entry then it must be the default, so will never be filtered
+            // if we didn't override the category enabled check, then none will be disabled
+            result = new LinkedHashSet<SCMSourceCategory>(result);
+            for (Iterator<? extends SCMSourceCategory> iterator = result.iterator(); iterator.hasNext(); ) {
+                SCMSourceCategory category = iterator.next();
+                if (!category.isUncategorized() && !isCategoryEnabled(category)) {
+                    // only keep the enabled non-default categories
+                    iterator.remove();
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Sub-classes can override this method to filter the categories that are available from a specific source. For
+     * example a source type might be capable of having mainline branches, user branches, merge requests and
+     * release tags while a specific instance of the source may be configured to only have mainline branches and
+     * release tags.
+     *
+     * @param category the category.
+     * @return {@code true} if the supplied category is enabled for this {@link SCMNavigator} instance.
+     * @since FIXME
+     */
+    protected boolean isCategoryEnabled(@NonNull SCMSourceCategory category) {
+        return true;
+    }
 
     @Override
     public SCMNavigatorDescriptor getDescriptor() {

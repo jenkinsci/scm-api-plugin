@@ -27,7 +27,11 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
-import hudson.model.Item;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import jenkins.scm.impl.UncategorizedSCMHeadCategory;
+import net.jcip.annotations.GuardedBy;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -42,6 +46,15 @@ import java.util.UUID;
  * @author Stephen Connolly
  */
 public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implements IconSpec {
+
+    /**
+     * The set of {@link SCMHeadCategory} singletons for this type of {@link SCMSource}
+     *
+     * @see #getCategories()
+     * @since FIXME
+     */
+    @GuardedBy("this")
+    protected transient Set<SCMHeadCategory> categories;
 
     /**
      * Return or generate the ID for a source instance.
@@ -158,4 +171,50 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
     public String getPronoun() {
         return null;
     }
+
+    /**
+     * Returns the set of {@link SCMHeadCategory} that this {@link SCMSource} supports. There will always be
+     * exactly one {@link SCMCategory#isUncategorized()} instance in the returned set.
+     *
+     * @return the set of {@link SCMHeadCategory} that this {@link SCMSource} supports.
+     * @since FIXME
+     */
+    @NonNull
+    public synchronized final Set<SCMHeadCategory> getCategories() {
+        if (categories == null) {
+            Set<SCMHeadCategory> categories = new LinkedHashSet<SCMHeadCategory>();
+            boolean haveDefault = false;
+            for (SCMHeadCategory c : createCategories()) {
+                if (c.isUncategorized()) {
+                    if (!haveDefault) {
+                        categories.add(c);
+                        haveDefault = true;
+                    }
+                } else {
+                    categories.add(c);
+                }
+            }
+            if (!haveDefault) {
+                categories.add(new UncategorizedSCMHeadCategory());
+            }
+            this.categories = Collections.unmodifiableSet(categories);
+        }
+        return categories;
+    }
+
+    /**
+     * Creates the singleton {@link SCMHeadCategory} instances that this type of {@link SCMSource} is capable of
+     * producing.
+     *
+     * @return the singleton {@link SCMHeadCategory} instances for this type of {@link SCMSource}
+     * @see #getCategories()
+     * @since FIXME
+     */
+    @NonNull
+    @GuardedBy("this")
+    protected SCMHeadCategory[] createCategories() {
+        return new SCMHeadCategory[]{new UncategorizedSCMHeadCategory()};
+    }
+
+
 }

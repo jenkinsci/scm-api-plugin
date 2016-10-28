@@ -26,24 +26,24 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.AbstractItem;
-import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.LogTaskListener;
-import net.jcip.annotations.GuardedBy;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.jcip.annotations.GuardedBy;
 
 /**
  * A {@link SCMSource} is responsible for fetching {@link SCMHead} and corresponding {@link SCMRevision} instances from
@@ -524,6 +524,46 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @CheckForNull
     public String getPronoun() {
         return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getPronoun());
+    }
+
+    /**
+     * Returns the set of {@link SCMHeadCategory} that this {@link SCMSource} supports. There will always be
+     * exactly one {@link SCMCategory#isUncategorized()} instance in the returned set.
+     *
+     * @return the set of {@link SCMHeadCategory} that this {@link SCMSource} supports.
+     * @since FIXME
+     */
+    @NonNull
+    public final Set<? extends SCMHeadCategory> getCategories() {
+        Set<? extends SCMHeadCategory> result = getDescriptor().getCategories();
+        if (result.size() > 1
+                && Util.isOverridden(SCMSource.class, getClass(), "isCategoryEnabled", SCMHeadCategory.class)) {
+            // if result has only one entry then it must be the default, so will never be filtered
+            // if we didn't override the category enabled check, then none will be disabled
+            result = new LinkedHashSet<SCMHeadCategory>(result);
+            for (Iterator<? extends SCMHeadCategory> iterator = result.iterator(); iterator.hasNext(); ) {
+                SCMHeadCategory category = iterator.next();
+                if (!category.isUncategorized() && !isCategoryEnabled(category)) {
+                    // only keep the enabled non-default categories
+                    iterator.remove();
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Sub-classes can override this method to filter the categories that are available from a specific source. For
+     * example a source type might be capable of having mainline branches, user branches, merge requests and
+     * release tags while a specific instance of the source may be configured to only have mainline branches and
+     * release tags.
+     *
+     * @param category the category.
+     * @return {@code true} if the supplied category is enabled for this {@link SCMSource} instance.
+     * @since FIXME
+     */
+    protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
+        return true;
     }
 
 }
