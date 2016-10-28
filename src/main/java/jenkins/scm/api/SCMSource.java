@@ -543,6 +543,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}.
      *
      * Public exposed API for {@link #createProbe(SCMHead, SCMRevision)}.
+     * @param head the {@link SCMHead}.
      * @param revision the {@link SCMRevision}.
      * @return the {@link SCMSourceCriteria.Probe}.
      * @throws IllegalArgumentException if the {@link SCMRevision#getHead()} is not equal to the supplied {@link SCMHead}

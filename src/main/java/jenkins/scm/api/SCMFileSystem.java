@@ -67,6 +67,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @return A <code>long</code> value representing the time the {@link SCMFileSystem} was
      * last modified, measured in milliseconds since the epoch
      * (00:00:00 GMT, January 1, 1970) or {@code 0L} if the operation is unsupported.
+     * @throws IOException if an error occurs while performing the operation.
      */
     public abstract long lastModified() throws IOException;
 
