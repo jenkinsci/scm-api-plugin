@@ -51,7 +51,7 @@ public interface SCMSourceCriteria extends Serializable {
     /**
      * A probe for a branch candidate. Inspectors can tell whether a file path exists.
      */
-    static abstract class Probe implements Serializable {
+    abstract class Probe implements Serializable {
 
         /**
          * Returns the name of the potential head.
@@ -88,9 +88,14 @@ public interface SCMSourceCriteria extends Serializable {
          * @param path the path.
          * @return The results of the check.
          * @throws IOException if a remote network call failed and the result is therefore indeterminate.
+         * @since FIXME
          */
         public SCMProbeStat stat(@NonNull String path) throws IOException {
-            return exists(path) ? SCMProbeStat.found(SCMProbeStat.Type.UNKNOWN) : SCMProbeStat.missing();
+            if (exists(path)) {
+                return SCMProbeStat.fromType(SCMFile.Type.OTHER);
+            } else {
+                return SCMProbeStat.fromType(SCMFile.Type.NONEXISTENT);
+            }
         }
 
         /**

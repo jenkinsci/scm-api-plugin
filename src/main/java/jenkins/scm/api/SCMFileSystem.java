@@ -33,7 +33,11 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * A virtual file system for a specific {@link SCM} potentially pinned to a specific {@link SCMRevision}.
+ * A virtual file system for a specific {@link SCM} potentially pinned to a specific {@link SCMRevision}. In contrast
+ * to {@link SCMProbe}, implementations should not cache results (while some DVCS implementations may need to perform
+ * a local checkout in order to be able to implement this API it should be noted that in such cases the local checkout
+ * is not a cache but rather a copy of the immutable revisions - this may look and sound like a cache but it isn't
+ * as the revision itself is immutable.
  *
  * @author Stephen Connolly
  */
