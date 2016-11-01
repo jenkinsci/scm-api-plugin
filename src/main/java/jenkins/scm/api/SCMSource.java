@@ -464,16 +464,22 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
 
     /**
      * Fetches any actions that should be persisted for objects related to the specified revision. For example,
-     * if a {@link Run} is building a specific {@link SCMRevision}, then this method would be called to refresh
-     * any {@link Action} instances of that {@link Run}.
+     * if a {@link Run} is building a specific {@link SCMRevision}, then this method would be called to populate
+     * any {@link Action} instances for that {@link Run}. <strong>NOTE: unlike
+     * {@link #fetchActions(SCMHead, TaskListener)}, {@link #fetchActions(TaskListener)} or
+     * {@link SCMNavigator#fetchActions(SCMNavigatorOwner, TaskListener)}</strong> there is no guarantee that
+     * this method will ever be called more than once for any {@link Run}.
      *
      * @param revision the {@link SCMRevision}
+     * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
      * @since FIXME
      */
-    public Map<Class<? extends Action>, Action> persistentActions(@NonNull SCMRevision revision) {
-        return Collections.emptyMap();
+    @NonNull
+    public final Map<Class<? extends Action>, Action> fetchActions(@NonNull SCMRevision revision,
+                                                                   @CheckForNull TaskListener listener) {
+        return tidyActionMap(retrieveActions(revision, defaultListener(listener)));
     }
 
     /**
@@ -482,12 +488,15 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * any {@link Action} instances of that {@link Job}.
      *
      * @param head the {@link SCMHead}
+     * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
      * @since FIXME
      */
-    public Map<Class<? extends Action>, Action> persistentActions(@NonNull SCMHead head) {
-        return Collections.emptyMap();
+    @NonNull
+    public final Map<Class<? extends Action>, Action> fetchActions(@NonNull SCMHead head,
+                                                                   @CheckForNull TaskListener listener) {
+        return tidyActionMap(retrieveActions(head, defaultListener(listener)));
     }
 
     /**
@@ -495,12 +504,81 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * if a {@link Item} is associated with a specific {@link SCMSource}, then this method would be called to refresh
      * any {@link Action} instances of that {@link Item}.
      *
+     * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
      * @since FIXME
      */
-    public Map<Class<? extends Action>, Action> persistentActions() {
+    @NonNull
+    public final Map<Class<? extends Action>, Action> fetchActions(@CheckForNull TaskListener listener) {
+        return tidyActionMap(retrieveActions(defaultListener(listener)));
+    }
+
+    /**
+     * SPI for {@link #fetchActions(SCMRevision, TaskListener)}. Fetches any actions that should be persisted for
+     * objects related to the specified revision.
+     *
+     * @param revision the {@link SCMRevision}
+     * @param listener the listener to report progress on.
+     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
+     * values indicate actions that should be removed if present.
+     * @since FIXME
+     */
+    @NonNull
+    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMRevision revision,
+                                                                   @NonNull TaskListener listener) {
         return Collections.emptyMap();
+    }
+
+    /**
+     * SPI for {@link #fetchActions(SCMHead, TaskListener)}. Fetches any actions that should be persisted for objects
+     * related to the specified head.
+     *
+     * @param head the {@link SCMHead}
+     * @param listener the listener to report progress on.
+     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
+     * values indicate actions that should be removed if present.
+     * @since FIXME
+     */
+    @NonNull
+    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMHead head,
+                                                                   @NonNull TaskListener listener) {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * SPI for {@link #fetchActions(TaskListener)}. Fetches any actions that should be persisted for
+     * objects related to the specified source.
+     *
+     * @param listener the listener to report progress on.
+     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
+     * values indicate actions that should be removed if present.
+     * @since FIXME
+     */
+    @NonNull
+    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull TaskListener listener) {
+        return Collections.emptyMap();
+    }
+
+    static Map<Class<? extends Action>, Action> tidyActionMap(Map<Class<? extends Action>, Action> map) {
+        if (map == null) return Collections.emptyMap();
+        for (Iterator<Class<? extends Action>> iterator = map.keySet().iterator(); iterator.hasNext(); ) {
+            Class<? extends Action> clazz = iterator.next();
+            boolean isSubclass = false;
+            for (Class<? extends Action> c : map.keySet()) {
+                if (clazz == c) {
+                    continue;
+                }
+                if (c.isAssignableFrom(clazz)) {
+                    isSubclass = true;
+                    break;
+                }
+            }
+            if (isSubclass) {
+                iterator.remove();
+            }
+        }
+        return map;
     }
 
     /**

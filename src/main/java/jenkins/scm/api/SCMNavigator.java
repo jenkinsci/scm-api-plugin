@@ -31,13 +31,17 @@ import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Action;
 import hudson.model.Item;
+import hudson.model.TaskListener;
 import hudson.util.AlternativeUiTextProvider;
+import hudson.util.LogTaskListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An API for discovering new and navigating already discovered {@link SCMSource}s within an organization.
@@ -123,16 +127,55 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     }
 
     /**
-     * Fetches any actions that should be persisted for objects related to the specified source. For example,
-     * if a {@link Item} is associated with a specific {@link SCMNavigator}, then this method would be called to refresh
+     * Fetches any actions that should be persisted for objects related to the specified owner. For example,
+     * if a {@link Item} owns a specific {@link SCMNavigator}, then this method would be called to refresh
      * any {@link Action} instances of that {@link Item}.
      *
+     * @param owner the owner of this {@link SCMNavigator}.
+     * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
      * @since FIXME
      */
-    public Map<Class<? extends Action>, Action> persistentActions() {
+    @NonNull
+    public final Map<Class<? extends Action>, Action> fetchActions(@NonNull SCMNavigatorOwner owner,
+                                                                   @CheckForNull TaskListener listener) {
+        return SCMSource.tidyActionMap(retrieveActions(owner, defaultListener(listener)));
+    }
+
+    /**
+     * SPI for {@link #fetchActions(SCMNavigatorOwner, TaskListener)}. Fetches any actions that should be persisted for
+     * objects related to the specified owner.
+     *
+     * @param owner the owner of this {@link SCMNavigator}.
+     * @param listener the listener to report progress on.
+     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
+     * values indicate actions that should be removed if present.
+     * @since FIXME
+     */
+    @NonNull
+    public Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMNavigatorOwner owner, @NonNull TaskListener listener) {
         return Collections.emptyMap();
+    }
+
+    /**
+     * Turns a possibly {@code null} {@link TaskListener} reference into a guaranteed non-null reference.
+     *
+     * @param listener a possibly {@code null} {@link TaskListener} reference.
+     * @return guaranteed non-null {@link TaskListener}.
+     */
+    @NonNull
+    protected final TaskListener defaultListener(@CheckForNull TaskListener listener) {
+        if (listener == null) {
+            Level level;
+            try {
+                level = Level.parse(System.getProperty(getClass().getName() + ".defaultListenerLevel", "FINE"));
+            } catch (IllegalArgumentException e) {
+                level = Level.FINE;
+            }
+            return new LogTaskListener(Logger.getLogger(getClass().getName()), level);
+        }
+        return listener;
     }
 
 }
