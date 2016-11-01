@@ -135,11 +135,14 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
     @NonNull
     public final Map<Class<? extends Action>, Action> fetchActions(@NonNull SCMNavigatorOwner owner,
-                                                                   @CheckForNull TaskListener listener) {
+                                                                   @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
         return SCMSource.tidyActionMap(retrieveActions(owner, defaultListener(listener)));
     }
 
@@ -151,10 +154,14 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
     @NonNull
-    public Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMNavigatorOwner owner, @NonNull TaskListener listener) {
+    public Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
+                                                                @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
         return Collections.emptyMap();
     }
 

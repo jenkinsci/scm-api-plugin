@@ -468,49 +468,63 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * any {@link Action} instances for that {@link Run}. <strong>NOTE: unlike
      * {@link #fetchActions(SCMHead, TaskListener)}, {@link #fetchActions(TaskListener)} or
      * {@link SCMNavigator#fetchActions(SCMNavigatorOwner, TaskListener)}</strong> there is no guarantee that
-     * this method will ever be called more than once for any {@link Run}.
+     * this method will ever be called more than once for any {@link Run}. <strong>
+     * {@link #fetchActions(SCMHead, TaskListener)} must have been called at least once before calling this method.
+     * </strong>
      *
      * @param revision the {@link SCMRevision}
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
     @NonNull
     public final Map<Class<? extends Action>, Action> fetchActions(@NonNull SCMRevision revision,
-                                                                   @CheckForNull TaskListener listener) {
+                                                                   @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
         return tidyActionMap(retrieveActions(revision, defaultListener(listener)));
     }
 
     /**
      * Fetches any actions that should be persisted for objects related to the specified head. For example,
      * if a {@link Job} is associated with a specific {@link SCMHead}, then this method would be called to refresh
-     * any {@link Action} instances of that {@link Job}.
+     * any {@link Action} instances of that {@link Job}. <strong>{@link #fetchActions(TaskListener)} must have
+     * been called at least once before calling this method.</strong>
      *
      * @param head the {@link SCMHead}
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
     @NonNull
     public final Map<Class<? extends Action>, Action> fetchActions(@NonNull SCMHead head,
-                                                                   @CheckForNull TaskListener listener) {
+                                                                   @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
         return tidyActionMap(retrieveActions(head, defaultListener(listener)));
     }
 
     /**
      * Fetches any actions that should be persisted for objects related to the specified source. For example,
      * if a {@link Item} is associated with a specific {@link SCMSource}, then this method would be called to refresh
-     * any {@link Action} instances of that {@link Item}.
+     * any {@link Action} instances of that {@link Item}. <strong>If this {@link SCMSource} belongs to a
+     * {@link SCMNavigator} then {@link SCMNavigator#fetchActions(SCMNavigatorOwner, TaskListener)} must have been
+     * called at least once before calling this method.</strong>
      *
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
     @NonNull
-    public final Map<Class<? extends Action>, Action> fetchActions(@CheckForNull TaskListener listener) {
+    public final Map<Class<? extends Action>, Action> fetchActions(@CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
         return tidyActionMap(retrieveActions(defaultListener(listener)));
     }
 
@@ -522,11 +536,14 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
     @NonNull
     protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMRevision revision,
-                                                                   @NonNull TaskListener listener) {
+                                                                   @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
         return Collections.emptyMap();
     }
 
@@ -538,11 +555,14 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
     @NonNull
     protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMHead head,
-                                                                   @NonNull TaskListener listener) {
+                                                                   @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
         return Collections.emptyMap();
     }
 
@@ -553,10 +573,13 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
     @NonNull
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull TaskListener listener) {
+    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull TaskListener listener)
+            throws IOException, InterruptedException {
         return Collections.emptyMap();
     }
 
