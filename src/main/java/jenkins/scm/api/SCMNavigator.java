@@ -29,10 +29,14 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.Action;
+import hudson.model.Item;
 import hudson.util.AlternativeUiTextProvider;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -117,4 +121,18 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     public String getPronoun() {
         return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getPronoun());
     }
+
+    /**
+     * Fetches any actions that should be persisted for objects related to the specified source. For example,
+     * if a {@link Item} is associated with a specific {@link SCMNavigator}, then this method would be called to refresh
+     * any {@link Action} instances of that {@link Item}.
+     *
+     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
+     * values indicate actions that should be removed if present.
+     * @since FIXME
+     */
+    public Map<Class<? extends Action>, Action> persistentActions() {
+        return Collections.emptyMap();
+    }
+
 }

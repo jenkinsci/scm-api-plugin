@@ -28,6 +28,10 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.Action;
+import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.AlternativeUiTextProvider;
@@ -40,7 +44,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.jcip.annotations.GuardedBy;
@@ -457,6 +460,47 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             revisions.add(head.getName());
         }
         return revisions;
+    }
+
+    /**
+     * Fetches any actions that should be persisted for objects related to the specified revision. For example,
+     * if a {@link Run} is building a specific {@link SCMRevision}, then this method would be called to refresh
+     * any {@link Action} instances of that {@link Run}.
+     *
+     * @param revision the {@link SCMRevision}
+     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
+     * values indicate actions that should be removed if present.
+     * @since FIXME
+     */
+    public Map<Class<? extends Action>, Action> persistentActions(@NonNull SCMRevision revision) {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Fetches any actions that should be persisted for objects related to the specified head. For example,
+     * if a {@link Job} is associated with a specific {@link SCMHead}, then this method would be called to refresh
+     * any {@link Action} instances of that {@link Job}.
+     *
+     * @param head the {@link SCMHead}
+     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
+     * values indicate actions that should be removed if present.
+     * @since FIXME
+     */
+    public Map<Class<? extends Action>, Action> persistentActions(@NonNull SCMHead head) {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Fetches any actions that should be persisted for objects related to the specified source. For example,
+     * if a {@link Item} is associated with a specific {@link SCMSource}, then this method would be called to refresh
+     * any {@link Action} instances of that {@link Item}.
+     *
+     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
+     * values indicate actions that should be removed if present.
+     * @since FIXME
+     */
+    public Map<Class<? extends Action>, Action> persistentActions() {
+        return Collections.emptyMap();
     }
 
     /**
