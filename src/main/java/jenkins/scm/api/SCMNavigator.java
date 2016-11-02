@@ -81,7 +81,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     public final Set<? extends SCMSourceCategory> getCategories() {
         Set<? extends SCMSourceCategory> result = getDescriptor().getCategories();
         if (result.size() > 1
-                && Util.isOverridden(SCMNavigator.class, getClass(), "isCategoryEnabled", SCMSourceCategory.class)) {
+                && MethodUtils.isOverridden(SCMNavigator.class, getClass(), "isCategoryEnabled", SCMSourceCategory.class)) {
             // if result has only one entry then it must be the default, so will never be filtered
             // if we didn't override the category enabled check, then none will be disabled
             result = new LinkedHashSet<SCMSourceCategory>(result);
