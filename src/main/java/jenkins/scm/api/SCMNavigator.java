@@ -64,6 +64,10 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     /**
      * Looks for SCM sources in a configured place.
      * After this method completes, no further calls may be made to the {@code observer} or its child callbacks.
+     * <strong>It is vitally important that implementations must periodically check {@link Thread#interrupted()} and
+     * throw a {@link InterruptedException} if {@code true} otherwise it will be impossible for users to interrupt
+     * the operation.</strong>
+     *
      * @param observer a recipient of progress notifications and a source of contextual information
      * @throws IOException if scanning fails
      * @throws InterruptedException if scanning is interrupted
