@@ -26,7 +26,6 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
-import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Action;
 import hudson.model.Item;
@@ -46,7 +45,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import net.jcip.annotations.GuardedBy;
 
 /**
@@ -267,6 +265,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     /**
      * Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
      * but the call must always check the validity of any intermediary caches.
+     * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
+     * otherwise it will be impossible for users to interrupt the operation.</strong>
      *
      * @param criteria the criteria to use, if non-{@code null} them implementations <strong>must</strong>filter all
      *                 {@link SCMHead} instances against the
@@ -888,6 +888,18 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
         return true;
+    }
+
+    /**
+     * Checks the {@link Thread#interrupted()} and throws an {@link InterruptedException} if it was set.
+     *
+     * @throws InterruptedException if interrupted.
+     * @since FIXME
+     */
+    protected final void checkInterrupt() throws InterruptedException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
     }
 
 }

@@ -64,9 +64,8 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     /**
      * Looks for SCM sources in a configured place.
      * After this method completes, no further calls may be made to the {@code observer} or its child callbacks.
-     * <strong>It is vitally important that implementations must periodically check {@link Thread#interrupted()} and
-     * throw a {@link InterruptedException} if {@code true} otherwise it will be impossible for users to interrupt
-     * the operation.</strong>
+     * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
+     * otherwise it will be impossible for users to interrupt the operation.</strong>
      *
      * @param observer a recipient of progress notifications and a source of contextual information
      * @throws IOException if scanning fails
@@ -187,6 +186,18 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
             return new LogTaskListener(Logger.getLogger(getClass().getName()), level);
         }
         return listener;
+    }
+
+    /**
+     * Checks the {@link Thread#interrupted()} and throws an {@link InterruptedException} if it was set.
+     *
+     * @throws InterruptedException if interrupted.
+     * @since FIXME
+     */
+    protected final void checkInterrupt() throws InterruptedException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
     }
 
 }
