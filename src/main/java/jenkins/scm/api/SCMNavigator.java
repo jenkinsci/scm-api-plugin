@@ -27,7 +27,6 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
-import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Action;
 import hudson.model.Item;
@@ -47,6 +46,7 @@ import java.util.logging.Logger;
  * An API for discovering new and navigating already discovered {@link SCMSource}s within an organization.
  * An implementation does not need to cache existing discoveries, but some form of caching is strongly recommended
  * where the backing provider of repositories has a rate limiter on API calls.
+ *
  * @since 0.3-beta-1
  */
 public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator> implements ExtensionPoint {
@@ -59,7 +59,11 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     public static final AlternativeUiTextProvider.Message<SCMNavigator> PRONOUN
             = new AlternativeUiTextProvider.Message<SCMNavigator>();
 
-    protected SCMNavigator() {}
+    /**
+     * Constructor.
+     */
+    protected SCMNavigator() {
+    }
 
     /**
      * Looks for SCM sources in a configured place.
@@ -68,10 +72,26 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * otherwise it will be impossible for users to interrupt the operation.</strong>
      *
      * @param observer a recipient of progress notifications and a source of contextual information
-     * @throws IOException if scanning fails
+     * @throws IOException          if scanning fails
      * @throws InterruptedException if scanning is interrupted
      */
     public abstract void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException;
+
+    /**
+     * Looks for the named SCM source in a configured place.
+     * Implementers must ensure that after this method completes, no further calls may be made to the {@code observer}
+     * or its child callbacks. Implementations are <strong>strongly encouraged</strong> to override this method.
+     *
+     * @param sourceName the source to visit.
+     * @param observer   a recipient of progress notifications and a source of contextual information
+     * @throws IOException          if scanning fails
+     * @throws InterruptedException if scanning is interrupted
+     * @since FIXME
+     */
+    public void visitSource(@NonNull String sourceName, @NonNull SCMSourceObserver observer)
+            throws IOException, InterruptedException {
+        visitSources(SCMSourceObserver.filter(observer, sourceName));
+    }
 
     /**
      * Returns the set of {@link SCMSourceCategory} that this {@link SCMNavigator} supports. There will always be
@@ -84,7 +104,11 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     public final Set<? extends SCMSourceCategory> getCategories() {
         Set<? extends SCMSourceCategory> result = getDescriptor().getCategories();
         if (result.size() > 1
-                && MethodUtils.isOverridden(SCMNavigator.class, getClass(), "isCategoryEnabled", SCMSourceCategory.class)) {
+                && MethodUtils.isOverridden(SCMNavigator.class,
+                getClass(),
+                "isCategoryEnabled",
+                SCMSourceCategory.class)
+                ) {
             // if result has only one entry then it must be the default, so will never be filtered
             // if we didn't override the category enabled check, then none will be disabled
             result = new LinkedHashSet<SCMSourceCategory>(result);
@@ -113,6 +137,9 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SCMNavigatorDescriptor getDescriptor() {
         return (SCMNavigatorDescriptor) super.getDescriptor();
@@ -134,11 +161,11 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * if a {@link Item} owns a specific {@link SCMNavigator}, then this method would be called to refresh
      * any {@link Action} instances of that {@link Item}.
      *
-     * @param owner the owner of this {@link SCMNavigator}.
+     * @param owner    the owner of this {@link SCMNavigator}.
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
-     * @throws IOException if an error occurs while performing the operation.
+     * @throws IOException          if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
@@ -153,11 +180,11 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * SPI for {@link #fetchActions(SCMNavigatorOwner, TaskListener)}. Fetches any actions that should be persisted for
      * objects related to the specified owner.
      *
-     * @param owner the owner of this {@link SCMNavigator}.
+     * @param owner    the owner of this {@link SCMNavigator}.
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
-     * @throws IOException if an error occurs while performing the operation.
+     * @throws IOException          if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since FIXME
      */
@@ -198,6 +225,16 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
         if (Thread.interrupted()) {
             throw new InterruptedException();
         }
+    }
+
+    /**
+     * Callback from the {@link SCMNavigatorOwner} after the {@link SCMNavigatorOwner} has been saved. Can be used to
+     * register the {@link SCMNavigatorOwner} for a call-back hook from the backing SCM that this navigator is for.
+     *
+     * @param owner the {@link SCMNavigatorOwner}.
+     * @since FIXME
+     */
+    public void afterSave(@NonNull SCMNavigatorOwner owner) {
     }
 
 }

@@ -367,7 +367,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
-     * Gets the current head revision of the specified head.
+     * Gets the current head revision of the specified head. Does not check this against any {@link SCMSourceCriteria}.
      *
      * @param head     the head.
      * @param listener the task listener
@@ -382,7 +382,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
-     * Gets the current head revision of the specified head.
+     * Gets the current head revision of the specified head. Does not check this against any {@link SCMSourceCriteria}.
      *
      * @param head     the head.
      * @param listener the task listener
@@ -901,5 +901,13 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             throw new InterruptedException();
         }
     }
+
+    /**
+     * Callback from the {@link SCMSourceOwner} after the {@link SCMSourceOwner} has been saved. Can be used to
+     * register the {@link SCMSourceOwner} for a call-back hook from the backing SCM that this source is for.
+     *
+     * @since FIXME
+     */
+    public void afterSave() {}
 
 }
