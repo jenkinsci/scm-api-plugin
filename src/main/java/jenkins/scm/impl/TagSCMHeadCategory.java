@@ -67,7 +67,7 @@ public final class TagSCMHeadCategory extends SCMHeadCategory {
      * Constructs a {@link TagSCMHeadCategory} using the default naming.
      */
     public TagSCMHeadCategory() {
-        super(Messages._TagSCMHeadCategory_DisplayName());
+        super("tags", Messages._TagSCMHeadCategory_DisplayName());
     }
 
     /**
