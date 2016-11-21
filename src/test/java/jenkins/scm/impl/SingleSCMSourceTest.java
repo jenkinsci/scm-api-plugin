@@ -120,19 +120,7 @@ public class SingleSCMSourceTest {
         SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
                 new GitSCM("https://nowhere.net/something.git"));
         Map<SCMHead, SCMRevision> result = instance.fetch(SCMHeadObserver.collect(), null).result();
-        assertThat(result.entrySet(), contains(
-                allOf(
-                        hasProperty("key", allOf(
-                                instanceOf(SCMHead.class),
-                                hasProperty("name", is("the-name"))
-                        )),
-                        hasProperty("value", allOf(
-                                instanceOf(SCMRevision.class),
-                                hasProperty("head", hasProperty("name", is("the-name"))),
-                                hasProperty("deterministic", is(false))
-                        ))
-                )
-        ));
+        assertThat(result.entrySet(), hasSize(1));
         Map.Entry<SCMHead, SCMRevision> entry = result.entrySet().iterator().next();
         assertThat(instance.build(entry.getKey(), entry.getValue()), instanceOf(GitSCM.class));
     }
@@ -141,21 +129,6 @@ public class SingleSCMSourceTest {
     public void given_instance_when_fetchingNonObservedHead_then_nullScmReturned() throws Exception {
         SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
                 new GitSCM("https://nowhere.net/something.git"));
-        Map<SCMHead, SCMRevision> result = instance.fetch(SCMHeadObserver.collect(), null).result();
-        assertThat(result.entrySet(), contains(
-                allOf(
-                        hasProperty("key", allOf(
-                                instanceOf(SCMHead.class),
-                                hasProperty("name", is("the-name"))
-                        )),
-                        hasProperty("value", allOf(
-                                instanceOf(SCMRevision.class),
-                                hasProperty("head", hasProperty("name", is("the-name"))),
-                                hasProperty("deterministic", is(false))
-                        ))
-                )
-        ));
-        Map.Entry<SCMHead, SCMRevision> entry = result.entrySet().iterator().next();
         assertThat(instance.build(new SCMHead("foo"), mock(SCMRevision.class)), instanceOf(NullSCM.class));
 
     }
