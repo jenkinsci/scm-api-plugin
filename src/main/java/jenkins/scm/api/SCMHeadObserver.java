@@ -198,7 +198,9 @@ public abstract class SCMHeadObserver {
         @Override
         public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
             for (SCMHeadObserver observer : observers) {
-                observer.observe(head, revision);
+                if (observer.isObserving()) {
+                    observer.observe(head, revision);
+                }
             }
         }
 
@@ -289,7 +291,9 @@ public abstract class SCMHeadObserver {
         @Override
         public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
             for (SCMHeadObserver observer : observers) {
-                observer.observe(head, revision);
+                if (observer.isObserving()) {
+                    observer.observe(head, revision);
+                }
             }
         }
 
@@ -497,7 +501,22 @@ public abstract class SCMHeadObserver {
         public Any() {
         }
 
+        /**
+         * Returns the result.
+         *
+         * @return the result.
+         */
         public SCMRevision getRevision() {
+            return revision;
+        }
+
+        /**
+         * Returns the result.
+         *
+         * @return the result.
+         */
+        @CheckForNull
+        public SCMRevision result() {
             return revision;
         }
 
