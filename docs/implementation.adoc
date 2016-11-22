@@ -1,0 +1,127 @@
+== Implementation Guide
+
+This document provides the guidelines for the correct implementation of the SCM API.
+
+=== Introduction
+
+The SCM API consists of a number of extension points:
+
+* The original `hudson.scm.SCM` extension point is responsible for:
+
+** performing checkouts from source control into a `FilePath`
+
+** calculating the changelogs between revisions
+
+** constructing the changelog parser
+
+* The `jenkins.scm.SCMSource` extension point is responsible for:
+
+** identifying heads / branches that are available
+
+** tracking the current revisions of heads
+
+** constructing `hudson.scm.SCM` instances for a given head and revision pair
+
+* The `jenkins.scm.SCMNavigator` extension point is responsible for:
+
+** enumerating potential `jenkins.scm.SCMSource` instances
+
+Some examples of how these concepts may be mapped into well known source control systems:
+
+* Git has a fairly direct mapping of concepts
+
+** `jenkins.scm.SCMHead` would represent the branches and tags in an individual Git repository
+
+** `jenkins.scm.SCMRevision` would represent the Git commit hash of each individual commit. Because Git commits are immutable, each `SCMRevision` is deterministic as if you ask to check out the same hash you will always get the same contents.
+
+** `jenkins.scm.SCMSource` would represent a single Git repository.
+
+** `jenkins.scm.SCMNavigator` would represent a collection of Git repositories - most likely all on the same server
+
+* Subversion can have a fairly direct mapping of concepts analogous to the Git mapping above.
+Alternatively some oganizations will use a single Subversion repository to hold multiple projects under which each project would have the familiar `trunk/branches/tags` structure. If we consider this style of Subversion use then:
+
+** `jenkins.scm.SCMHead` would be mapped against a specific project and be one of: `trunk`, `branches/_name_` or `tags/_name_`.
+
+** `jenkins.scm.SCMRevision` would be mapped to the global Subversion revision number against which the specific `SCMHead` was last modified. Each `SCMRevision` is deterministic as if you ask to check out the trunk/branch.tag at the same revision you will always get the same contents.
+
+** `jenkins.scm.SCMSource` would represent a single project withi the Subversion repository.
+
+** `jenkins.scm.SCMNavigator` would represent the collection of projects in the root of the Subversion repository.
+
+* CVS, one mapping of the CVS concepts would be:
+
+** `jenkins.scm.SCMHead` would represent a branch in a module.
+
+** `jenkins.scm.SCMRevision` would represent a timestamp. Sadly the timestamp is not deterministic as an immediate checkout may miss some files that are still being committed to the repository.
++
+NOTE: An alternative deterministic `jenkins.scm.SCMRevision` would be a list of all the files and their individual revisions, but this would be prohibitive in terms of storage cost and is non-trivial for a user to replicate from their own workspace and consequently the timestamp would be preferred.
+Ignoring the problems of time sychronization in a distributed system, we could assume that any timestamp more than _X_ minutes in the past should be deterministic in order to allow the consuming plugins to make optimizations that are only possible with deterministic revisions.
+
+** `jenkins.scm.SCMSource` would represent an individual module on the CVS server.
+
+** `jenkins.scm.SCMNavigator` would represent the collection of modules available from a single CVS server.
+
+Implementers are free to map the concepts to their own SCM system as they see fit, but the recommendation is to try to keep close to the principles of mapping outlined in the above examples.
+
+The concepts we have covered so far determine how Jenkins plugins can drive interactions with the SCM system.
+While a Jenkins driven interaction with an SCM is sufficient for enabling advanced SCM functionality such as that provided in the https://wiki.jenkins-ci.org/display/JENKINS/Branch+API+Plugin[Branch API plugin], it does not lend to a good user experience as Jenkins would be required to continually poll the backing SCM to establish if there are any changes.
+In order to minimize the load on Jenkins and the SCM system as well as minimize the amount of time between a change being committed to the SCM system and Jenkins responding to the change, it is necessary to implement the eventing portions of the SCM API.
+
+There are currently three classes of events:
+
+* `jenkins.scm.SCMHeadEvent` represents an event concerning a `jenkins.scm.SCMHead` such as:
+** the creation of a new `jenkins.scm.SCMHead` within a specific `jenkins.scm.SCMSource`,
+** a change in revision of a `jenkins.scm.SCMHead`,
+** a change in metadata about a specific `jenkins.scm.SCMHead` and
+** the removal of an existing `jenkins.scm.SCMHead` from a `jenkins.scm.SCMSource`
+* `jenkins.scm.SCMSourceEvent` represents an event concerning a `jenkins.scm.SCMSource` such as:
+** the creation of a new `jenkins.scm.SCMSource` within a specific `jenkins.scm.SCMNavigator`,
+** a change in metadata about a specific `jenkins.scm.SCMSource`
+** the removal of an existing `jenkins.scm.SCMSource` from a `jenkins.scm.SCMNavigator`
+* `jenkins.scm.SCMNavigatorEvent` represents an event concerning a `jenkins.scm.SCMNavigator` such as:
+** the creation of a new `jenkins.scm.SCMNavigator`
++
+NOTE: there is no use case for this event currently envisioned as it would likely require a containing context for the `jenkins.scm.SCMNavigator` instances.
+** a change in metadata about a specific `jenkins.scm.SCMNavigator`
+** the removal of an existing `jenkins.scm.SCMNavigator`.
+
+Not every event is required to be provided by the backing SCM system.
+The primary events ensure that Jenkins responds promptly to activity in the backing source control system. They are, in order of priority:
+
+1. `jenkins.scm.SCMHeadEvent` of type `UPDATED` representing the change of a revision in a specific head.
+When this event is implemented, it removes the need to continually poll for revision changes and builds can be triggered as soon as the event is received which benefits user responsiveness.
+2. `jenkins.scm.SCMHeadEvent` of type `CREATED` representing the creation of a new head.
+When this event is implemented, it removes the need to continually poll the `jenkins.scm.SCMSource` to identify untracked `jenkins.scm.SCMHead` instances.
+3. `jenkins.scm.SCMSourceEvent` of type `CREATED` representing the creation of a new source.
+When this event is implemented, it removes the need to continually poll the `jenkins.scm.SCMNavigator` to identify untracked `jenkins.scm.SCMSource` instances.
+
+The secondary events ensure that state changes in the source control system are reflected promptly within Jenkins. These secondary events will not trigger builds. They are, in ordre of priority:
+
+1. `jenkins.scm.SCMHeadEvent` of type `REMOVED` representing the removal a specific head.
+When this event is implemented, it means that Jenkins can "deactivate" any resources (i.e. jobs) that are dedicated to tracking that head.
++
+NOTE: It is likely that the resources (i.e. jobs) cannot be removed until Jenkins performs a full scan as the SCM API is designed for the use case where you have multiple sources attached to the same owner and the reason for removal from one source may be a move to another source.
+Without a full scan of all sources the priority claims of multiple sources cannot be determined
+2. `jenkins.scm.SCMSourceEvent` of type `REMOVED` representing the removal of a specific source.
+When this event is implemented, it means that Jenkins can "deactivate" any resources (i.e. jobs) that are dedicated to tracking that source.
+
+The tertiary events relate to metadata updates, such as URLs, display names or descriptions about the various resources being tracked.
+The kind of tertiary information that these events represent may not be available for all source control systems.
+In cases where the source control system provides an API to store such metadata, it may be the case that there are no events generated when the metadata is modified. The tertiary events are, in order of priority:
+
+1. `jenkins.scm.SCMHeadEvent` of type `UPDATED` representing the change of metadata for a specific head, such as the description of a branch / change request
+2. `jenkins.scm.SCMSourceEvent` of type `UPDATED` representing the change of metadata for a specific source, such as:
+** the description of the source
+** the display name of the source
+** the information URL of the source
+** the avatar of the source
+3. `jenkins.scm.SCMNavigatorEvent` of type `UPDATED` representing the change of metadata for a collection of sources as an aggregate, such as:
+** the description of the collection
+** the display name of the collection
+** the information URL of the collection
+** the avatar of the collection
+
+Implementations are free to use the event system to publish other events as appropriate providing the type of event is logically mapped.
+
+
