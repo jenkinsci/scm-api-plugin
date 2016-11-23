@@ -96,7 +96,7 @@ When this event is implemented, it removes the need to continually poll the `jen
 3. `jenkins.scm.api.SCMSourceEvent` of type `CREATED` representing the creation of a new source.
 When this event is implemented, it removes the need to continually poll the `jenkins.scm.api.SCMNavigator` to identify untracked `jenkins.scm.api.SCMSource` instances.
 
-The secondary events ensure that state changes in the source control system are reflected promptly within Jenkins. These secondary events will not trigger builds. They are, in ordre of priority:
+The secondary events ensure that state changes in the source control system are reflected promptly within Jenkins. These secondary events will not trigger builds. They are, in order of priority:
 
 1. `jenkins.scm.api.SCMHeadEvent` of type `REMOVED` representing the removal a specific head.
 When this event is implemented, it means that Jenkins can "deactivate" any resources (i.e. jobs) that are dedicated to tracking that head.
