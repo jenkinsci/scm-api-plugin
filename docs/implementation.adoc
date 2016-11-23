@@ -812,7 +812,9 @@ public class MyChangeRequestSCMRevision extends SCMRevision {
     private final String base;
     private final String change;
 
-    public MyChangeRequestSCMRevision(@NonNull MyChangeRequestSCMHead head, @NonNull String base, @NonNull String change) {
+    public MyChangeRequestSCMRevision(@NonNull MyChangeRequestSCMHead head,
+                                      @NonNull String base,
+                                      @NonNull String change) {
         super(head);
         this.base = base;
         this.change = change;
