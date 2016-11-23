@@ -504,4 +504,192 @@ You should assume that any `RepositoryBrowser` you are provided is an implementa
 
 === Implementing `jenkins.scm.api.SCMSource`
 
+The `jenkins.scm.api.SCMSource` API has been subject to some evolution.
+The following are the recommended methods to implement:
 
+[source,java]
+----
+public class MySCMSource extends SCMSource {
+    /*
+     * all configuration fields should be private
+     * mandatory fields should be final
+     * non-mandatory fields should be non-final
+     */
+
+    @DataBoundConstructor
+    public MockSCMSource(/*mandatory configuration*/) {
+        super(/* see note on ids*/);
+    }
+
+    public MockSCMSource(MySCMNavigator config, String name) {
+        super(/* see note on ids*/);
+    }
+
+    // Getters for all the configuration fields
+
+    // use @DataBoundSetter to inject the non-mandatory configuration elements
+    // as this will simplify the usage from pipeline
+
+    @Override
+    protected void retrieve(@CheckForNull SCMSourceCriteria criteria,
+                            @NonNull SCMHeadObserver observer,
+                            @NonNull TaskListener listener)
+        throws IOException, InterruptedException {
+        Iterable<...> candidates = null;
+        Set<SCMHead> includes = observer.getIncludes();
+        if (includes != null) {
+            // at least optimize for the case where the includes is one and only one
+            if (includes.size() == 1 && includes.iterator().next() instanceof MySCMHead) {
+                candidates = getSpecificCandidateFromSourceControl();
+            }
+        }
+        if (candidates == null) {
+            candidates = getAllCandiatesFromSourceControl();
+        }
+        for (candidate : candidates) {
+            checkInterrupt(); // important to call this periodically
+            SCMHead head = new ...;
+            SCMRevision revision = new ...;
+            if (criteria != null) {
+                /* see note on SCMProbe */
+                try (SCMProbe probe = createProbe(head, revision)) {
+                    if (!criteria.isHead(probe, listener)) {
+                        continue;
+                    }
+                }
+                observer.observe(head, revision);
+            }
+        }
+    }
+
+    @NonNull
+    @Override
+    protected SCMProbe createProbe(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision)
+            throws IOException {
+        /* see note on SCMProbe */
+
+        // assuming we have a sutable implementation of SCMFileSystem
+        return newProbe(head, revision);
+    }
+
+    @NonNull
+    @Override
+    public SCM build(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {
+        MySCM result = new MySCM(this);
+        result.setHead(head, revision);
+        return result;
+    }
+
+
+    @NonNull
+    @Override
+    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        Map<Class<? extends Action>, Action> result = new HashMap<>();
+        // if your SCM provides support for metadata at the "SCMSource" level
+        // then you probably want to return at least a `jenkins.branch.MetadataAction`
+        // from this method. The listener can be used to log the interactions
+        // with the backing source control system.
+        return result;
+    }
+
+    @NonNull
+    @Override
+    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMHead head,
+                                                                   @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        Map<Class<? extends Action>, Action> result = new HashMap<>();
+        // if your SCM provides support for metadata at the "SCMHead" level
+        // then you probably want to return the correct metadata actions
+        // from this method. The listener can be used to log the interactions
+        // with the backing source control system.
+        return result;
+    }
+
+    @NonNull
+    @Override
+    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMRevision revision,
+                                                                   @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        Map<Class<? extends Action>, Action> result = new HashMap<>();
+        // if your SCM provides support for metadata at the "SCMRevision" level
+        // then you probably want to return the correct metadata actions
+        // from this method. The listener can be used to log the interactions
+        // with the backing source control system.
+        return result;
+    }
+
+    // This method is only required if you have more than one category and
+    // it is user configurable whether any specific source may opt in/out of
+    // specific categories
+    @Override
+    protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
+        if (category instanceof ChangeRequestSCMHeadCategory) {
+            return includeChangeRequests;
+        }
+        if (category instanceof TagSCMHeadCategory) {
+            return includeTags;
+        }
+        return true;
+    }
+
+    @Symbol("my")
+    @Extension
+    public static class DescriptorImpl extends SCMSourceDescriptor {
+        @Nonnull
+        @Override
+        public String getDisplayName() {
+            return "My SCM";
+        }
+
+        // This method is only required if you need more than one category
+        // or if the categories need to use idiomatic names specific to
+        // your source control system.
+        @NonNull
+        @Override
+        protected SCMHeadCategory[] createCategories() {
+            return new SCMHeadCategory[]{
+                    new UncategorizedSCMHeadCategory(),
+                    new ChangeRequestSCMHeadCategory(),
+                    new TagSCMHeadCategory()
+            };
+        }
+    }
+}
+----
+
+[NOTE]
+.SCMSource IDs
+====
+The SCMSource's IDs are used to help track the SCMSource that a SCMHead instance originated from.
+
+If - *and only if* - you are certain that you can construct a definitive ID from the configuration details of your SCMSource then implementations are encouraged to use a computed ID.
+
+In all other cases, implementations should use the default generated ID mechanism.
+
+An example of how a generated ID could be definitively constructed would be:
+
+* Start with the definitive URL of the server including the port
+* Append the name of the source
+* Append a SHA-1 hash of the other configuration options (this is because users can add the same source with different configuration options)
+
+If users add the same source with the same configuration options twice to the same owner, with the above ID generation scheme, it should not matter as both sources would be idempotent.
+
+By starting with the server URL and then appending the name of the source we might be able to more quickly route events.
+
+*The observant reader* will spot the issue above, namely that we need to start from an URL that is definitive.
+Most SCM systems can be accessed via multiple URLs.
+For example, GitHub can be accessed at both `https://github.com/` and `https://github.com./`.
+For internal source control systems, this can get even more complex as some users may configure using the IP address, some may configure using a hostname without a domain, some may configure using a fully qualified hostname... also ID generation should not require a network connection or any external I/O.
+====
+
+[NOTE]
+.SCMProbe: implement custom or leverage SCMFileSystem
+====
+The above example uses the default implementation of `SCMSource.newProbe(_head_, _revision_)` to instantiate the `SCMProbe`.
+This will only work if you have provided an implementation of `SCMFileSystem.Builder`.
+
+If your source control system cannot support an implementation of `SCMFileSystem`, i.e. it cannot support deep inspection, then you will need to provide your own implementation of SCMProbe.
+
+If your source control system cannot support even the `SCMProbe.stat(_path_)` style of inspection then you will have to ignore the criteria and allow all heads to be observed.
+====
