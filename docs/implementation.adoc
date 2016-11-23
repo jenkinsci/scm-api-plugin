@@ -163,7 +163,7 @@ The event provided a revision does not really matter as, the observer will be pr
 The revalidation should not block the handling of the webhook that delivered the event, hence the SCM API provides a simpler contract for all consumers by ensuring that the events are always on a separate thread from the webhook processing thread.
 ====
 
-Consumers of the SCM API may want more advanced criteria may to check the contents of specific files in the head / branch.
+Consumers of the SCM API may want more advanced criteria to check the contents of specific files in the head / branch.
 Additionally, in some cases consumers of the SCM API may want to inspect specific files in the source control system in order to determine how to process that head / branch.
 For example,
 
@@ -268,7 +268,7 @@ public class AccurevSCMNavivator extends SCMNavigator {
        protected SCMSourceCategory[] createCategories() {
             return new SCMSourceCategory[]{
                 new UncategorizedSCMSourceCategory(
-                    new NonLocalizable("Depot")
+                    new NonLocalizable("Depots")
                 // Better: Messages._AccurevSCMNavigator_DepotSourceCategory()
                 )
             };
@@ -294,11 +294,11 @@ public class AccurevSCMSource extends SCMSource {
        protected SCMHeadCategory[] createCategories() {
             return new SCMSourceCategory[]{
                 new UncategorizedSCMSourceCategory(
-                    new NonLocalizable("Stream")
+                    new NonLocalizable("Streams")
                     // Better: Messages._AccurevSCMSource_StreamHeadCategory()
                 ),
                 new TagSCMHeadCategory(
-                    new NonLocalizable("Snapshot")
+                    new NonLocalizable("Snapshots")
                     // Better: Messages._AccurevSCMSource_SnapshotHeadCategory()
                 )
             };
