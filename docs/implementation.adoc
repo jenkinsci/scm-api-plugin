@@ -14,7 +14,7 @@ The SCM API consists of a number of extension points:
 
 ** constructing the changelog parser
 
-* The `jenkins.scm.SCMSource` extension point is responsible for:
+* The `jenkins.scm.api.SCMSource` extension point is responsible for:
 
 ** identifying heads / branches that are available
 
@@ -22,45 +22,45 @@ The SCM API consists of a number of extension points:
 
 ** constructing `hudson.scm.SCM` instances for a given head and revision pair
 
-* The `jenkins.scm.SCMNavigator` extension point is responsible for:
+* The `jenkins.scm.api.SCMNavigator` extension point is responsible for:
 
-** enumerating potential `jenkins.scm.SCMSource` instances
+** enumerating potential `jenkins.scm.api.SCMSource` instances
 
 Some examples of how these concepts may be mapped into well known source control systems:
 
 * Git has a fairly direct mapping of concepts
 
-** `jenkins.scm.SCMHead` would represent the branches and tags in an individual Git repository
+** `jenkins.scm.api.SCMHead` would represent the branches and tags in an individual Git repository
 
-** `jenkins.scm.SCMRevision` would represent the Git commit hash of each individual commit. Because Git commits are immutable, each `SCMRevision` is deterministic as if you ask to check out the same hash you will always get the same contents.
+** `jenkins.scm.api.SCMRevision` would represent the Git commit hash of each individual commit. Because Git commits are immutable, each `SCMRevision` is deterministic as if you ask to check out the same hash you will always get the same contents.
 
-** `jenkins.scm.SCMSource` would represent a single Git repository.
+** `jenkins.scm.api.SCMSource` would represent a single Git repository.
 
-** `jenkins.scm.SCMNavigator` would represent a collection of Git repositories - most likely all on the same server
+** `jenkins.scm.api.SCMNavigator` would represent a collection of Git repositories - most likely all on the same server
 
 * Subversion can have a fairly direct mapping of concepts analogous to the Git mapping above.
 Alternatively some oganizations will use a single Subversion repository to hold multiple projects under which each project would have the familiar `trunk/branches/tags` structure. If we consider this style of Subversion use then:
 
-** `jenkins.scm.SCMHead` would be mapped against a specific project and be one of: `trunk`, `branches/_name_` or `tags/_name_`.
+** `jenkins.scm.api.SCMHead` would be mapped against a specific project and be one of: `trunk`, `branches/_name_` or `tags/_name_`.
 
-** `jenkins.scm.SCMRevision` would be mapped to the global Subversion revision number against which the specific `SCMHead` was last modified. Each `SCMRevision` is deterministic as if you ask to check out the trunk/branch.tag at the same revision you will always get the same contents.
+** `jenkins.scm.api.SCMRevision` would be mapped to the global Subversion revision number against which the specific `SCMHead` was last modified. Each `SCMRevision` is deterministic as if you ask to check out the trunk/branch.tag at the same revision you will always get the same contents.
 
-** `jenkins.scm.SCMSource` would represent a single project withi the Subversion repository.
+** `jenkins.scm.api.SCMSource` would represent a single project withi the Subversion repository.
 
-** `jenkins.scm.SCMNavigator` would represent the collection of projects in the root of the Subversion repository.
+** `jenkins.scm.api.SCMNavigator` would represent the collection of projects in the root of the Subversion repository.
 
 * CVS, one mapping of the CVS concepts would be:
 
-** `jenkins.scm.SCMHead` would represent a branch in a module.
+** `jenkins.scm.api.SCMHead` would represent a branch in a module.
 
-** `jenkins.scm.SCMRevision` would represent a timestamp. Sadly the timestamp is not deterministic as an immediate checkout may miss some files that are still being committed to the repository.
+** `jenkins.scm.api.SCMRevision` would represent a timestamp. Sadly the timestamp is not deterministic as an immediate checkout may miss some files that are still being committed to the repository.
 +
-NOTE: An alternative deterministic `jenkins.scm.SCMRevision` would be a list of all the files and their individual revisions, but this would be prohibitive in terms of storage cost and is non-trivial for a user to replicate from their own workspace and consequently the timestamp would be preferred.
+NOTE: An alternative deterministic `jenkins.scm.api.SCMRevision` would be a list of all the files and their individual revisions, but this would be prohibitive in terms of storage cost and is non-trivial for a user to replicate from their own workspace and consequently the timestamp would be preferred.
 Ignoring the problems of time sychronization in a distributed system, we could assume that any timestamp more than _X_ minutes in the past should be deterministic in order to allow the consuming plugins to make optimizations that are only possible with deterministic revisions.
 
-** `jenkins.scm.SCMSource` would represent an individual module on the CVS server.
+** `jenkins.scm.api.SCMSource` would represent an individual module on the CVS server.
 
-** `jenkins.scm.SCMNavigator` would represent the collection of modules available from a single CVS server.
+** `jenkins.scm.api.SCMNavigator` would represent the collection of modules available from a single CVS server.
 
 Implementers are free to map the concepts to their own SCM system as they see fit, but the recommendation is to try to keep close to the principles of mapping outlined in the above examples.
 
@@ -70,53 +70,53 @@ In order to minimize the load on Jenkins and the SCM system as well as minimize 
 
 There are currently three classes of events:
 
-* `jenkins.scm.SCMHeadEvent` represents an event concerning a `jenkins.scm.SCMHead` such as:
-** the creation of a new `jenkins.scm.SCMHead` within a specific `jenkins.scm.SCMSource`,
-** a change in revision of a `jenkins.scm.SCMHead`,
-** a change in metadata about a specific `jenkins.scm.SCMHead` and
-** the removal of an existing `jenkins.scm.SCMHead` from a `jenkins.scm.SCMSource`
-* `jenkins.scm.SCMSourceEvent` represents an event concerning a `jenkins.scm.SCMSource` such as:
-** the creation of a new `jenkins.scm.SCMSource` within a specific `jenkins.scm.SCMNavigator`,
-** a change in metadata about a specific `jenkins.scm.SCMSource`
-** the removal of an existing `jenkins.scm.SCMSource` from a `jenkins.scm.SCMNavigator`
-* `jenkins.scm.SCMNavigatorEvent` represents an event concerning a `jenkins.scm.SCMNavigator` such as:
-** the creation of a new `jenkins.scm.SCMNavigator`
+* `jenkins.scm.api.SCMHeadEvent` represents an event concerning a `jenkins.scm.api.SCMHead` such as:
+** the creation of a new `jenkins.scm.api.SCMHead` within a specific `jenkins.scm.api.SCMSource`,
+** a change in revision of a `jenkins.scm.api.SCMHead`,
+** a change in metadata about a specific `jenkins.scm.api.SCMHead` and
+** the removal of an existing `jenkins.scm.api.SCMHead` from a `jenkins.scm.api.SCMSource`
+* `jenkins.scm.api.SCMSourceEvent` represents an event concerning a `jenkins.scm.api.SCMSource` such as:
+** the creation of a new `jenkins.scm.api.SCMSource` within a specific `jenkins.scm.api.SCMNavigator`,
+** a change in metadata about a specific `jenkins.scm.api.SCMSource`
+** the removal of an existing `jenkins.scm.api.SCMSource` from a `jenkins.scm.api.SCMNavigator`
+* `jenkins.scm.api.SCMNavigatorEvent` represents an event concerning a `jenkins.scm.api.SCMNavigator` such as:
+** the creation of a new `jenkins.scm.api.SCMNavigator`
 +
-NOTE: there is no use case for this event currently envisioned as it would likely require a containing context for the `jenkins.scm.SCMNavigator` instances.
-** a change in metadata about a specific `jenkins.scm.SCMNavigator`
-** the removal of an existing `jenkins.scm.SCMNavigator`.
+NOTE: there is no use case for this event currently envisioned as it would likely require a containing context for the `jenkins.scm.api.SCMNavigator` instances.
+** a change in metadata about a specific `jenkins.scm.api.SCMNavigator`
+** the removal of an existing `jenkins.scm.api.SCMNavigator`.
 
 Not every event is required to be provided by the backing SCM system.
 The primary events ensure that Jenkins responds promptly to activity in the backing source control system. They are, in order of priority:
 
-1. `jenkins.scm.SCMHeadEvent` of type `UPDATED` representing the change of a revision in a specific head.
+1. `jenkins.scm.api.SCMHeadEvent` of type `UPDATED` representing the change of a revision in a specific head.
 When this event is implemented, it removes the need to continually poll for revision changes and builds can be triggered as soon as the event is received which benefits user responsiveness.
-2. `jenkins.scm.SCMHeadEvent` of type `CREATED` representing the creation of a new head.
-When this event is implemented, it removes the need to continually poll the `jenkins.scm.SCMSource` to identify untracked `jenkins.scm.SCMHead` instances.
-3. `jenkins.scm.SCMSourceEvent` of type `CREATED` representing the creation of a new source.
-When this event is implemented, it removes the need to continually poll the `jenkins.scm.SCMNavigator` to identify untracked `jenkins.scm.SCMSource` instances.
+2. `jenkins.scm.api.SCMHeadEvent` of type `CREATED` representing the creation of a new head.
+When this event is implemented, it removes the need to continually poll the `jenkins.scm.api.SCMSource` to identify untracked `jenkins.scm.api.SCMHead` instances.
+3. `jenkins.scm.api.SCMSourceEvent` of type `CREATED` representing the creation of a new source.
+When this event is implemented, it removes the need to continually poll the `jenkins.scm.api.SCMNavigator` to identify untracked `jenkins.scm.api.SCMSource` instances.
 
 The secondary events ensure that state changes in the source control system are reflected promptly within Jenkins. These secondary events will not trigger builds. They are, in ordre of priority:
 
-1. `jenkins.scm.SCMHeadEvent` of type `REMOVED` representing the removal a specific head.
+1. `jenkins.scm.api.SCMHeadEvent` of type `REMOVED` representing the removal a specific head.
 When this event is implemented, it means that Jenkins can "deactivate" any resources (i.e. jobs) that are dedicated to tracking that head.
 +
 NOTE: It is likely that the resources (i.e. jobs) cannot be removed until Jenkins performs a full scan as the SCM API is designed for the use case where you have multiple sources attached to the same owner and the reason for removal from one source may be a move to another source.
 Without a full scan of all sources the priority claims of multiple sources cannot be determined
-2. `jenkins.scm.SCMSourceEvent` of type `REMOVED` representing the removal of a specific source.
+2. `jenkins.scm.api.SCMSourceEvent` of type `REMOVED` representing the removal of a specific source.
 When this event is implemented, it means that Jenkins can "deactivate" any resources (i.e. jobs) that are dedicated to tracking that source.
 
 The tertiary events relate to metadata updates, such as URLs, display names or descriptions about the various resources being tracked.
 The kind of tertiary information that these events represent may not be available for all source control systems.
 In cases where the source control system provides an API to store such metadata, it may be the case that there are no events generated when the metadata is modified. The tertiary events are, in order of priority:
 
-1. `jenkins.scm.SCMHeadEvent` of type `UPDATED` representing the change of metadata for a specific head, such as the description of a branch / change request
-2. `jenkins.scm.SCMSourceEvent` of type `UPDATED` representing the change of metadata for a specific source, such as:
+1. `jenkins.scm.api.SCMHeadEvent` of type `UPDATED` representing the change of metadata for a specific head, such as the description of a branch / change request
+2. `jenkins.scm.api.SCMSourceEvent` of type `UPDATED` representing the change of metadata for a specific source, such as:
 ** the description of the source
 ** the display name of the source
 ** the information URL of the source
 ** the avatar of the source
-3. `jenkins.scm.SCMNavigatorEvent` of type `UPDATED` representing the change of metadata for a collection of sources as an aggregate, such as:
+3. `jenkins.scm.api.SCMNavigatorEvent` of type `UPDATED` representing the change of metadata for a collection of sources as an aggregate, such as:
 ** the description of the collection
 ** the display name of the collection
 ** the information URL of the collection
@@ -124,42 +124,127 @@ In cases where the source control system provides an API to store such metadata,
 
 Implementations are free to use the event system to publish other events as appropriate providing the type of event is logically mapped.
 
-The next step in implementing the SCM API is to allow for consuming plugins to perform deeper identification of interesting `jenkins.scm.SCMHead` instances.
-Consuming plugins may not be interested in every single `jenkins.scm.SCMHead`.
+The next step in implementing the SCM API is to allow for consuming plugins to perform deeper identification of interesting `jenkins.scm.api.SCMHead` instances.
+Consuming plugins may not be interested in every single `jenkins.scm.api.SCMHead`.
 For example:
 
-* the https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch Plugin] is only interested in `jenkins.scm.SCMHead` instances that have a `Jenkinsfile` in the root of the checkout.
+* the https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch Plugin] is only interested in `jenkins.scm.api.SCMHead` instances that have a `Jenkinsfile` in the root of the checkout.
 
-* the https://wiki.jenkins-ci.org/display/JENKINS/Literate+Plugin[Literate Plugin] is only interested in `jenkins.scm.SCMHead` instances that have a marker file (configurable with the default being `.cloudbees.md`) in the root of the checkout.
+* the https://wiki.jenkins-ci.org/display/JENKINS/Literate+Plugin[Literate Plugin] is only interested in `jenkins.scm.api.SCMHead` instances that have a marker file (configurable with the default being `.cloudbees.md`) in the root of the checkout.
 
-Each SCM API consuming plugin defines the criteria by implementing `jenkins.scm.SCMSourceCriteria`.
-Each `jenkins.scm.SCMSourceOwner` can specify the criteria for the `jenkins.scm.SCMSource` instances that it owns.
+Each SCM API consuming plugin defines the criteria by implementing `jenkins.scm.api.SCMSourceCriteria`.
+Each `jenkins.scm.api.SCMSourceOwner` can specify the criteria for the `jenkins.scm.api.SCMSource` instances that it owns.
 
-When a `jenkins.scm.SCMSource` has been supplied with a `jenkins.scm.SCMSourceCriteria` it will need to provide a `jenkins.scm.SCMProbe` when identifying potential `jenkins.scm.SCMHead` instances.
+When a `jenkins.scm.api.SCMSource` has been supplied with a `jenkins.scm.api.SCMSourceCriteria` it will need to provide a `jenkins.scm.api.SCMProbe` when identifying potential `jenkins.scm.api.SCMHead` instances.
 
 [NOTE]
 ====
-Implementations of `jenkins.scm.SCMProbe` should put primary focus on the `stat(_path_)` method that checks for existence and filetype.
+Implementations of `jenkins.scm.api.SCMProbe` should put primary focus on the `stat(_path_)` method that checks for existence and filetype.
 This method is expected to be a hot code path
 
-When a consuming plugin is processing a `jenkins.scm.SCMHeadEvent`, it will be necessary for the consuming plugin to revalidate the head instance against the `jenkins.scm.SCMSourceCriteria`.
-Even if we could trust the content of the `jenkins.scm.SCMHeadEvent`, the revalidation would be a necessary step as we have no way of determining from a `jenkins.scm.SCMHeadEvent` whether the change has:
+When a consuming plugin is processing a `jenkins.scm.api.SCMHeadEvent`, it will be necessary for the consuming plugin to revalidate the head instance against the `jenkins.scm.api.SCMSourceCriteria`.
+Even if we could trust the content of the `jenkins.scm.api.SCMHeadEvent`, the revalidation would be a necessary step as we have no way of determining from a `jenkins.scm.api.SCMHeadEvent` whether the change has:
 
 * Transitioned the criteria matching from `false` to `true`;
 * Maintained the criteria matching in its current state; or
-* Transitioned the criteria matching from `true` to `false.
+* Transitioned the criteria matching from `true` to `false`.
 
-Thus *every* SCM API consuming plugin that listens for a `jenkins.scm.SCMEvent` will need to validate that event *against the criteria*.
+Thus *every* SCM API consuming plugin that listens for a `jenkins.scm.api.SCMEvent` will need to validate that event *against the criteria*.
 This revalidation would be necessary even if we received a signed trusted event from the backing source control system.
 This is why:
 
-* The `jenkins.scm.SCMEvent` is always considered `Untrusted` - consuming plugins will be doing revalidation anyway, so it is simpler for consuming plugins to treat everything from an event as untrusted.
-For example, if we receive a `jenkins.scm.SCMHeadEvent` saying that there is a new head with a specific revision.
-The revalidation will involve checking if that revision contains the required marker content by calling `jenkins.scm.SCMSource.fetch()` with an observer that is only interested in the head mentioned in the event.
+* The `jenkins.scm.api.SCMEvent` is always considered `Untrusted` - consuming plugins will be doing revalidation anyway, so it is simpler for consuming plugins to treat everything from an event as untrusted.
+For example, if we receive a `jenkins.scm.api.SCMHeadEvent` saying that there is a new head with a specific revision.
+The revalidation will involve checking if that revision contains the required marker content by calling `jenkins.scm.api.SCMSource.fetch()` with an observer that is only interested in the head mentioned in the event.
 If a malicious event has provided a head that does not exist, then the observer will never be called.
-The event provided a revision does not really matter as, the observer will be provided with the actual revision of the named head (though if the event provided revision matches the known revision of the head the consumer can even avoid the call to `jenkins.scm.SCMSource.fetch()` in the first place.
+The event provided a revision does not really matter as, the observer will be provided with the actual revision of the named head (though if the event provided revision matches the known revision of the head the consumer can even avoid the call to `jenkins.scm.api.SCMSource.fetch()` in the first place).
 
-* The `jenkins.scm.SCMEvent` dispatch methods always push events to a background thread - *every* consuming plugin will need to perform revalidation of any claim made from an event.
+* The `jenkins.scm.api.SCMEvent` dispatch methods always push events to a background thread - *every* consuming plugin will need to perform revalidation of any claim made from an event.
 The revalidation should not block the handling of the webhook that delivered the event, hence the SCM API provides a simpler contract for all consumers by ensuring that the events are always on a separate thread from the webhook processing thread.
 ====
+
+Consumers of the SCM API may want more advanced criteria may to check the contents of specific files in the head / branch.
+Additionally, in some cases consumers of the SCM API may want to inspect specific files in the source control system in order to determine how to process that head / branch.
+For example,
+
+* when https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch Plugin] needs to build a specific revision of a specific branch, it first needs to parse the `Jenkinsfile` in order to determine the build plan.
+
+* when https://wiki.jenkins-ci.org/display/JENKINS/Literate+Plugin[Literate Plugin] needs to build a specific revision of a specific branch, it first needs to parse the `README.md` in order to determine the matrix of execution environments against which to build.
+
+Consumers of the SCM API cannot assume that every SCM API implementation has the ability for deep inspection of specific files at specific revisions and thus must fall back to performing a full check-out.
+
+SCM API implementations indicate their support for deep inspection both by returning a non-`null` value from `jenkins.scm.api.SCMProbe.getRoot()` and/or by implementing the `jenkins.scm.api.SCMFileSystem.Builder` extension point.
+
+The final areas of the SCM API of interest to implementers are categorization and branding.
+Both of these areas can be considered completely optional.
+As they provide for a significantly richer user experience for the end user, it is recommended to implement these areas of the SCM API.
+
+The `jenkins.scm.api.SCMHead` instances can represent a number of different things:
+
+* mainline development branches
+* side feature branches
+* tags or snapshots of branches at fixed revisions
+* change requests to branches
+* _etc._
+
+Each source control system will have their own idiomatic terminology for each of these concepts.
+For example:
+
+* GitHub uses the term "Pull Request" to refer to a change request
+* Gerrit uses the term "Change" to refer to a change request
+* Perforce uses the term "Change Review" to refer to a change request
+* Git and Subversion use the term "Tag" to refer to a tag
+* Accurev uses the term "Snapshot" to refer to a tag
+
+Each `jenkins.scm.api.SCMSourceDescriptor` should provide the concrete instances of the `jenkins.scm.api.SCMHeadCategory` that are potentially generated by their `jenkins.scm.api.SCMSource` instances.
+Then each `jenkins.scm.api.SCMSource` instance can filter down that list to the actual categories that may be returned by that specific source.
+For example, a GitHub source may return "Branches", "Pull Requests" and "Tags" but the user may have configured their specific source for a specific project to only build "Branches" and "Tags".
+
+In an analgous way, the `jenkins.scm.api.SCMSource` instances themselves may have different terminology for each of the different source control systems:
+
+* GitHub uses the term "Repository" to refer to primary repositories
+* GitHub uses the term "Fork" to refer to forks of the primary repositories
+* Accurev uses the term "Depot" to refer to repositories (using the term "repository" to refer to the collection of "depots")
+* One way of mapping CVS concepts to the SCM API might use the term "Module" for `jenkins.scm.api.SCMSource` instances.
+
+In general, it is anticipated that most `jenkins.scm.api.SCMNavigatorDescriptor` instances will only ever return a single `jenkins.scm.impl.UncategorizedSCMSourceCategory` instance using the concept name that users expect.
+Thus,
+
+* An `AccurevSCMNavigator.DescriptorImpl` would have
++
+[source,java]
+----
+public class AccurevSCMNavigator extends SCMNavigator {
+    // ...
+    @Extension
+    public static class DecriptorImpl extends SCMNavigatorDescriptor {
+        // ...
+        protected SCMSourceCategory[] createCategories() {
+            return new SCMSourceCategory[]{
+                new UncategorizedSCMSourceCategory(Messages._AccurevSCMNavigator_DepotSourceCategory())
+            };
+        }
+    }
+}
+----
+* A `CVSSCMNavigator.DescriptorImpl` would have
++
+[source,java]
+----
+public class CVSSCMNavigator extends SCMNavigator {
+    // ...
+    @Extension
+    public static class DecriptorImpl extends SCMNavigatorDescriptor {
+        // ...
+        protected SCMSourceCategory[] createCategories() {
+            return new SCMSourceCategory[]{
+                new UncategorizedSCMSourceCategory(Messages._CVSSCMNavigator_ModuleSourceCategory())
+            };
+        }
+    }
+}
+----
+
+The implementers of a GitHub SCM API would need to decide whether the forks should be listed as additional heads / branches of the primary repository or whether they should be listed as a separate category of sources.
+
 
