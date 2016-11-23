@@ -2,7 +2,13 @@
 
 This document provides the guidelines for a correct optimal implementation of the SCM API.
 
-=== Introduction
+This document is structured as follows:
+
+* The first section is an overview of all the elements that contribute to a correct performant optimal implementation of the SCM API.
+
+* The subsequent sections consider each of the API extension points in turn, in the recommended order of implementation. If you stop at the end of any one section, you should have something that works, but may not be optimal.
+
+=== Overview
 
 The SCM API consists of a number of extension points:
 
@@ -450,8 +456,14 @@ public class MySCMRevisionState extends SCMRevisionState implements Serializable
 }
 ----
 
+Most SCM implementations will just capture the output of an externally launched command and write that to the change log file (e.g. the equivalent of `git log rev1..rev2 > file`).
+This has the advantage of being easy for users to compare to their own locally launched commands, but it requires that the change log parser be able to parse
+historical change log files.
+
 The easiest format for the change log on disk is just to serialize the list of log entries using `XStream`.
-If that on-disk format is used, then the change log parser can become relatively trivial:
+You still have to write a parser for the native tool change log format, but as you evolve the native command used to capture the change logs, you can use the `XStream` data model evolution to ensure that the older changelogs can be parsed by newer implementations (e.g. if we changed from using say `git log --format=oneline rev1..rev2` to `git log --format=fuller rev1..rev2`)
+
+If the `XStream` on-disk format is used, then the change log parser can become relatively trivial:
 
 [source,java]
 ----
