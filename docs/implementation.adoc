@@ -1,6 +1,6 @@
 == Implementation Guide
 
-This document provides the guidelines for the correct implementation of the SCM API.
+This document provides the guidelines for a correct optimal implementation of the SCM API.
 
 === Introduction
 
