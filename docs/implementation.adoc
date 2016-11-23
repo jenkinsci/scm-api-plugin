@@ -922,7 +922,7 @@ public class MySCMNavigator extends SCMNavigator {
         @Nonnull
         @Override
         public String getDisplayName() {
-            return "My SCM";
+            return "My SCM Team";
         }
 
         @Override
@@ -980,3 +980,43 @@ public class MySCMNavigator extends SCMNavigator {
 
 The `jenkins.scm.api.SCMNavigator` implementation will also need a Stapler view for `config`.
 
+=== Testing the implementation
+
+At this point you should now have a full implementation of the SCM API that works for polling.
+
+==== Setup
+
+To test this implementation you should set up an organization / team / whatever the correct terminology is for the thing you are representing with `SCMNavigator`
+
+Within this you should set up more than one of repository / project / whatever the correct terminology is for the thing you are representing with `SCMSource`
+
+Within these repositories, create some dummy branches with a basic `Jenkinsfile` in the root.
+Also have some branches that do not have a `Jenkinsfile` in the root.
+
+Ensure you have at least one repository with content but without a `Jenkinsfile` in any branch / tag / change request.
+
+Tag some of the branches.
+
+If your source control system has the concept of change requests, create some change requests.
+
+Install the https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch Plugin] and your plugin into your test instance.
+
+==== Tests
+
+1. If your `SCMNavigatorDescriptor.newInstance(_name_)` method does not return null, verify that the new item screen has a specific organization folder type corresponding to your `SCMNavigator`.
+
+2. Create an organization folder for your `SCMNavigator`. It should not matter whether you use the name based inference from a specific organization folder type or create a generic organization folder and add your `SCMNavigator` to the configuration.
+
+3. Verify that all the repositories containing at least one branch with a `Jenkinsfile` have had multibranch projects created for them.
+
+4. Verify that the repository that does not contain any `Jenkinsfile` has not had a multibranch project created for it (unless you did not implement `SCMProbe` or `SCMFileSystem.Builder`)
+
+5. Pick one of the multibranch projects. Verify that the branches / tags / change requests that contain a `Jenkinsfile` have been created and categorized correctly.
+
+6. Commit a change to one of the branches. Trigger a rescan of the organization. Verify that the only build activity is the organization scan, the repository scans for each individual repository and then the branch build for the changed branch. This is checking that your revision equality has been implemented correctly and relying on the Branch API to requests builds when scanning identifies changed revisions for individual `SCMHead` instances.
+
+You could perform additional testing, doing things like adding new branches / tags / change requests, updating branches, merging change requests, deleting branches, etc but as the implementation we have to this point only performs polling, if the above tests work then everything should work when polling.
+
+ === Implementing event support
+
+ From the testing and the requirement to trigger a scan in order to see the changes, you should now have an appreciation of why event support is important to users.
