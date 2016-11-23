@@ -124,4 +124,42 @@ In cases where the source control system provides an API to store such metadata,
 
 Implementations are free to use the event system to publish other events as appropriate providing the type of event is logically mapped.
 
+The next step in implementing the SCM API is to allow for consuming plugins to perform deeper identification of interesting `jenkins.scm.SCMHead` instances.
+Consuming plugins may not be interested in every single `jenkins.scm.SCMHead`.
+For example:
+
+* the https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch Plugin] is only interested in `jenkins.scm.SCMHead` instances that have a `Jenkinsfile` in the root of the checkout.
+
+* the https://wiki.jenkins-ci.org/display/JENKINS/Literate+Plugin[Literate Plugin] is only interested in `jenkins.scm.SCMHead` instances that have a marker file (configurable with the default being `.cloudbees.md`) in the root of the checkout.
+
+Each SCM API consuming plugin defines the criteria by implementing `jenkins.scm.SCMSourceCriteria`.
+Each `jenkins.scm.SCMSourceOwner` can specify the criteria for the `jenkins.scm.SCMSource` instances that it owns.
+
+When a `jenkins.scm.SCMSource` has been supplied with a `jenkins.scm.SCMSourceCriteria` it will need to provide a `jenkins.scm.SCMProbe` when identifying potential `jenkins.scm.SCMHead` instances.
+
+[NOTE]
+====
+Implementations of `jenkins.scm.SCMProbe` should put primary focus on the `stat(_path_)` method that checks for existence and filetype.
+This method is expected to be a hot code path
+
+When a consuming plugin is processing a `jenkins.scm.SCMHeadEvent`, it will be necessary for the consuming plugin to revalidate the head instance against the `jenkins.scm.SCMSourceCriteria`.
+Even if we could trust the content of the `jenkins.scm.SCMHeadEvent`, the revalidation would be a necessary step as we have no way of determining from a `jenkins.scm.SCMHeadEvent` whether the change has:
+
+* Transitioned the criteria matching from `false` to `true`;
+* Maintained the criteria matching in its current state; or
+* Transitioned the criteria matching from `true` to `false.
+
+Thus *every* SCM API consuming plugin that listens for a `jenkins.scm.SCMEvent` will need to validate that event *against the criteria*.
+This revalidation would be necessary even if we received a signed trusted event from the backing source control system.
+This is why:
+
+* The `jenkins.scm.SCMEvent` is always considered `Untrusted` - consuming plugins will be doing revalidation anyway, so it is simpler for consuming plugins to treat everything from an event as untrusted.
+For example, if we receive a `jenkins.scm.SCMHeadEvent` saying that there is a new head with a specific revision.
+The revalidation will involve checking if that revision contains the required marker content by calling `jenkins.scm.SCMSource.fetch()` with an observer that is only interested in the head mentioned in the event.
+If a malicious event has provided a head that does not exist, then the observer will never be called.
+The event provided a revision does not really matter as, the observer will be provided with the actual revision of the named head (though if the event provided revision matches the known revision of the head the consumer can even avoid the call to `jenkins.scm.SCMSource.fetch()` in the first place.
+
+* The `jenkins.scm.SCMEvent` dispatch methods always push events to a background thread - *every* consuming plugin will need to perform revalidation of any claim made from an event.
+The revalidation should not block the handling of the webhook that delivered the event, hence the SCM API provides a simpler contract for all consumers by ensuring that the events are always on a separate thread from the webhook processing thread.
+====
 
