@@ -1017,6 +1017,6 @@ Install the https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plu
 
 You could perform additional testing, doing things like adding new branches / tags / change requests, updating branches, merging change requests, deleting branches, etc but as the implementation we have to this point only performs polling, if the above tests work then everything should work when polling.
 
- === Implementing event support
+=== Implementing event support
 
- From the testing and the requirement to trigger a scan in order to see the changes, you should now have an appreciation of why event support is important to users.
+From the testing and the requirement to trigger a scan in order to see the changes, you should now have an appreciation of why event support is important to users.
