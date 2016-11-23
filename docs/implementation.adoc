@@ -247,4 +247,81 @@ public class CVSSCMNavigator extends SCMNavigator {
 
 The implementers of a GitHub SCM API would need to decide whether the forks should be listed as additional heads / branches of the primary repository or whether they should be listed as a separate category of sources.
 
+When defining custom categorization, we also need to pay attention to the `getPronoun()` methods of:
+
+* `jenkins.scm.api.SCMHead`
+* `jenkins.scm.api.SCMSource` (which will fall through to `jenkins.scm.api.SCMSourceDescriptor`)
+* `jenkins.scm.api.SCMNavigator` (which will fall through to `jenkins.scm.api.SCMNavigatorDescriptor`)
+
+For example, with the Accurev source control system we might have:
+
+[source,java]
+----
+public class AccurevSCMNavivator extends SCMNavigator {
+    // ...
+    @Extension
+    public static class DecriptorImpl extends SCMNavigatorDescriptor {
+        // ...
+       public String getPronoun() {
+           return "Repository"; // Better: Messages.AccurevSCMNavigator_RepositoryPronoun();
+       }
+       protected SCMSourceCategory[] createCategories() {
+            return new SCMSourceCategory[]{
+                new UncategorizedSCMSourceCategory(
+                    new NonLocalizable("Depot")
+                // Better: Messages._AccurevSCMNavigator_DepotSourceCategory()
+                )
+            };
+        }
+    }
+}
+public class AccurevSCMSource extends SCMSource {
+    private boolean buildTags;
+    // ...
+    protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
+        if (category instanceof TagSCMHeadCategory) {
+            return buildTags;
+        }
+        return true;
+    }
+
+    @Extension
+    public static class DecriptorImpl extends SCMNavigatorDescriptor {
+        // ...
+       public String getPronoun() {
+           return "Depot"; // Better: Messages.AccurevSCMSource_RepositoryPronoun();
+       }
+       protected SCMHeadCategory[] createCategories() {
+            return new SCMSourceCategory[]{
+                new UncategorizedSCMSourceCategory(
+                    new NonLocalizable("Stream")
+                    // Better: Messages._AccurevSCMSource_StreamHeadCategory()
+                ),
+                new TagSCMHeadCategory(
+                    new NonLocalizable("Snapshot")
+                    // Better: Messages._AccurevSCMSource_SnapshotHeadCategory()
+                )
+            };
+        }
+    }
+}
+public class AccurevSCMHead extends SCMHead {
+    // ...
+    public String getPronoun() {
+        return getAction(TagAction.class) == null ? "Stream" : "Snapshot"; //: Better with localization
+    }
+ }
+----
+
+The above represents the terminology and categorization that is appropriate for the Accurev source control system.
+
+NOTE: When implementing categorization it is recommended to reuse an existing categorization class (with the terminology injected) rather than create a new categorization.
+New categorizations should be added to the scm-api plugin by pull requests as this allows similar categories to be grouped.
+
+Branding controls the visual icons that are used to represent the `jenkins.scm.api.SCMSource` and `jenkins.scm.api.SCMNavigator` instances.
+Branding is determined by the `getIconClassName()` of the `jenkins.scm.api.SCMSourceDescriptor` and `jenkins.scm.api.SCMNavigatorDescriptor`.
+Where these methods return non-null the corresponding icons will be used by consumers of the SCM API as the final fall-back icons.
+
+=== Implementing `hudson.scm.SCM`
+
 

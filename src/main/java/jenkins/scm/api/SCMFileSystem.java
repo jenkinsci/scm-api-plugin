@@ -27,9 +27,16 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.scm.SCM;
+import hudson.scm.SCMRevisionState;
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * A virtual file system for a specific {@link SCM} potentially pinned to a specific {@link SCMRevision}. In contrast
@@ -112,6 +119,23 @@ public abstract class SCMFileSystem implements Closeable {
      */
     @NonNull
     public abstract SCMFile getRoot();
+
+    /**
+     * Writes the changes between the specified revision and {@link #getRevision()} in the format compatible
+     * with the {@link SCM} from this {@link SCMFileSystem#of(SCM)} to the supplied {@link OutputStream}.
+     * This method allows for consumers or the SCM API to replicate the
+     * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File, SCMRevisionState)} functionality
+     * that captures the changelog without requiring a full checkout.
+     *
+     * @param revision        the starting revision or {@code null} to capture the initial change set.
+     * @param changeLogStream the destination to stream the changes to.
+     * @throws UnsupportedOperationException if this {@link SCMFileSystem} does not support changelog querying.
+     * @since FIXME
+     */
+    public boolean changesSince(@CheckForNull SCMRevision revision, @NonNull OutputStream changeLogStream)
+            throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Given a {@link SCM} this method will try to retrieve a corresponding {@link SCMFileSystem} instance.
