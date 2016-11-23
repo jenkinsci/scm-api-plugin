@@ -434,6 +434,8 @@ To simplify the implementation of the `jenkins.scm.api.SCMSource` we provide a c
 If the configuration for the `SCMHead` and/or the `SCMRevision` requires manipulation of final fields, then a constructor taking the `SCMSource`, `SCMHead` and `SCMRevision` would be equally appropriate.
 ====
 
+The `hudson.scm.SCM` implementation will also need a Stapler view for `config`.
+
 You will also need to provide implementations of `SCMRevisionState` and `ChangeLogParser`.
 You do not need to provide an implementation of `RepositoryBrowser` but you must at least provide an abstract base class with the appropriate methods for generating links from change log entries.
 
@@ -705,3 +707,274 @@ If your source control system cannot support an implementation of `SCMFileSystem
 
 If your source control system cannot support even the `SCMProbe.stat(_path_)` style of inspection then you will have to ignore the criteria and allow all heads to be observed.
 ====
+
+The `jenkins.scm.api.SCMSource` implementation will also need a Stapler view for `config-detail`.
+
+You will need to have implemented your own `SCMHead` and `SCMRevision` subclasses.
+
+* For regular branch and tag like things, you will want to extend from `SCMHead` directly. When the backing object in source control is more like a tag, then the `SCMHead.getActions()` should return a `TagAction` to identify that the head is a tag.
++
+[source,java]
+----
+public class MySCMHead extends SCMHead {
+    private static final TagAction TAG_ACTION = new TagAction();
+    private static final long serialVersionUID = 1L;
+
+    private boolean tag;
+
+    public MockSCMHead(@NonNull String name, boolean tag) {
+        super(name);
+        this.tag = tag;
+    }
+
+    @NonNull
+    @Override
+    public List<? extends Action> getAllActions() {
+        if (tag) {
+            List<Action> actions = new ArrayList<Action>(super.getAllActions());
+            actions.add(TAG_ACTION);
+            return actions;
+        } else {
+            return super.getAllActions();
+        }
+    }
+}
+public class MySCMRevision extends SCMRevision {
+    private static final long serialVersionUID = 1L;
+
+    private final String hash;
+
+    public MySCMRevision(@NonNull MySCMHead head, String hash) {
+        super(head);
+        this.hash = hash;
+    }
+
+    public String getHash() {
+        return hash;
+    }
+
+    // critical to implement equals and hashCode
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        MySCMRevision that = (MySCMRevision) o;
+
+        return hash.equals(that.hash);
+    }
+
+    @Override
+    public int hashCode() {
+        return hash.hashCode();
+    }
+
+    // very helpful for users to implement toString
+    @Override
+    public String toString() {
+        return hash;
+    }
+}
+----
+
+* Change request like things are special. For one, the actual strategy used to determine what to build can be different from a regular head. The change request may be built against the original baseline revision, or it mat be built against the current revision of the original baseline branch.
++
+For this reason change request like things should extend from `ChangeRequestSCMHead` to flag for implementers that they need to think somewhat differently about how the change request should be exposed via the SCM API.
++
+Another important concern with change request like things is where the change request can originate from untrusted users.
+Implementers should always make it configurable whether change request like things will be excluded from the `SCMSource` and also where possible to differentiate between trusted and untrusted users.
++
+[source,java]
+----
+public class MyChangeRequestSCMHead extends ChangeRequestSCMHead {
+    private static final long serialVersionUID = 1L;
+
+    private final MyChangeRequestAction action;
+
+    public MyChangeRequestSCMHead(MyChangeRequestAction action) {
+        super("Change/" + action.getId()); // because My SCM calls Change Requests Change/### where ### is the change ID
+        this.action = action;
+    }
+
+    @NonNull
+    @Override
+    public ChangeRequestAction getChangeRequestAction() {
+        return action;
+    }
+}
+public class MyChangeRequestSCMRevision extends SCMRevision {
+    private static final long serialVersionUID = 1L;
+
+    private final String base;
+    private final String change;
+
+    public MyChangeRequestSCMRevision(@NonNull MyChangeRequestSCMHead head, @NonNull String base, @NonNull String change) {
+        super(head);
+        this.base = base;
+        this.change = change;
+    }
+
+    /**
+     * The commit hash of the base branch we are tracking.
+     */
+    public String getBase() {
+        return base;
+    }
+
+    /**
+     * The commit hash of the head of the change request branch.
+     */
+    public String getChange() {
+        return change;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof MyChangeRequestSCMRevision)) {
+            return false;
+        }
+        MyChangeRequestSCMRevision other = (MyChangeRequestSCMRevision) o;
+        return getHead().equals(other.getHead())
+            && base.equals(other.base)
+            && change.equals(other.change);
+    }
+
+    @Override
+    public int hashCode() {
+        return change.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return base + "+" + change;
+    }
+}
+----
+
+=== Implementing `jenkins.scm.api.SCMNavigator`
+
+The `jenkins.scm.api.SCMNavigator` API has not been subject to much evolution and consequently the methods to implement are relatively obvious
+
+[source,java]
+----
+public class MySCMNavigator extends SCMNavigator {
+
+    /*
+     * all configuration fields should be private
+     * mandatory fields should be final
+     * non-mandatory fields should be non-final
+     */
+
+    @DataBoundConstructor
+    public MySCMNavigator(/*mandatory configuration*/) {
+        // ...
+    }
+
+    // Getters for all the configuration fields
+
+    // use @DataBoundSetter to inject the non-mandatory configuration elements
+    // as this will simplify the usage from pipeline
+
+    @Override
+    public void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException {
+        Iterable<...> candidates = null;
+        Set<String> includes = observer.getIncludes();
+        if (includes != null) {
+            // at least optimize for the case where the includes is one and only one
+            if (includes.size() == 1 && includes.iterator().next() instanceof MySCMHead) {
+                candidates = getSpecificCandidateFromSourceControl();
+            }
+        }
+        if (candidates == null) {
+            candidates = getAllCandiatesFromSourceControl();
+        }
+        for (String name : candidates) {
+            checkInterrupt(); // important to call this periodically
+            SCMSourceObserver.ProjectObserver po = observer.observe(name);
+            po.addSource(new MySCMSource(this, name));
+            po.complete();
+        }
+    }
+
+    @NonNull
+    @Override
+    public Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
+                                                                @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        Map<Class<? extends Action>, Action> result = new HashMap<>();
+        // if your SCM provides support for metadata at the "SCMNavigator" level
+        // then you probably want to return at least a `jenkins.branch.MetadataAction`
+        // from this method. The listener can be used to log the interactions
+        // with the backing source control system.
+        return result;
+    }
+
+    @Symbol("my")
+    @Extension
+    public static class DescriptorImpl extends SCMNavigatorDescriptor {
+
+        @Nonnull
+        @Override
+        public String getDisplayName() {
+            return "My SCM";
+        }
+
+        @Override
+        public SCMNavigator newInstance(@CheckForNull String name) {
+            // if you can guess a fully configured MySCMNavigator instance
+            // from just the name, e.g. a GitHub navigator could guess that
+            // the name was the name of a GitHub organization (assuming it does
+            // not need to worry about GitHub Enterprise servers or assuming
+            // that the descriptor allows configuring the default server as
+            // a global configuration) then return one here, otherwise...
+            return null;
+        }
+
+        // This method is only required if you need more than one category
+        // or if the categories need to use idiomatic names specific to
+        // your source control system.
+        @NonNull
+        @Override
+        protected SCMSourceCategory[] createCategories() {
+            return new SCMHeadCategory[]{
+                    new UncategorizedSCMHeadCategory(
+                        // better would be Messages.MySCMNavigator_TeamsCategory()
+                        new NonLocalizable("Teams") // because My SCM uses the term "teams" for a collection of repositories.
+                    )
+            };
+        }
+
+        // optional branding of the icon
+        public String getIconClassName() {
+            return "icon-my-scm-team";
+        }
+
+        // register the icons as we have implemented optional branding
+        static {
+            IconSet.icons.addIcon(
+                    new Icon("icon-my-scm-team icon-sm",
+                            "plugin/my-scm/images/16x16/team.png",
+                            Icon.ICON_SMALL_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-my-scm-team icon-md",
+                            "plugin/my-scm/images/24x24/team.png",
+                            Icon.ICON_MEDIUM_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-my-scm-team icon-lg",
+                            "plugin/my-scm/images/32x32/team.png",
+                            Icon.ICON_LARGE_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-my-scm-team icon-xlg",
+                            "plugin/my-scm/images/48x48/team.png",
+                            Icon.ICON_XLARGE_STYLE));
+        }
+    }
+}
+----
+
+The `jenkins.scm.api.SCMNavigator` implementation will also need a Stapler view for `config`.
+
