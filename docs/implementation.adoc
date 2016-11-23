@@ -324,4 +324,184 @@ Where these methods return non-null the corresponding icons will be used by cons
 
 === Implementing `hudson.scm.SCM`
 
+The `hudson.scm.SCM` API has been subject to significant evolution. Modern implementations should focus on implementing the following methods:
+
+[source,java]
+----
+public class MySCM extends SCM {
+    /*
+     * all configuration fields should be private
+     * mandatory fields should be final
+     * non-mandatory fields should be non-final
+     */
+
+    @DataBoundConstructor
+    public MySCM(/*mandatory configuration*/) {
+        // ...
+    }
+
+    // for easier interop with SCMSource
+    public MySCM(MySCMSource config) {
+        // copy the configuratuion from the SCMSource
+    }
+
+    // Getters for all the configuration fields
+
+    // use @DataBoundSetter to inject the non-mandatory configuration elements
+    // as this will simplify the usage from pipeline
+
+    @Override
+    public boolean supportsPolling() {
+        return true; // hopefully you do
+    }
+
+    @Override
+    public boolean requiresWorkspaceForPolling() {
+        return false; // hopefully you don't
+    }
+
+    // for easier interop with SCMSource
+    public void setSCMHead(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {
+        // configure to checkout the specified head at the specific revision
+        // if passed implementations that do not come from a MySCMSource then silently ignore
+    }
+
+    @Override
+    public PollingResult compareRemoteRevisionWith(@Nonnull Job<?, ?> project, @Nullable Launcher launcher,
+                                                   @Nullable FilePath workspace, @Nonnull TaskListener listener,
+                                                   @Nonnull SCMRevisionState baseline)
+            throws IOException, InterruptedException {
+        if (baseline instanceof MySCMRevisionState) {
+            //
+            // get current revision in SCM
+            // if your implementation of requiresWorkspaceForPolling() returns true then the
+            // workspace and launcher parameters should be non-null and point to a
+            // workspace and node to use for the comparison
+            // NOTE: requiring a workspace for polling is a realy bad user experience
+            // as obtaining a workspace may require the provisioning of build resources
+            // from the Cloud API just to determine that there are no changes to build
+            //
+            if (baseline same as currentRevision) {
+                return PollingResult.NO_CHANGES;
+            } else {
+                return PollingResult.SIGNIFICANT;
+            }
+        } else {
+            return PollingResult.BUILD_NOW;
+        }
+    }
+
+    @Override
+    public void checkout(@Nonnull Run<?, ?> build, @Nonnull Launcher launcher, @Nonnull FilePath workspace,
+                         @Nonnull TaskListener listener, @CheckForNull File changelogFile,
+                         @CheckForNull SCMRevisionState baseline) throws IOException, InterruptedException {
+        // do the checkout in the remote workspace using the supplied launcher
+        // output from the checkout should be streamed to the listener
+
+        // write the changelog to the changelog file (assuming it is non-null)
+        // the changelog should be from the supplied baseline to the revision checked out
+
+        // finally attach the revision state to the build's actions.
+        build.addAction(new MySCMRevisionState(/*whatever you need*/));
+    }
+
+    @Override
+    public ChangeLogParser createChangeLogParser() {
+         return new MyChangeLogParser();
+    }
+
+    @Symbol("my")
+    @Extension
+    public static class DescriptorImpl extends SCMDescriptor<MySCM> {
+       public DescriptorImpl() {
+            super(MySCMRepositoryBrowser.class);
+        }
+        // ...
+    }
+}
+----
+
+[NOTE]
+====
+To simplify the implementation of the `jenkins.scm.api.SCMSource` we provide a constructor that takes the `MySCMSource` and a setter method to pin that source to a specific `SCMHead` and optionally a `SCMRevision`.
+
+If the configuration for the `SCMHead` and/or the `SCMRevision` requires manipulation of final fields, then a constructor taking the `SCMSource`, `SCMHead` and `SCMRevision` would be equally appropriate.
+====
+
+You will also need to provide implementations of `SCMRevisionState` and `ChangeLogParser`.
+You do not need to provide an implementation of `RepositoryBrowser` but you must at least provide an abstract base class with the appropriate methods for generating links from change log entries.
+
+For simplification of integration with `jenkins.scm.api.SCMSource` and the new SCM API it is recommended to use a `SCMRevisionState` implementation that effectively defers to your implementation of `SCMRevision`
+
+[source,java]
+----
+public class MySCMRevisionState extends SCMRevisionState implements Serializable {
+    private static final long serialVersionUID = 1L;
+    @NonNull
+    private final MySCMRevision revision;
+
+    public MySCMRevisionState(@NonNull MySCMRevision revision) {
+        this.revision = revision;
+    }
+
+    public MySCMRevision getRevision() {
+        return revision;
+    }
+}
+----
+
+The easiest format for the change log on disk is just to serialize the list of log entries using `XStream`.
+If that on-disk format is used, then the change log parser can become relatively trivial:
+
+[source,java]
+----
+public class MySCMChangeLogParser extends ChangeLogParser {
+    @Override
+    public ChangeLogSet<? extends ChangeLogSet.Entry> parse(Run build,
+                                                            RepositoryBrowser<?> browser,
+                                                            File changelogFile)
+            throws IOException, SAXException {
+        List<MySCMChangeLogEntry> entries =
+                (List<MySCMChangeLogEntry>) Items.XSTREAM2.fromXML(changelogFile);
+        return new MySCMChangeLogSet(build, browser, entries);
+    }
+}
+public class MySCMChangeLogEntry extends ChangeLogSet.Entry {
+    // ...
+    /*package*/ void setParent(MySCMChangeLogSet parent) {
+        super.setParent(parent);
+    }
+}
+public class MySCMChangeLogSet extends ChangeLogSet<MySCMChangeLogEntry> {
+    private final List<MySCMChangeLogEntry> entries;
+
+    public MySCMChangeLogSet(Run<?, ?> build,
+                             RepositoryBrowser<?> browser,
+                             List<MySCMChangeLogEntry> entries) {
+        super(build, browser);
+        this.entries = new ArrayList<>(entries);
+        // contract of ChangeLogSet.Entry is that parent must be set before
+        // ChangeLogSet is exposed
+        for (MySCMChangeLogEntry entry: this.entries) {
+            entry.setParent(this);
+        }
+    }
+
+    @Override
+    public boolean isEmptySet() {
+        return entries.isEmpty();
+    }
+
+    public Iterator<MySCMChangeLogEntry> iterator() {
+        return entries.iterator();
+    }
+}
+----
+
+The `ChangeLogSet` implementation will also need Stapler views for `index` and `digest`.
+When rendering the entries, the repository browser should be used to render links.
+You should assume that any `RepositoryBrowser` you are provided is an implementation of the base class you specified in your `SCMDescriptor`.
+
+=== Implementing `jenkins.scm.api.SCMSource`
+
 
