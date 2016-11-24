@@ -176,7 +176,8 @@ public abstract class SCMEvent<P> {
      * <p>
      * Some source control systems may be able to generate and deliver
      * events with content that can be trusted. The trust information can be used by implementations of the
-     * SCM API when overriding {@link SCMNavigator#visitSources(SCMSourceObserver, SCMSourceEvent)} or
+     * SCM API when overriding {@link SCMNavigator#visitSources(SCMSourceObserver, SCMSourceEvent)},
+     * {@link SCMNavigator#visitSources(SCMSourceObserver, SCMHeadEvent)} or
      * {@link SCMSource#fetch(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)} to minimize round
      * trip requests to the backing source control system.
      *
@@ -204,12 +205,14 @@ public abstract class SCMEvent<P> {
      *     </li>
      *     <li>
      *       If you are overriding this method then you will also want to be providing a custom implementation of
-     *       at least one of {@link SCMNavigator#visitSources(SCMSourceObserver, SCMSourceEvent)} and
+     *       at least one of {@link SCMNavigator#visitSources(SCMSourceObserver, SCMSourceEvent)},
+     *       {@link SCMNavigator#visitSources(SCMSourceObserver, SCMHeadEvent)}, and
      *       {@link SCMSource#retrieve(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)}
      *     </li>
      * </ul>
      * @return the trustability of the event payload.
      * @see SCMNavigator#visitSources(SCMSourceObserver, SCMSourceEvent)
+     * @see SCMNavigator#visitSources(SCMSourceObserver, SCMHeadEvent)
      * @see SCMSource#fetch(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)
      * @see SCMSource#retrieve(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)
      */

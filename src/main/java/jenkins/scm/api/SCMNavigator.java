@@ -95,6 +95,23 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     }
 
     /**
+     * Looks for SCM sources in a configured place (scoped against a specific event).
+     * After this method completes, no further calls may be made to the {@code observer} or its child callbacks.
+     * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
+     * otherwise it will be impossible for users to interrupt the operation.</strong>
+     *
+     * @param observer a recipient of progress notifications and a source of contextual information
+     * @param event    the event from which the operation should be scoped.
+     * @throws IOException          if scanning fails
+     * @throws InterruptedException if scanning is interrupted
+     * @since FIXME
+     */
+    public void visitSources(@NonNull SCMSourceObserver observer, @NonNull SCMHeadEvent<?> event)
+            throws IOException, InterruptedException {
+        visitSources(SCMSourceObserver.filter(observer, event.getSourceName()));
+    }
+
+    /**
      * Looks for the named SCM source in a configured place.
      * Implementers must ensure that after this method completes, no further calls may be made to the {@code observer}
      * or its child callbacks. Implementations are <strong>strongly encouraged</strong> to override this method.
