@@ -38,31 +38,44 @@ Some examples of how these concepts may be mapped into well known source control
 
 ** `jenkins.scm.api.SCMHead` would represent the branches and tags in an individual Git repository
 
-** `jenkins.scm.api.SCMRevision` would represent the Git commit hash of each individual commit. Because Git commits are immutable, each `SCMRevision` is deterministic as if you ask to check out the same hash you will always get the same contents.
+** `jenkins.scm.api.SCMRevision` would represent the Git commit hash of each individual commit.
+Because Git commits are immutable, each `SCMRevision` is deterministic as if you ask to check out the same hash you will always get the same contents.
+Some Git based source control systems - such as GitHub - have the concept of a change/pull request.
+The `SCMRevision` of a GitHub pull request would actually be a composite revision consisting of both the pull request head revision and the base branch head revision.
 
 ** `jenkins.scm.api.SCMSource` would represent a single Git repository.
 
-** `jenkins.scm.api.SCMNavigator` would represent a collection of Git repositories - most likely all on the same server
+** `jenkins.scm.api.SCMNavigator` would represent a collection of Git repositories - most likely all on the same server.
+Another example of a collection of Git repositories could be a GitHub organization.
 
 * Subversion can have a fairly direct mapping of concepts analogous to the Git mapping above.
 Alternatively some oganizations will use a single Subversion repository to hold multiple projects under which each project would have the familiar `trunk/branches/tags` structure. If we consider this style of Subversion use then:
 
 ** `jenkins.scm.api.SCMHead` would be mapped against a specific project and be one of: `trunk`, `branches/_name_` or `tags/_name_`.
 
-** `jenkins.scm.api.SCMRevision` would be mapped to the global Subversion revision number against which the specific `SCMHead` was last modified. Each `SCMRevision` is deterministic as if you ask to check out the trunk/branch.tag at the same revision you will always get the same contents.
+** `jenkins.scm.api.SCMRevision` would be mapped to the global Subversion revision number against which the specific `SCMHead` was last modified.
+Each `SCMRevision` is deterministic as if you ask to check out the trunk/branch.tag at the same revision you will always get the same contents, e.g. `svn co http://svn.example.com/project/trunk@1234`
 
-** `jenkins.scm.api.SCMSource` would represent a single project withi the Subversion repository.
+** `jenkins.scm.api.SCMSource` would represent a single project within the Subversion repository.
 
 ** `jenkins.scm.api.SCMNavigator` would represent the collection of projects in the root of the Subversion repository.
 
 * CVS, one mapping of the CVS concepts would be:
 
-** `jenkins.scm.api.SCMHead` would represent a branch in a module.
+** `jenkins.scm.api.SCMHead` would represent a `HEAD` / branch / tag in a module.
 
-** `jenkins.scm.api.SCMRevision` would represent a timestamp. Sadly the timestamp is not deterministic as an immediate checkout may miss some files that are still being committed to the repository.
+** `jenkins.scm.api.SCMRevision` would represent a timestamp (for its `jenkins.scm.api.SCMHead`). Sadly the timestamp is not deterministic as an immediate checkout may miss some files that are still being committed to the repository.
 +
-NOTE: An alternative deterministic `jenkins.scm.api.SCMRevision` would be a list of all the files and their individual revisions, but this would be prohibitive in terms of storage cost and is non-trivial for a user to replicate from their own workspace and consequently the timestamp would be preferred.
-Ignoring the problems of time sychronization in a distributed system, we could assume that any timestamp more than _X_ minutes in the past should be deterministic in order to allow the consuming plugins to make optimizations that are only possible with deterministic revisions.
+[NOTE]
+====
+An alternative deterministic `jenkins.scm.api.SCMRevision` would be a list of all the files and their individual revisions, but this would be prohibitive in terms of storage cost and is non-trivial for a user to replicate from their own workspace and consequently the timestamp would be preferred.
+
+CVS timestamps are technically deterministic to within 1 second resolution, the issue here is that during the *current* 1 second checkout you can get different files that are in the process of currently being committed.
+
+Ignoring the problems of time sychronization in a distributed system, we could assume that any timestamp more than 1 second in the past should be deterministic in order to allow the consuming plugins to make optimizations that are only possible with deterministic revisions.
+
+In reality, we do not know the time difference between the CVS server's clock and the Jenkins master's clock, so we would probably need to use a larger time difference between the timestamp and the Jenkins master in order to safely assume that the timestamp is more than one second in the past *for the CVS server* and thus has become deterministic.
+====
 
 ** `jenkins.scm.api.SCMSource` would represent an individual module on the CVS server.
 
