@@ -28,6 +28,7 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.Item;
+import hudson.scm.SCM;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -117,6 +118,14 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
     @NonNull
     @Untrusted
     public abstract Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source);
+
+    /**
+     * Tests if this event applies to the supplied {@link SCM}.
+     *
+     * @param scm the {@link SCM}.
+     * @return {@code true} if and only if this event concerns the supplied {@link SCM}.
+     */
+    public abstract boolean isMatch(@NonNull SCM scm);
 
     /**
      * Wraps a {@link SCMHeadObserver} such that the wrapped observer will only observe {@link SCMHead} instances
