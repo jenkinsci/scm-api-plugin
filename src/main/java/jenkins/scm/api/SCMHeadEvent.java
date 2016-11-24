@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.Item;
 import hudson.scm.SCM;
+import hudson.triggers.SCMTrigger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -37,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import jenkins.scm.impl.SCMTriggerListener;
 
 /**
  * Base class for events relating to {@link SCMHead} instances.
@@ -120,10 +122,20 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
     public abstract Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source);
 
     /**
-     * Tests if this event applies to the supplied {@link SCM}.
+     * Tests if this event applies to the supplied {@link SCM}. Implementations that return {@code true} will trigger
+     * polling for the matching jobs that have enabled the {@link SCMTrigger} and have not disabled the post commit
+     * hooks {@link SCMTrigger#isIgnorePostCommitHooks()}.
+     * <p>
+     * <strong>NOTE:</strong> if you are implementing {@link SCMHeadEvent} and you already have a separate code path
+     * responsible for notifying {@link SCMTrigger} then you should <strong>either</strong> remove that code path
+     * <strong>or</strong> always return {@code false} from this method. The recommendation is to consolidate on
+     * {@link SCMHeadEvent} based triggering as that minimizes the number of times the graph of all items needs to
+     * be traversed by event listeners.
      *
      * @param scm the {@link SCM}.
      * @return {@code true} if and only if this event concerns the supplied {@link SCM}.
+     * @see SCMTriggerListener
+     * @see SCMTrigger#isIgnorePostCommitHooks()
      */
     public abstract boolean isMatch(@NonNull SCM scm);
 
