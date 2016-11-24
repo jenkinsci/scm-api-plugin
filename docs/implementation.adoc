@@ -1011,17 +1011,17 @@ Install the https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plu
 
 ==== Tests
 
-1. If your `SCMNavigatorDescriptor.newInstance(_name_)` method does not return null, verify that the new item screen has a specific organization folder type corresponding to your `SCMNavigator`.
+. If your `SCMNavigatorDescriptor.newInstance(_name_)` method does not return null, verify that the new item screen has a specific organization folder type corresponding to your `SCMNavigator`.
 
-2. Create an organization folder for your `SCMNavigator`. It should not matter whether you use the name based inference from a specific organization folder type or create a generic organization folder and add your `SCMNavigator` to the configuration.
+. Create an organization folder for your `SCMNavigator`. It should not matter whether you use the name based inference from a specific organization folder type or create a generic organization folder and add your `SCMNavigator` to the configuration.
 
-3. Verify that all the repositories containing at least one branch with a `Jenkinsfile` have had multibranch projects created for them.
+. Verify that all the repositories containing at least one branch with a `Jenkinsfile` have had multibranch projects created for them.
 
-4. Verify that the repository that does not contain any `Jenkinsfile` has not had a multibranch project created for it (unless you did not implement `SCMProbe` or `SCMFileSystem.Builder`)
+. Verify that the repository that does not contain any `Jenkinsfile` has not had a multibranch project created for it (unless you did not implement `SCMProbe` or `SCMFileSystem.Builder`)
 
-5. Pick one of the multibranch projects. Verify that the branches / tags / change requests that contain a `Jenkinsfile` have been created and categorized correctly.
+. Pick one of the multibranch projects. Verify that the branches / tags / change requests that contain a `Jenkinsfile` have been created and categorized correctly.
 
-6. Commit a change to one of the branches. Trigger a rescan of the organization. Verify that the only build activity is the organization scan, the repository scans for each individual repository and then the branch build for the changed branch. This is checking that your revision equality has been implemented correctly and relying on the Branch API to requests builds when scanning identifies changed revisions for individual `SCMHead` instances.
+. Commit a change to one of the branches. Trigger a rescan of the organization. Verify that the only build activity is the organization scan, the repository scans for each individual repository and then the branch build for the changed branch. This is checking that your revision equality has been implemented correctly and relying on the Branch API to requests builds when scanning identifies changed revisions for individual `SCMHead` instances.
 
 You could perform additional testing, doing things like adding new branches / tags / change requests, updating branches, merging change requests, deleting branches, etc but as the implementation we have to this point only performs polling, if the above tests work then everything should work when polling.
 
@@ -1320,3 +1320,56 @@ Not every source control system will be able to store customized metadata, so th
 . `jenkins.scm.api.SCMHeadEvent` of type `UPDATED` representing the change of metadata for a specific head.
 . `jenkins.scm.api.SCMSourceEvent` of type `UPDATED` representing the change of metadata for a specific source.
 . `jenkins.scm.api.SCMNavigatorEvent` of type `UPDATED` representing the change of metadata for a collection of sources as an aggregate.
+
+==== Tests of event support
+
+We can reuse the previous test environment
+
+. Update a file in one of the branches with a `Jenkinsfile`.
++
+Verify that the event support for an updated revision of an existing branch results in that branch being triggered without either a full reindex of the multibranch project or a full scan of the organization folder.
+
+. Create a new branch from a branch that already has a `Jenkinsfile`
++
+Verify that the event support for a new branch results in that branch being discovered and a project created for it without either a full reindex of the multibranch project or a full scan of the organization folder.
+
+. (If technically possible) Create a new repository with initial content that already has a branch with a `Jenkinsfile`.
+For example, in GitHub you could clone an existing repository into the user / team.
++
+Verift that the event support for a new repository results in that repository being indexed, the branch with the `Jenkinsfile` being discovered and consequently both the multibranch project and the branch project being created
+without a full scan of the organization folder.
+
+. Add a `Jenkinsfile` to a branch in a repository that does not have any branches with a `Jenkinsfile`.
++
+Verify that the event support for an updated revision of an existing branch where there is no multibranch project for the repository (and consequently no branch project for the branch) results in both the multibranch project and the branch project being created without a full scan of the organization folder.
+
+. Remove a branch that has a `Jenkinsfile`.
++
+Verify that the event support for removal of a branch results in that branch project being disabled until the next full index of the multibranch project (or longer if the multibranch project has an orphaned item strategy that retains branches for a period of time after the branch is "dead")
+
+. Remove a repository that has at least one branch with a `Jenkinsfile`.
++
+Verify that the event support for removal of a repository results in all the branch projects being disabled until the next full index of the multibranch project (or longer if the multibranch project has an orphaned item strategy that retains branches for a period of time after the branch is "dead") and that the multibranch project itself is disabled until the next full scan of the organization folder (or longer depending on the organization folder's orphaned item strategy).
+
+If you have implemented tag support, repeat the above tests for tags where those tests make sense.
+(Some source control systems may be exceedingly strict on tag like objects.
+For example, Accurev will not permit the deletion of snapshots or the modification of snapshots in any way.
+So in the case of Accurev, it would not be possible to test adding a `Jenkinsfile` to a snapshot.
+For Accurev, it may make sense to test hiding a snapshot and unhiding a snapshot given that hiding a snapshot is the closest equivalent to deleting a tag)
+
+If you have implemented change request support, repeat the above tests for change requests where those tests make sense.
+
+If your source control system has support for metadata attached to `SCMHead` / `SCMSource` / `SCMNavigator` concepts:
+
+. Test that updating the metadata for a branch / tag / change request results in the corresponding update to the metadata for that project without triggering a build of the project or a full reindex of the multibranch project.
++
+For example, changing the title of a change request results in the description of the change request's branch project being updated.
+
+. Test that updating the metadata for a repository results in the corresponding update to the metadata for the multibranch project without triggering a full reindex of the multibranch project or a full scan of the organization folder.
++
+For example, changing the description of a repository results in the description of the multibranch project being updated.
+
+. Test that updating the metadata for a collection of repositories results in the corresponding update to the metadata for the organization folder without triggering a full scan of the organization folder.
++
+For example, changing the avatar of an organization
+. Verify that all the repositories containing at least one branch with a `Jenkinsfile` have had multibranch projects created for them.
