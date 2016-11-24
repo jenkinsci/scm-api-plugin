@@ -1284,3 +1284,39 @@ For example, if the "MySCM" worked more like Git where you can have a single "gi
   //...
 }
 ----
+
+There are two ways we can map this type of event payload into the SCM API's event model:
+
+* We could separate this event into multiple events, each of which will have to be matched against all the listeners. Each source would then check their interest against the four events, for `feature-23`, `feature-26`, `master` and `1.0`.
+
+* We could issue this as a single event that returns the appropriate heads for each source. A source that is interested in features and master but not tags would get the `feature-23`, `feature-26` and `master` heads from `SCMHeadEvent.heads(_source_)` while a source that is interested in master and tags but not features would get `master` and `1.0` heads from `SCMHeadEvent.heads(_source_)`.
+
+[NOTE]
+====
+The first option requires the least code and is conceptually easier to understand.
+
+The second option allows for significantly reducing the number of requests that are required to be made against the source control system.
+Additionally when making requests against the source control system, an event scoped cache could be stored within the event object as it is likely that multiple interested parties will be making essentially the exact same checks.
+
+**With source control systems that havea public service offering, e.g. GitHub, there will typically be API rate limits. When there are API rate limits, reducing the number of API calls will become a priority**
+====
+
+If you only implement support for some events, please make best effort to ensure that the first release of your plugin has support for the following three events:
+
+. `jenkins.scm.api.SCMHeadEvent` of type `UPDATED` representing the change of a revision in a specific head.
+. `jenkins.scm.api.SCMHeadEvent` of type `CREATED` representing the creation of a new head.
+. `jenkins.scm.api.SCMSourceEvent` of type `CREATED` representing the creation of a new source.
+
+Useful, but non-essential events are:
+
+. `jenkins.scm.api.SCMHeadEvent` of type `REMOVED` representing the removal a specific head.
+. `jenkins.scm.api.SCMSourceEvent` of type `REMOVED` representing the removal of a specific source.
+
+These events will be used to track heads that no longer exist and sources that are no longer relevant, however as a full (non-event driven) scan would be required to confirm that the head / source has actually been removed rather than moved between sources / navigators their non-implementation will have minimal impact.
+
+Finally, the metadata update events are just polish to show a professionally implemented plugin.
+Not every source control system will be able to store customized metadata, so these events may not even be relevant for some source control systems.
+
+. `jenkins.scm.api.SCMHeadEvent` of type `UPDATED` representing the change of metadata for a specific head.
+. `jenkins.scm.api.SCMSourceEvent` of type `UPDATED` representing the change of metadata for a specific source.
+. `jenkins.scm.api.SCMNavigatorEvent` of type `UPDATED` representing the change of metadata for a collection of sources as an aggregate.
