@@ -159,14 +159,22 @@ Thus *every* SCM API consuming plugin that listens for a `jenkins.scm.api.SCMEve
 This revalidation would be necessary even if we received a signed trusted event from the backing source control system.
 This is why:
 
-* The `jenkins.scm.api.SCMEvent` is always considered `Untrusted` - consuming plugins will be doing revalidation anyway, so it is simpler for consuming plugins to treat everything from an event as untrusted.
-For example, if we receive a `jenkins.scm.api.SCMHeadEvent` saying that there is a new head with a specific revision.
-The revalidation will involve checking if that revision contains the required marker content by calling `jenkins.scm.api.SCMSource.fetch()` with an observer that is only interested in the head mentioned in the event.
-If a malicious event has provided a head that does not exist, then the observer will never be called.
-The event provided a revision does not really matter as, the observer will be provided with the actual revision of the named head (though if the event provided revision matches the known revision of the head the consumer can even avoid the call to `jenkins.scm.api.SCMSource.fetch()` in the first place).
-
+* The `jenkins.scm.api.SCMEvent` is by default considered `Untrusted`
 * The `jenkins.scm.api.SCMEvent` dispatch methods always push events to a background thread - *every* consuming plugin will need to perform revalidation of any claim made from an event.
 The revalidation should not block the handling of the webhook that delivered the event, hence the SCM API provides a simpler contract for all consumers by ensuring that the events are always on a separate thread from the webhook processing thread.
+
+Consumers can safely ignore wither a specific event is trusted or not.
+To illustrate why consumers do not need to know about the trust state of an event, consider how a consumer responds to a `SCMHeadEvent` of `Type.UPDATED` corresponding to a new `SCMRevision`:
+
+. The consumer first checks if it already knows about this head.
+If the head is known and the revision from the event matches the revision last seen by the consumer, then this event is known to be telling the consumer nothing new and can be dropped on the floor.
+
+. At this point the consumer now knows there is a rumor of either a new revision for a head it is interested in or a revision of a head it was not interested in but potentially may be interested in as a result of the new revision.
+The consumer now wants to check the validity of the rumor and, if true, check whether the criteria match against the new revision.
++
+If we have a trusted event, we would still need to check whether the criteria match against the new revision.
++
+Both of these cases use the exact same method call with the exact same parameters: namely a `jenkins.scm.api.SCMSource.fetch()` call with the `SCMHeadEvent` overload parameter where the triggering event is passed through as a parameter.
 ====
 
 Consumers of the SCM API may want more advanced criteria to check the contents of specific files in the head / branch.
@@ -1020,3 +1028,70 @@ You could perform additional testing, doing things like adding new branches / ta
 === Implementing event support
 
 From the testing and the requirement to trigger a scan in order to see the changes, you should now have an appreciation of why event support is important to users.
+
+The first part of implementing event support is to determine how events will be fed into Jenkins.
+There are a number of techniques that can be used. The two most common techniques are:
+
+* Webhook
+* Messaging service
+
+The webhook technique typically involves setting up a `RootAction` that can receive a payload from the source control system.
+For this technique to work, the source control system must be able to establish a connection to the Jenkins server.
+This can be problematic where, for example, the Jenkins server is on an internal-only network and the source control system is an externally hosted service (e.g. GitHub)
+
+The messaging service uses a broker which can be reached by both the Jenkins server and the source control system.
+The source control system sends its event payloads to the broker system.
+The Jenkins server periodically connects (or in some cases uses a persistent connection) to the broker to receive the payloads.
+
+The webhook technique is the simpler to implement and is generally sufficient for most Jenkins users.
+For the users where the webhook technique is not sufficient it is usually relatively easy to build a generic messaging service on top of the webhook, for example the https://wiki.jenkins-ci.org/display/JENKINS/SCM+SQS+Plugin[SCM SQS Plugin].
+
+The basic starting point for a WebHook is an `UnprotectedRootAction`
+
+[source,java]
+----
+@Extension
+public class MySCMWebHook implements UnprotectedRootAction {
+    @Override
+    public String getIconFileName() {
+        return null;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return null;
+    }
+
+    @Override
+    public String getUrlName() {
+        return URLNAME;
+    }
+
+    @RequirePOST
+    public HttpResponse doIndex(StaplerRequest req) {
+        // extract the payload from the request
+        // parse the payload
+        /* PSEUDOCODE
+        for (event : payload) {
+            switch (eventType) {
+                case HEAD:
+                    SCMHeadEvent.fireNow(new MySCMHeadEvent(eventType, payload);
+                    break;
+                case SOURCE:
+                    SCMHeadEvent.fireNow(new MySCMSourceEvent(eventType, payload);
+                    break;
+                case NAVIGATOR:
+                    SCMHeadEvent.fireNow(new MySCMNavigatorEvent(eventType, payload);
+                    break;
+            }
+        }
+        */
+        return HttpResponses.ok();
+    }
+}
+----
+
+There are some common concerns that you should be aware of when writing a webhook:
+
+* The webhook normally needs to be an `UnprotectedRootAction` because it can be tricky to configure the source control system to integrate with whatever `SecurityRealm` the user's Jenkins has been configured to use.
+For example, if a Jenkins is configured to use OAuth or some other single sign-on technology, you would need to configure an Jenkins API token for a user and then
