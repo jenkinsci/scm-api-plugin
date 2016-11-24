@@ -93,7 +93,7 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      * @return the name of the {@link SCMSource}
      */
     @NonNull
-    @Untrusted
+    @EventData(Trustability.UNTRUSTED)
     public abstract String getSourceName();
 
     /**
@@ -118,7 +118,7 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      * not relevant to the supplied {@link SCMSource}
      */
     @NonNull
-    @Untrusted
+    @EventData(Trustability.UNTRUSTED)
     public abstract Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source);
 
     /**

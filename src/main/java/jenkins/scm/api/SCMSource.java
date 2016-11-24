@@ -199,9 +199,59 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @NonNull
     public final <O extends SCMHeadObserver> O fetch(@CheckForNull SCMSourceCriteria criteria, @NonNull O observer,
-                                                        @CheckForNull TaskListener listener)
+                                                     @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
         _retrieve(criteria, observer, defaultListener(listener));
+        return observer;
+    }
+
+    /**
+     * Fetches the latest heads and corresponding revisions scoped against a specific event.
+     * Implementers are free to cache intermediary results but the call must always check the validity of any
+     * intermediary caches. Where the event {@link SCMEvent#isPayloadTrusted()}, implementations are free to use
+     * the event information to check the validity of any intermediary caches..
+     *
+     * @param <O> Observer type.
+     * @param criteria the criteria to use.
+     * @param observer an optional observer of interim results.
+     * @param event the event from which the fetch should be scoped.
+     * @param listener the task listener
+     * @return the provided observer.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @see SCMEvent#isPayloadTrusted()
+     * @since FIXME
+     */
+    @NonNull
+    public final <O extends SCMHeadObserver> O fetch(@CheckForNull SCMSourceCriteria criteria,
+                                                     @NonNull O observer, @NonNull SCMHeadEvent<?> event,
+                                                     @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        _retrieve(criteria, observer, defaultListener(listener));
+        return observer;
+    }
+
+    /**
+     * Fetches the latest heads and corresponding revisions scoped against a specific event.
+     * Implementers are free to cache intermediary results but the call must always check the validity of any
+     * intermediary caches. Where the event {@link SCMEvent#isPayloadTrusted()}, implementations are free to use
+     * the event information to check the validity of any intermediary caches..
+     *
+     * @param <O> Observer type.
+     * @param observer an optional observer of interim results.
+     * @param event the event from which the fetch should be scoped.
+     * @param listener the task listener
+     * @return the provided observer.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @see SCMEvent#isPayloadTrusted()
+     * @since FIXME
+     */
+    @NonNull
+    public final <O extends SCMHeadObserver> O fetch(@NonNull O observer, @NonNull SCMHeadEvent<?> event,
+                                                     @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        _retrieve(getCriteria(), observer, defaultListener(listener));
         return observer;
     }
 
@@ -281,6 +331,43 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                                      @NonNull SCMHeadObserver observer,
                                      @NonNull TaskListener listener)
             throws IOException, InterruptedException;
+
+    /**
+     * Fetches the latest heads and corresponding revisions that are originating from the supplied event.
+     * If the supplied event is one that the implementer trusts, then the implementer may be able to optimize
+     * retrieval to minimize round trips.
+     * Implementers are free to cache intermediary results but the call must always check the validity of any
+     * intermediary caches. Where the event {@link SCMEvent#isPayloadTrusted()}, implementations are free to use
+     * the event information to check the validity of any intermediary caches..
+     * <p>
+     * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
+     * otherwise it will be impossible for users to interrupt the operation.</strong>
+     * <p>
+     * The default implementation wraps the {@link SCMHeadObserver} using
+     * {@link SCMHeadEvent#filter(SCMSource, SCMHeadObserver)} and delegates to
+     * {@link #retrieve(SCMSourceCriteria, SCMHeadObserver, TaskListener)}
+     *
+     * @param criteria the criteria to use, if non-{@code null} them implementations <strong>must</strong>filter all
+     *                 {@link SCMHead} instances against the
+     *                 {@link SCMSourceCriteria#isHead(SCMSourceCriteria.Probe, TaskListener)}
+     *                 before passing through to the {@link SCMHeadObserver}.
+     * @param observer an optional observer of interim results.
+     * @param event the event from which the operation should be scoped.
+     * @param listener the task listener.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @see SCMEvent#isPayloadTrusted()
+     * @since FIXME
+     */
+    protected void retrieve(@CheckForNull SCMSourceCriteria criteria,
+                            @NonNull SCMHeadObserver observer,
+                            @NonNull SCMHeadEvent<?> event,
+                            @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        if (event.isMatch(this)) {
+            _retrieve(criteria, event.filter(this, observer), listener);
+        }
+    }
 
     /**
      * Fetches the current list of heads. Implementers are free to cache intermediary results

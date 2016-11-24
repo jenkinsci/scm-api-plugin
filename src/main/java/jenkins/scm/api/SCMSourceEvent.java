@@ -92,7 +92,7 @@ public abstract class SCMSourceEvent<P> extends SCMEvent<P> {
      * @return the name of the {@link SCMSource}
      */
     @NonNull
-    @Untrusted
+    @EventData(Trustability.UNTRUSTED)
     public abstract String getSourceName();
 
     /**
