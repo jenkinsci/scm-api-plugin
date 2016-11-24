@@ -1164,6 +1164,123 @@ This will allow for:
 
 The database should also either:
 
-* Keep track of which items the hooks were established for so that you can de-register hooks that are unnecessary; or
-* Periodically scan all the `SCMNavigatorOwner` / `SCMSourceOwner` / `SCMTriggerItem` instances tracking which hooks are required and then after a complete scan has been completed, de-register any unnecessary hooks.
+* Keep track of which items the hooks were established for so that you can deregister hooks that are unnecessary; or
+* Periodically scan all the `SCMNavigatorOwner` / `SCMSourceOwner` / `SCMTriggerItem` instances tracking which hooks are required and then after a complete scan has been completed, deregister any unnecessary hooks.
 ====
+
+At this point we need to look into implementing the events themselves.
+The most important event is the `SCMHeadEvent` for an updated revision.
+This is also potentially the most difficult event to implement.
+
+The easiest case is where there is a 1:1 mapping between events in the source control system and events in the SCM API.
+
+For example, if the "MySCM" source control system always sends JSON event payloads, and the payload for a updated branch looked something like:
+
+[source,javascript]
+----
+{
+  "event":"branch-update",
+  "server":"https://myscm.example.com:443/",
+  "team":"project-odd",
+  "repository":"webapp",
+  "branch":"feature-23",
+  "revision":"af536372"
+  //...
+}
+----
+
+The webhook receiver would start by parsing the payload and then create the appropriate event object from the payload:
+
+[source,java]
+----
+JsonNode json = new ObjectMapper().readTree(payload);
+String event = json.path("event").asString();
+if ("branch-create".equals(event)) {
+    SCMHeadEvent.fireNow(new MyBrachSCMHeadEvent(Type.CREATED, json);
+} else if ("branch-update".equals(event)) {
+    SCMHeadEvent.fireNow(new MyBrachSCMHeadEvent(Type.UPDATED, json);
+} // else etc
+----
+
+Because each event from the source control system has a 1:1 correspondance with the events in the SCM API the implementation of each event can be fairly straightforward:
+
+[source,java]
+----
+public class MyBrachSCMHeadEvent extends SCMHeadEvent<JsonNode> {
+
+    public MyBrachSCMHeadEvent(@NonNull Type type, JsonNode payload) {
+        super(type, payload);
+    }
+
+    @Override
+    public boolean isMatch(@NonNull SCMNavigator navigator) {
+        return navigator instanceof MySCMNavigator
+            && ((MySCMNavigator)navigator).getServer().equals(payload.path("server").asString());
+            && ((MySCMNavigator)navigator).getTeam().equals(payload.path("team").asString());
+    }
+
+    @NonNull
+    @Override
+    public String getSourceName() {
+        return payload.path("repository").asString();
+    }
+
+    @NonNull
+    @Override
+    public Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source) {
+        if (!(source instanceof MySCMSource)) {
+            return Collections.emptyMap();
+        }
+        MySCMSource src = (MySCMSource) source;
+        if (!(src.getServer().equals(payload.path("server").asString()))) {
+            return Collections.emptyMap();
+        }
+        if (!(src.getTeam().equals(payload.path("team").asString()))) {
+            return Collections.emptyMap();
+        }
+        if (!(src.getRepository().equals(payload.path("repository").asString()))) {
+            return Collections.emptyMap();
+        }
+        MySCMHead head = new MySCMHead(payload.path("branch").asString(), false);
+        return Collections.<SCMHead, SCMRevision>singletonMap(
+                head, new MySCMRevision(head, revision)
+        );
+    }
+
+    @Override
+    public boolean isMatch(@NonNull SCM scm) {
+        if (scm instanceof MySCM) {
+            MySCM mySCM = (MockSCM) scm;
+            return mySCM.getServer().equals(payload.path("server").asString())
+                && mySCM.getTeam().equals(payload.path("team").asString())
+                    && mySCM.getRepository().equals(payload.path("repository").asString())
+                && mySCM.getBranch().equals(payload.path("branch").asString());
+        }
+        return false;
+    }
+}
+----
+
+The important things here are to ensure that the methods return as fast as possible if they know there is no match.
+
+When there is not a good mapping between source control events and the events of the SCM API, it will be necessary to detangle the events.
+For example, if the "MySCM" worked more like Git where you can have a single "git push" update multiple branches and create multiple tags, we may have an event payload that looks something more like:
+
+[source,javascript]
+----
+{
+  "event":"push",
+  "server":"https://myscm.example.com:443/",
+  "team":"project-odd",
+  "repository":"webapp",
+  "branches":{
+    "feature-23":"af536372",
+    "feature-26":"6712edf2",
+    "master":"b8a6d7c2"
+  },
+  "tags":{
+    "1.0":"b8a6d7c2"
+  }
+  //...
+}
+----
