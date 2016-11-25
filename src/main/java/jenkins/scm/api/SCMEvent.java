@@ -26,6 +26,8 @@
 package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.Cause;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -67,6 +69,10 @@ import jenkins.util.Timer;
  */
 public abstract class SCMEvent<P> {
 
+    /**
+     * An empty array of {@linkplain Cause}s.
+     */
+    private static final Cause[] EMPTY_CAUSES = new Cause[0];
     /**
      * The event type.
      */
@@ -218,6 +224,19 @@ public abstract class SCMEvent<P> {
      */
     protected Trustability payloadTrustability() {
         return Trustability.UNTRUSTED;
+    }
+
+    /**
+     * If this event is being used to trigger a build, what - if any - {@linkplain Cause}s should be added to the
+     * triggered build.
+     * <strong>The {@link Cause} instances should probably be new instances each time, see
+     * {@link Cause#onAddedTo(Run)}.</strong>
+     *
+     * @return the {@link Cause} instances to add to any builds triggerd by this event.
+     */
+    @NonNull
+    public Cause[] asCauses() {
+        return EMPTY_CAUSES;
     }
 
     /**

@@ -26,6 +26,9 @@
 package jenkins.scm.impl;
 
 import hudson.Extension;
+import hudson.model.Action;
+import hudson.model.Cause;
+import hudson.model.CauseAction;
 import hudson.model.Item;
 import hudson.scm.SCM;
 import hudson.triggers.SCMTrigger;
@@ -73,7 +76,8 @@ public class SCMTriggerListener extends SCMEventListener {
                         if (!event.isMatch(scm)) {
                             // only interested in SCMs that match the event
                             LOGGER.log(Level.INFO, "Triggering polling of {0}", project.getFullName());
-                            trigger.run();
+                            Cause[] causes = event.asCauses();
+                            trigger.run(causes.length == 0 ? null : new Action[]{new CauseAction(causes)});
                             break;
                         }
                     }
