@@ -39,6 +39,7 @@ There are some issues however:
 +
 If project A depends on project B then we may have complex triggers between each projects different branch sustaining lines.
 * We you have even more projects, most jobs are doing mostly the same thing and reuse of these patterns and/or implementation of organizational best practices becomes hard.
+This is especially a concern when those organizational best practices change and you have thousands of jobs that need to be updated.
 
 One of the first attempts to solve this problem was introduced by the https://wiki.jenkins-ci.org/display/JENKINS/Git+Plugin[Git plugin]:
 
@@ -108,6 +109,14 @@ The SCM API within Jenkins, which is based on `hudson.scm.SCM` did not provide t
 
 In order to allow the missing functionality to be more of more general utility, the decision was taken to put the SCM functionality into a separate API plugin, namely this SCM API plugin.
 
-The initial SCM API extension points were driven by a lot of the use cases of the Branch API plugin, but the design has been tempered to try and allow for other unanticipated use cases
+The initial SCM API extension points were driven by a lot of the use cases of the Branch API plugin, but the design has been tempered to try and allow for other unanticipated use cases.
+
+The primary requirements of the Branch API are:
+
+* provide a means to enumerate all the "branches" of a "repository"
+
+* provide a means to identify interesting "branches", by checking whether the branch has specific files or perhaps even checking the contents of specific files within the branch.
+
+* provide a means to enumerate all the "repositories" of a "source control server"
 
 === Overview
