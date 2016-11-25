@@ -89,6 +89,10 @@ There still remain other issues that the Branch API plugin cannot solve on its o
 +
 If different branches need different job configuration -- which may be highly likely if a feature branch is refactoring the build process -- we need to be able to get the automatically configured jobs to have the correct configuration.
 
+* For inter-project dependencies, it can be unclear how to establish branch relationships.
++
+Should branch `feature-23` of project A be using the artifacts from branch `master` of project B or from branch `sustainging-1.x`.
+
 Efforts to solve these issues are a responsibility of the plugins that implement multi-branch project types.
 
 * The https://wiki.jenkins-ci.org/display/JENKINS/Literate+Plugin[Literate plugin] stores the job configuration in a file (`README.md`) in source control directly in the branch.
