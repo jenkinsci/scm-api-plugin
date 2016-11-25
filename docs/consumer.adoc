@@ -1,1 +1,113 @@
 == Consumer guide
+
+This document provides the guidelines for using the SCM API.
+
+This document is structured as follows:
+
+* The first section provides some background into the use cases driving the development of the SCM API.
+
+* The second section is an overview of all the functionality provided by the SCM API.
+
+* The subsequent sections consider each of the API extension points in turn and the recommended usage patterns
+
+=== Background
+
+The initial core use case for Jenkins is that of monitoring a project in source control and when the project changes, checking out the modified source, building the source and reporting the results of that build to the people who made the changes.
+
+As Jenkins usage has grown, the use cases have also grown.
+
+The initial design of Jenkins was focused on creating Jenkins jobs for each project in source control.
+
+For projects that have a single mainline of development, there would typically be a 1:1 relationship between projects in source control and jobs in Jenkins.
+
+For projects that have multiple mainlines of development, for example where there may be multiple sustaining branches for older releases, there would be multiple Jenkins jobs for each project: one for each branch.
+
+Initially, creating one job for each development branch seems reasonable:
+
+* The older branches may require older versions of the build toolchain.
+* The job changelog for each branch reflects the changes in that branch.
+* The build break / fix status for each branch is correct
+* The creation of the branch job is just a copy operation within Jenkins - or a rename and copy if you want to move the build history.
+
+There are some issues however:
+
+* When a sustaining branch is removed, we need to remember to delete the corresponding sustaining job.
+* If we need to make a configuration change that affects multiple branches, we have to configure the Jenkins jobs in the UI in multiple places.
+* These are potentially _heavyweight_ copy operations: the copy has to be performed within Jenkins itself - often times the Jenkins administrator will have restricted permissions for job creation and thus the creation of the branch job may require internal support tickets, etc.
+* Developers do not get the CI feedback support when working on short-lived feature branches, thus the benefits of CI are only seen when merging the feature branches back to a mainline which increases the risk of a broken mainline build.
+* Inter project job chain dependencies can become incredibly difficult to manage.
++
+If project A depends on project B then we may have complex triggers between each projects different branch sustaining lines.
+* We you have even more projects, most jobs are doing mostly the same thing and reuse of these patterns and/or implementation of organizational best practices becomes hard.
+
+One of the first attempts to solve this problem was introduced by the https://wiki.jenkins-ci.org/display/JENKINS/Git+Plugin[Git plugin]:
+
+* Rather than having a job track a single branch, a job could be configured that tracked multiple branches.
+
+The side-effect of this, is that:
+
+* The job changelog is now meaningless.
++
+In some cases there is no relationship between the revision of the previous build and the revision of the current build, so asking for a list of changes between them is semi-random.
+* The build break / fix status is now meaningless.
++
+The previous build may be from a different feature branch and may be broken.
+Your build is on your feature branch and is not broken.
++
+Jenkins then notifies you and the developer of the other feature branch that the build is now "Fixed".
+* The trend lines for test results are now meaningless.
+* The trend lines for code coverage are now meaningless.
+* The trend lines for static analysis are now meaningless.
+
+In order to allow for some rollback of some of these side-effects, typically one would:
+
+* Create a job that just builds the master branch.
+* Create one job each for each of the sustaining branches that need to be tracked.
+* Create one job that builds everything else (including for example pull requests).
+
+This leaves only one job with meaningless change logs / build status history / trend charts / etc, but we still have the issue of needing to maintain all the sustaining branches.
+
+The https://wiki.jenkins-ci.org/display/JENKINS/Branch+API+Plugin[Branch API plugin] was developed as a second alternative solution to this problem space.
+The idea behind the Branch API plugin is to have a special job type which will follow all the branches in a repository and create sub-jobs for each branch. These branch specific jobs can then be managed automatically by the multi-branch project such that they can be removed automatically after the corresponding branch has been removed.
+
+Each branch specific sub-job has:
+
+* a valid changelog
+* a valid build break / fix status
+* valid trendlines
+
+Other benefits include:
+
+* Developers can create feature branches and get the CI benefits for that feature branch automatically without needing to worry about requesting creation of corresponding feature branch jobs.
+* The Jenkins administator does not need to worry about having to clean up old feature branch jobs that are no longer required.
+
+There still remain other issues that the Branch API plugin cannot solve on its own:
+
+* Each branch specific job needs to be configured.
++
+If different branches need different job configuration -- which may be highly likely if a feature branch is refactoring the build process -- we need to be able to get the automatically configured jobs to have the correct configuration.
+
+Efforts to solve these issues are a responsibility of the plugins that implement multi-branch project types.
+
+* The https://wiki.jenkins-ci.org/display/JENKINS/Literate+Plugin[Literate plugin] stores the job configuration in a file (`README.md`) in source control directly in the branch.
++
+Thus if the one branch uses a different build process then the configuration for that branch can live within that branch.
++
+The type of build configuration supported by the literate plugin is, as a result of the configuration file format, restricted to shell steps and publishers.
++
+The literate plugin also follows the principle of keeping all job configuration in the branch to which it relates.
+This means if you want to change one aspect of the build process in multiple branches at the same time, you need to explicitly replicate the changes to all the branches.
+Whether this is an advantage or disadvantage depends on your point of view.
+* The https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch plugin] also stores the job configuration in a file (`Jenkinsfile`) in source control directly in the branch.
++
+That file can reference lightweight "plugins" in the form of https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Shared+Groovy+Libraries+Plugin[shared groovy libraries].
+This allows for a Jenkins administrator to split some reusable best practices into a shared library.
+Changing the best practice in the global shared library can then affect all the branches simultaneously -- or if the shared library version was pinned you would need to push the library version update to the required branches.
+
+The SCM API within Jenkins, which is based on `hudson.scm.SCM` did not provide the required functionality.
+
+In order to allow the missing functionality to be more of more general utility, the decision was taken to put the SCM functionality into a separate API plugin, namely this SCM API plugin.
+
+The initial SCM API extension points were driven by a lot of the use cases of the Branch API plugin, but the design has been tempered to try and allow for other unanticipated use cases
+
+=== Overview
