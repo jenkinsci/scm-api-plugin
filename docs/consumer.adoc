@@ -59,6 +59,7 @@ Jenkins then notifies you and the developer of the other feature branch that the
 * The trend lines for test results are now meaningless.
 * The trend lines for code coverage are now meaningless.
 * The trend lines for static analysis are now meaningless.
+* Forget about triggering downstream jobs of other projects as a result of a build as there is no guarantee that the upstream job build even warrants the downstream job to be triggered.
 
 In order to allow for some rollback of some of these side-effects, typically one would:
 
