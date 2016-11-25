@@ -227,7 +227,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                                                      @NonNull O observer, @NonNull SCMHeadEvent<?> event,
                                                      @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        _retrieve(criteria, observer, defaultListener(listener));
+        retrieve(criteria, observer, event, defaultListener(listener));
         return observer;
     }
 
@@ -251,7 +251,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     public final <O extends SCMHeadObserver> O fetch(@NonNull O observer, @NonNull SCMHeadEvent<?> event,
                                                      @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        _retrieve(getCriteria(), observer, defaultListener(listener));
+        retrieve(getCriteria(), observer, event, defaultListener(listener));
         return observer;
     }
 
