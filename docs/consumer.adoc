@@ -200,9 +200,14 @@ Your implementation of `jenkins.scm.api.SCMSourceOwner` *should*:
 
 * Assume that `SCMSource.fetch(_observer_, _listener_)` may ignore your `SCMSourceOwner.getSCMSourceCriteria` -- not all source control systems will have the ability to perform either shallow probes (via `jenkins.scm.SCMProbe`) let alone deep probes (via `SCMProbe.getRoot()` or `jenkins.scm.SCMFileSystem.of(...)`)
 
+* Persist the results of any discovery of any interesting `SCMHead` instances resulting from calls to `SCMSource.fetch(...)` in some form or other.
++
+For example the Branch API plugin creates sub-jobs for each `SCMHead` that it is interested in.
+The `SCMHead` instances are persisted with their corresponding sub-jobs and the `SCMRevision` instances are persisted with the builds that were triggered for each discovered `SCMRevision`.
+
 * Have a `jenkins.scm.api.SCMEventListener` implementation to respond to events.
 +
-The listener will need to update the required `SCMSourceOwner` instances on the basis of the event and should minimize full indexing, e.g. by using the `SCMSourceOwner.fetch(..., event, listener)` variants.
+The listener will need to update the required `SCMSourceOwner` instances on the basis of the event and should minimize full indexing, e.g. by using the `SCMSourceOwner.fetch(..., _event_, _listener_)` variants.
 
 * Persist the results of `SCMSource.fetchActions(_listener_)` as part of each index and on receipt of any `SCMSourceEvent` events of type `CREATED` or `UPDATED`.
 +
@@ -214,3 +219,17 @@ For example, `hudson.model.AbstractProject` subclasses do not allow modification
 
 An alternative is to persist the actions through some other mechanism (in the case of the `AbstractProject` subclass, we could store them in a `JobProperty`) and then populate at runtime them using a `TransientItemActionFactory`
 ====
+
+The primary purpose of the `SCMSource` API is to allow the enumeration of `SCMHead` instances (and their current corresponding `SCMRevision`) from the source, so presumably you have implemented `SCMSourceOwner` because you want to do something with the `SCMHead` instances.
+
+* If the thing you are doing with `SCMHead` instances is creating `Actionable` objects footnote:[It is conceptually easier to think of these as `Item` instances or even `Job` instances, but perhaps you have some use case that we have not anticipated, so we use the most generic term: `Actionable` objects. If your use case is even more generic that you do not even need the `Actionable` contract then this you can ignore `SCMSource.fetchActions(_head_,_listener_)`] then you *shall* call `SCMSource.fetchActions(_head_,_listener_)` whenever either performing a full index or when an event indicates a change for the corresponding `SCMHead`.
++
+Any returned `Action` instances *must* be persisted with the `Actionable` object.
++
+TIP: In plain english, when you create a job from a `SCMHead` you *shall* call `SCMSource.fetchActions(_head_,_listener_)` and if that method returns any actions you *must* add the actions with the job and save the job.
+
+* If the thing you are doing with `SCMHead` instances results in creating `Actionable` objects associated with specific the `SCMRevision` for each `SCMHead` footnote:[It is conceptually easier to think of these as `Run` instances or even `Build` instances. You, however, may have some completely different use case that requires using the most general base class. If your use case is even more generic that you do not even need the `Actionable` contract then this you can ignore `SCMSource.fetchActions(_head_,_revision_,_listener_)`] then you *shall* call `SCMSource.fetchActions(_head_,_revision_,_listener_)` whenever you are creating your `Actionable` object for a specific `SCMRevision`.
++
+Any returned `Action` instances *must* be persisted with the `Actionable` object.
++
+TIP: In plain english, when you trigger a build of a job for a `SCMRevision` you *shall* call `SCMSource.fetchActions(_head_,_revision_,_listener_)` and if that method returns any actions you *must* add the actions to the build before the build is saved.
