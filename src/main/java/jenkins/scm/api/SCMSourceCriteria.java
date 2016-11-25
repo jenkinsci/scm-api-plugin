@@ -50,6 +50,7 @@ public interface SCMSourceCriteria extends Serializable {
 
     /**
      * A probe for a branch candidate. Inspectors can tell whether a file path exists.
+     * <strong>Implement {@link SCMProbe} not this</strong>
      */
     abstract class Probe implements Serializable {
 

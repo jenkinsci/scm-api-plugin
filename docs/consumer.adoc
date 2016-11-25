@@ -125,3 +125,92 @@ The primary requirements of the Branch API are:
 * provide a means to enumerate all the "repositories" of a "source control server"
 
 === Overview
+
+The SCM API exposes four main extension points for consumers:
+
+* The `jenkins.scm.api.SCMSource` extension point is designed to solve the use case of iterating all the "branches" / "tags" / "change requests" in a "project / repository".
+
+* The `jenkins.scm.api.SCMNavigator` extension point is designed to solve the use case of iterating all the "projects / repositories" in a "source control system / server / team / organization".
+
+* The `jenkins.scm.api.SCMFileSystem` extension point is designed to solve the use cases of browsing the content of a specific "branches" / "tags" / "change requests" and optionally retrieving specific files.
+
+Consumers will likely be interested in implementing the following extension points:
+
+* The `jenkins.scm.api.SCMEventListener` extension point is designed to solve the use case of recieving notification of events from the source control systems.
+
+Consumers will be required to implement the following contract interfaces depending on their use of the extension points of the SCM API:
+
+* Any `hudson.model.Item` that owns some `jenkins.scm.api.SCMSource` instances must implement `jenkins.scm.api.SCMSourceOwner`.
++
+.SCMSourceOwner implementation discovery
+[NOTE]
+====
+In the general case, the `hudson.model.Item` above will be `TopLevelItem` instances within the standard Jenkins item hierarchy.
+
+If your object is not discoverable through `Jenkins.getInstance().getAllItems(SCMSourceOwner.class)` then you will need to provide an implementation of the  `SCMSourceOwners.Enumerator` extension point that can find your object.
+====
+
+* Any `hudson.model.Item` that owns some `jenkins.scm.api.SCMNavigator` instances must implement `jenkins.scm.api.SCMNavigatorOwner`.
++
+.SCMNavigatorOwner implementation discovery
+[NOTE]
+====
+In the general case, the `hudson.model.Item` above will be `TopLevelItem` instances within the standard Jenkins item hierarchy.
+
+If your object is not discoverable through `Jenkins.getInstance().getAllItems(SCMNavigator.class)` then you will need to provide an implementation of the  `SCMNavigatorOwners.Enumerator` extension point that can find your object.
+====
+
+=== Using SCMSource instances
+
+Each `SCMSource` assumes that it is owned by an object.
+The owner is responsible for:
+
+* providing a context from which the `SCMSource` can resolve any required `Credentials` via the https://wiki.jenkins-ci.org/display/JENKINS/Credentials+Plugin[Credentials plugin]
+
+* providing any `SCMSourceCriteria` that would be required by the `SCMSource` in order to determine if a candidate `SCMHead` is actually a `SCMHead` that the owner is interested in.
+
+While it is possible to use a detached `SCMSource` without an owner, when operated in such a fashion, it is exceedingly likely that any required credentials will be unresolved and thus the usage may fail.
+
+==== `SCMSourceOwner` contract
+
+If you implement `jenkins.scm.api.SCMSourceOwner` your implementation *must*:
+
+* Be discoverable through `jenkins.scm.api.SCMSourceOwners`.
++
+This is the normal expected situation and will be the case if your implementation is part of the standard `Jenkins.getInstance().getAllItems()` tree.
++
+[NOTE]
+====
+The contract for `hudson.model.Item` does not mandate that instances be discoverable through `Jenkins.getInstance().getAllItems()`.
+
+For example, it is conceivable that a plugin might decide to store `hudson.model.User` specific `hudson.model.Item` through a custom `hudson.model.ItemGroup` attached to the owning user.
+
+If your plugin has decided to wander off the well established idiom, you will have to pay the cost of providing an implementation of `SCMSourceOwners.Enumerator` that can discover your `jenkins.scm.api.SCMSourceOwner` instances in order to ensure that events are delivered correctly.
+====
+
+* Ensure that `SCMSource.setOwner(_owner_)` has been called before any `SCMSource` instance is returned from either `SCMSourceOwner.getSCMSources()` or `SCMSourceOwner.getSCMSource_id)`.
++
+Normally this is achieved by setting the owner on creation, load and reconfiguration. Lazy owner setting immediately before first access of any specific SCMSource is also a valid solution.
+
+* Trigger a reindex of at least the specified source on receipt of a `SCMSourceOwner.onSCMSourceUpdated(_source_)` notification.
+
+* Call `SCMSource.afterSave()` on all the  `SCMSourceOwner.getSCMSources()` instances after every save of the `SCMSourceOwner`.
+
+Your implementation of `jenkins.scm.api.SCMSourceOwner` *should*:
+
+* Assume that `SCMSource.fetch(_observer_, _listener_)` may ignore your `SCMSourceOwner.getSCMSourceCriteria` -- not all source control systems will have the ability to perform either shallow probes (via `jenkins.scm.SCMProbe`) let alone deep probes (via `SCMProbe.getRoot()` or `jenkins.scm.SCMFileSystem.of(...)`)
+
+* Have a `jenkins.scm.api.SCMEventListener` implementation to respond to events.
++
+The listener will need to update the required `SCMSourceOwner` instances on the basis of the event and should minimize full indexing, e.g. by using the `SCMSourceOwner.fetch(..., event, listener)` variants.
+
+* Persist the results of `SCMSource.fetchActions(_listener_)` as part of each index and on receipt of any `SCMSourceEvent` events of type `CREATED` or `UPDATED`.
++
+[TIP]
+====
+It may not always be either possible or preferred to attach the actions directly to the owner.
+
+For example, `hudson.model.AbstractProject` subclasses do not allow modification of the project's actions (because `AbstractProject.getActions()` returns a read-only list and `Actionable.addAction(_action_)` tries to add the action to the list returned by `getActions()`).
+
+An alternative is to persist the actions through some other mechanism (in the case of the `AbstractProject` subclass, we could store them in a `JobProperty`) and then populate at runtime them using a `TransientItemActionFactory`
+====

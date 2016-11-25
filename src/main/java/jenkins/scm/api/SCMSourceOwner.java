@@ -26,12 +26,11 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
-
+import hudson.model.TaskListener;
 import java.util.List;
 
 /**
  * An {@link Item} that owns {@link SCMSource} instances.
- * @author Stephen Connolly
  */
 public interface SCMSourceOwner extends Item {
     /**
@@ -48,14 +47,23 @@ public interface SCMSourceOwner extends Item {
      * @param sourceId the {@link SCMSource#getId()}
      * @return the corresponding {@link SCMSource} or {@code null} if no matching source.
      */
+    // TODO provide a default implementation that iterates getSCMSources() once Java 8
     @CheckForNull
     SCMSource getSCMSource(@CheckForNull String sourceId);
 
     /**
-     * Called when a source has received notification of an update.
+     * Called when a source has received notification of an update. Implementations are required to assume that
+     * the set of the {@link SCMHead} instances returned by {@link SCMSource#fetch(SCMHeadObserver, TaskListener)}
+     * may now be invalid / incomplete and consequently requires a full refresh. <strong>Implementations must provide
+     * stern looks of disapproval to anyone calling this method.</strong>
      *
      * @param source the source
+     * @deprecated implementations of {@link SCMSourceOwner} would prefer the {@link SCMEventListener} extension point
+     * which allows for more fine-grained response to events, so prefer delivering event notification through
+     * {@link SCMHeadEvent#fireNow(SCMHeadEvent)}, {@link SCMSourceEvent#fireNow(SCMSourceEvent)} or
+     * {@link SCMNavigatorEvent#fireNow(SCMNavigatorEvent)} as appropriate.
      */
+    @Deprecated
     void onSCMSourceUpdated(@NonNull SCMSource source);
 
     /**
@@ -64,6 +72,7 @@ public interface SCMSourceOwner extends Item {
      * @param source the source to get the criteria for.
      * @return the criteria for determining if a candidate head is relevant for consumption.
      */
+    // TODO provide a default implementation returning null once Java 8
     @CheckForNull
     SCMSourceCriteria getSCMSourceCriteria(@NonNull SCMSource source);
 
