@@ -76,7 +76,7 @@ public abstract class SCMSourceObserver {
      * Declare that a new “project” such as a source repository has been found.
      *
      * @param projectName a name of the project, such as a repository name within an organization; may be used as an
-     * {@link Item#getName}
+     *                    {@link Item#getName}
      * @return a secondary callback to customize the project, on which you must call {@link ProjectObserver#complete}
      * @throws IllegalArgumentException if this {@code projectName} has already been encountered
      */
@@ -95,6 +95,16 @@ public abstract class SCMSourceObserver {
      */
     public abstract void addAttribute(@NonNull String key, @Nullable Object value) throws IllegalArgumentException,
             ClassCastException;
+
+    /**
+     * Returns information about whether the observer wants more results.
+     *
+     * @return {@code true} if the observer is still observing or {@code false} to signal that it is ok to stop early.
+     * @since FIXME
+     */
+    public boolean isObserving() {
+        return true;
+    }
 
     /**
      * Creates an observer that filters a delegates observer to the specified project names
@@ -118,7 +128,7 @@ public abstract class SCMSourceObserver {
          * Adds a source repository to be used from a new project.
          *
          * @param source a potential SCM source as in {@code MultiBranchProject.getSCMSources}; do not call
-         * {@link SCMSource#setOwner} on it
+         *               {@link SCMSource#setOwner} on it
          */
         public abstract void addSource(@NonNull SCMSource source);
 
@@ -145,45 +155,85 @@ public abstract class SCMSourceObserver {
 
     }
 
+    /**
+     * Base class for an observer that wraps another observer.
+     *
+     * @param <O> the class of wrapped observer.
+     */
     public static abstract class Wrapped<O extends SCMSourceObserver> extends SCMSourceObserver {
 
+        /**
+         * Our delegate.
+         */
         private final O delegate;
 
+        /**
+         * Constructor.
+         *
+         * @param delegate the observer to delegate to.
+         */
         protected Wrapped(O delegate) {
             this.delegate = delegate;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @NonNull
         public SCMSourceOwner getContext() {
             return delegate.getContext();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @NonNull
         public TaskListener getListener() {
             return delegate.getListener();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @CheckForNull
         public Set<String> getIncludes() {
             return delegate.getIncludes();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @NonNull
         public ProjectObserver observe(@NonNull String projectName) throws IllegalArgumentException {
             return delegate.observe(projectName);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void addAttribute(@NonNull String key, @Nullable Object value)
                 throws IllegalArgumentException, ClassCastException {
             delegate.addAttribute(key, value);
         }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isObserving() {
+            return delegate.isObserving();
+        }
     }
 
+    /**
+     * An observer that filters the observed sources to a subset of named instances.
+     * @param <O>
+     */
     public static class Filter<O extends SCMSourceObserver> extends Wrapped<O> {
 
         private final Set<String> projectNames;
@@ -193,14 +243,24 @@ public abstract class SCMSourceObserver {
         public Filter(O delegate, String... projectNames) {
             super(delegate);
             this.projectNames = new HashSet<String>(Arrays.asList(projectNames));
+            Set<String> includes = delegate.getIncludes();
+            if (includes != null) {
+                this.projectNames.retainAll(includes);
+            }
             this.remaining = new HashSet<String>(this.projectNames);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Set<String> getIncludes() {
             return projectNames;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @NonNull
         @Override
         public ProjectObserver observe(@NonNull String projectName) throws IllegalArgumentException {
@@ -209,6 +269,14 @@ public abstract class SCMSourceObserver {
             } else {
                 return NoOpProjectObserver.instance();
             }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isObserving() {
+            return !remaining.isEmpty() && super.isObserving();
         }
     }
 
