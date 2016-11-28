@@ -878,6 +878,9 @@ public class MyChangeRequestSCMRevision extends SCMRevision {
 }
 ----
 
+To enable consumers to establish the relationship between revisions and heads, you should implement the `SCMSource.parentRevisions(_head_,_revision_,_listener_)` and `SCMSource.parentHeads(_head_,_listener_)` methods.
+These two methods are not strictly _required_, but when implemented they enable consumers to identify relationships between different branches, e.g. if the consumer wants to build a more complete changelong history tracking through the different branches.
+
 === Implementing `jenkins.scm.api.SCMNavigator`
 
 The `jenkins.scm.api.SCMNavigator` API has not been subject to much evolution and consequently the methods to implement are relatively obvious
