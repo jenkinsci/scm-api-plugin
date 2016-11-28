@@ -162,7 +162,7 @@ If your object is not discoverable through `Jenkins.getInstance().getAllItems(SC
 
 === Using SCMSource instances
 
-Each `SCMSource` assumes that it is owned by an object.
+Each `SCMSource` assumes that it is owned by a `SCMSourceOwner` object.
 The owner is responsible for:
 
 * providing a context from which the `SCMSource` can resolve any required `Credentials` via the https://wiki.jenkins-ci.org/display/JENKINS/Credentials+Plugin[Credentials plugin]
@@ -207,7 +207,7 @@ The `SCMHead` instances are persisted with their corresponding sub-jobs and the 
 
 * Have a `jenkins.scm.api.SCMEventListener` implementation to respond to events.
 +
-The listener will need to update the required `SCMSourceOwner` instances on the basis of the event and should minimize full indexing, e.g. by using the `SCMSourceOwner.fetch(..., _event_, _listener_)` variants.
+The listener will need to update the required `SCMSourceOwner` instances on the basis of the event and should minimize full indexing, e.g. by using the `SCMSource.fetch(..., _event_, _listener_)` variants.
 
 * Persist the results of `SCMSource.fetchActions(_listener_)` as part of each index and on receipt of any `SCMSourceEvent` events of type `CREATED` or `UPDATED`.
 +
@@ -233,3 +233,67 @@ TIP: In plain english, when you create a job from a `SCMHead` you *shall* call `
 Any returned `Action` instances *must* be persisted with the `Actionable` object.
 +
 TIP: In plain english, when you trigger a build of a job for a `SCMRevision` you *shall* call `SCMSource.fetchActions(_head_,_revision_,_listener_)` and if that method returns any actions you *must* add the actions to the build before the build is saved.
+
+* If you need to partition your `SCMHead` things, you can use `SCMSource.getCategories()` to obtain the categorization of `SCMHead` instances.
+
+* The idiomatic name footnote:[If only all source control systems could agree a consistent set of names of things] for the kind of thing that a `SCMSource` represents is provided by `SCMSource.getPronoun()`.
++
+For example, a Git `SCMSource` might return _Repository_, an Accurev `SCMSource` might return _Depot_, a CVS `SCMSource` might return _Module_ while a Subversion `SCMSource` could return _Repository_ or perhaps even something more generic like _Project_ depending on the way in which the Subversion server is being used footnote:[Do you create one `trunk|branches|tags` per repository or do you use a single big repository and create many `_project_/(trunk|branches|tags)` in that single repository?].
+
+=== Using SCMNavigator instances
+
+If you implement `jenkins.scm.api.SCMNavigatorOwner` your implementation *must*:
+
+* Be discoverable through `jenkins.scm.api.SCMNavigatorOwners`.
++
+This is the normal expected situation and will be the case if your implementation is part of the standard `Jenkins.getInstance().getAllItems()` tree.
++
+[NOTE]
+====
+The contract for `hudson.model.Item` does not mandate that instances be discoverable through `Jenkins.getInstance().getAllItems()`.
+
+For example, it is conceivable that a plugin might decide to store `hudson.model.User` specific `hudson.model.Item` through a custom `hudson.model.ItemGroup` attached to the owning user.
+
+If your plugin has decided to wander off the well established idiom, you will have to pay the cost of providing an implementation of `SCMNavigatorOwners.Enumerator` that can discover your `jenkins.scm.api.SCMNavigatorOwner` instances in order to ensure that events are delivered correctly.
+====
+
+* Call `SCMNavigator.afterSave(_owner_)` on all the  `SCMNavigatorOwner.getSCMNavigators()` instances after every save of the `SCMNavigatorOwner`.
+
+Your implementation of `jenkins.scm.api.SCMSourceOwner` *should*:
+
+* Persist the results of any discovery of any interesting project instances resulting from calls to `SCMNavigator.visitSources(...)` in some form or other.
++
+For example the Branch API plugin creates sub-jobs in an organizational folder for each project that it is interested in.
+The project name and attributes are persisted with their corresponding sub-jobs..
+
+* Have a `jenkins.scm.api.SCMEventListener` implementation to respond to events.
++
+The listener will need to update the required `SCMNavigatorOwner` instances on the basis of the event and should minimize full indexing, e.g. by using the `SCMNavigator.visitSources(_observer_, _event_)` variants.
++
+NOTE: `SCMSourceEvent` and `SCMHeadEvent` events can transition a project from non-interesting to interesting, so a `SCMNavigatorOwner` will need to listen out for these events also.
+For example, an Organization Folder for Workflow jobs would need to see if any SCMHeadEvent for a
+project name that has not been created yet leads to a verification as to whether the named head actually contains a `Jenkinsfile`.
+If a `Jenkinsfile` were present then the project woudl need to be created in order to enable the branch specific grandchild job to be created.
+
+* Persist the results of `SCMNavigator.fetchActions(_owner_, _listener_)` as part of each index and on receipt of any `SCMNavigatorEvent` events of type `UPDATED`.
++
+[TIP]
+====
+It may not always be either possible or preferred to attach the actions directly to the owner.
+
+For example, `hudson.model.AbstractProject` subclasses do not allow modification of the project's actions (because `AbstractProject.getActions()` returns a read-only list and `Actionable.addAction(_action_)` tries to add the action to the list returned by `getActions()`).
+
+An alternative is to persist the actions through some other mechanism (in the case of the `AbstractProject` subclass, we could store them in a `JobProperty`) and then populate at runtime them using a `TransientItemActionFactory`
+====
+
+The primary purpose of the `SCMNavigator` API is to allow the enumeration of named projects which each have a corresponding `SCMSource` instances, so presumably you have implemented `SCMSourceOwner` because you want to do something with the `SCMSource` instances.
+
+* Override `SCMSourceObserver.isObserving()` and `SCMSourceObserver.getIncludes()` if you are only interested in a subset so that implementations can minimize the amount of work that they do.
+
+* If your observer is not interested in any specific project, just return `NoOpProjectObserver.instance()` for those instances.
+
+* If you need to partition your `SCMSource` things, you can use `SCMNavigator.getCategories()` to obtain the categorization of `SCMSource` instances.
+
+* The idiomatic name for the kind of thing that a `SCMNavigator` represents is provided by `SCMNavigator.getPronoun()`.
++
+For example, a GitHub `SCMNavigator` might return _Organization_, an Accurev `SCMSource` might return _Repository_, a CVS `SCMSource` might return _Server_ while a Subversion `SCMSource` could return _Repository_ or _Server_ depending on the way in which the Subversion server is being used.
