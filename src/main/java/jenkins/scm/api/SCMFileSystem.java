@@ -129,6 +129,7 @@ public abstract class SCMFileSystem implements Closeable {
      *
      * @param revision        the starting revision or {@code null} to capture the initial change set.
      * @param changeLogStream the destination to stream the changes to.
+     * @return {@code true} if there are changes, {@code false} if there were no changes.
      * @throws UnsupportedOperationException if this {@link SCMFileSystem} does not support changelog querying.
      * @since FIXME
      */

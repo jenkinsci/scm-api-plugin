@@ -121,6 +121,7 @@ public abstract class SCMHeadObserver {
     /**
      * Creates an observer that filters a delegates observer to the specified heads
      *
+     * @param <O>      the type of observer that will be filtered.
      * @param delegate the delegate
      * @param heads    the head to watch out for.
      * @return an observer that wraps the supplied delegate.

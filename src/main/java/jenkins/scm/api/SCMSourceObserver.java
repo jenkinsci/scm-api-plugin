@@ -109,6 +109,7 @@ public abstract class SCMSourceObserver {
     /**
      * Creates an observer that filters a delegates observer to the specified project names
      *
+     * @param <O>          the type of observer that will be filtered.
      * @param delegate     the delegate
      * @param projectNames the project names to watch out for.
      * @return an observer that wraps the supplied delegate.
@@ -232,14 +233,27 @@ public abstract class SCMSourceObserver {
 
     /**
      * An observer that filters the observed sources to a subset of named instances.
-     * @param <O>
+     *
+     * @param <O> the type of observer being filtered.
+     * @since FIXME
      */
     public static class Filter<O extends SCMSourceObserver> extends Wrapped<O> {
 
+        /**
+         * The project names that this observer is interested in.
+         */
         private final Set<String> projectNames;
+        /**
+         * The project names that remain to be observed.
+         */
         private final Set<String> remaining;
 
-
+        /**
+         * Constructor.
+         *
+         * @param delegate     the delegate.
+         * @param projectNames the project names to filter.
+         */
         public Filter(O delegate, String... projectNames) {
             super(delegate);
             this.projectNames = new HashSet<String>(Arrays.asList(projectNames));

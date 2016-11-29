@@ -57,6 +57,8 @@ public abstract class SCMTriggerItemSCM extends ExtensionPoint {
      * Callback from the {@link SCMTriggerItem} after the {@link SCMTriggerItem} has been saved. Can be used to
      * register the {@link SCMTriggerItem} for a call-back hook from the backing SCM that this source is for.
      *
+     * @param item the item that was saved.
+     * @param scm the {@link SCM} instance from the item that {@link #isMatch(SCM)}.
      * @see SCMTriggerListener
      * @see SCMTrigger#isIgnorePostCommitHooks()
      * @see SCMHeadEvent#isMatch(SCM)
