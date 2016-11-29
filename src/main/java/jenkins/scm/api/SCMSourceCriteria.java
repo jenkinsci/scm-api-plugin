@@ -33,6 +33,9 @@ import java.io.Serializable;
 /**
  * Filter that selects heads picked up by {@link SCMSource} out of all the branches and other heads
  * found in the repository.
+ * <strong>
+ *     Implementations should provide a correct implementation of {@link #equals(Object)} and {@link #hashCode()}
+ * </strong>
  */
 public interface SCMSourceCriteria extends Serializable {
 

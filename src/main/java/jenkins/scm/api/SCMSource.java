@@ -87,9 +87,28 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @since FIXME
      */
     private static final SCMSourceCriteria nullSCMSourceCriteria = new SCMSourceCriteria() {
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean isHead(@NonNull Probe probe, @NonNull TaskListener listener) throws IOException {
             return true;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int hashCode() {
+            return getClass().hashCode();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean equals(Object obj) {
+            return super.equals(obj);
         }
     };
 
