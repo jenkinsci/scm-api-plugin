@@ -1,31 +1,6 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- */
-
-/*
- * The MIT License
- *
  * Copyright 2016 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -52,6 +27,7 @@ package jenkins.scm.api.actions;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.InvisibleAction;
+import java.io.Serializable;
 import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMNavigator;
@@ -63,42 +39,21 @@ import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Holds metadata about a {@link SCMRevision}, {@link SCMHead}, {@link SCMSource} or {@link SCMNavigator}.
+ * Holds metadata about an avatar to be assoicated with a {@link SCMSource} or {@link SCMNavigator} (also valid for
+ * {@link SCMRevision} and {@link SCMHead}, but would be considered unusual).
  *
- * @since FIXME
+ * @since 2.0
  */
-public abstract class MetadataAction extends InvisibleAction {
-    /**
-     * Returns the display name of the object or {@code null}.
-     *
-     * @return the display name of the object or {@code null}
-     */
-    @CheckForNull
-    public String getObjectDisplayName() {
-        return null;
-    }
+@ExportedBean
+public abstract class AvatarMetadataAction extends InvisibleAction implements Serializable {
 
     /**
-     * Returns the description of the object or {@code null}.
-     *
-     * @return the description of the object or {@code null}
+     * Ensure consistent serialization.
      */
-    @CheckForNull
-    public String getObjectDescription() {
-        return null;
-    }
-
-    /**
-     * Returns the external url of the object or {@code null} if the object does not have an exernal url.
-     *
-     * @return the display name of the object or {@code null}
-     */
-    @CheckForNull
-    public String getObjectUrl() {
-        return null;
-    }
+    private static final long serialVersionUID = 1L;
 
     /**
      * Returns the {@link Icon} class specification for the avatar of this object
@@ -167,4 +122,15 @@ public abstract class MetadataAction extends InvisibleAction {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public abstract boolean equals(Object o);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public abstract int hashCode();
 }

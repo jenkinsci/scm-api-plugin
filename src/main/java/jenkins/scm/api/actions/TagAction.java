@@ -28,6 +28,8 @@ package jenkins.scm.api.actions;
 import hudson.model.InvisibleAction;
 import java.io.Serializable;
 import jenkins.scm.api.SCMHead;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Indicates that an {@link SCMHead} represents a tag rather than a branch. Tags are at least semi-immutable, in other
@@ -36,8 +38,23 @@ import jenkins.scm.api.SCMHead;
  *
  * @since FIXME
  */
+@ExportedBean
 public class TagAction extends InvisibleAction implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Exported
+    public boolean isTag() {
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && getClass().equals(obj.getClass());
+    }
 }
