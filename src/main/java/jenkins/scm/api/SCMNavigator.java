@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -198,6 +197,9 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * any {@link Action} instances of that {@link Item}.
      *
      * @param owner    the owner of this {@link SCMNavigator}.
+     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
@@ -214,10 +216,13 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     }
 
     /**
-     * SPI for {@link #fetchActions(SCMNavigatorOwner, TaskListener)}. Fetches any actions that should be persisted for
-     * objects related to the specified owner.
+     * SPI for {@link #fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)}. Fetches any actions that
+     * should be persisted for objects related to the specified owner.
      *
      * @param owner    the owner of this {@link SCMNavigator}.
+     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.

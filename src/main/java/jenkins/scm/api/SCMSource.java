@@ -584,6 +584,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * this method. </strong>
      *
      * @param revision the {@link SCMRevision}
+     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
@@ -606,6 +609,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * must have been called at least once before calling this method.</strong>
      *
      * @param head the {@link SCMHead}
+     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
@@ -628,6 +634,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * {@link SCMNavigator} then {@link SCMNavigator#fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)}
      * must have been called at least once before calling this method.</strong>
      *
+     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
@@ -647,8 +656,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * objects related to the specified revision.
      *
      * @param revision the {@link SCMRevision}
-     * @param event the event that triggered the request for fetching actions (may be used by implementations that
-     *              trust events to bypass remote queries for trusted events)
+     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
      * @return the list of {@link Action} instances to persist.
      * @throws IOException if an error occurs while performing the operation.
@@ -657,7 +667,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @NonNull
     protected List<Action> retrieveActions(@NonNull SCMRevision revision,
-                                           @NonNull SCMHeadEvent event,
+                                           @CheckForNull SCMHeadEvent event,
                                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         return Collections.emptyList();
@@ -668,8 +678,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * related to the specified head.
      *
      * @param head the {@link SCMHead}
-     * @param event the event that triggered the request for fetching actions (may be used by implementations that
-     *              trust events to bypass remote queries for trusted events)
+     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
      * @return the list of {@link Action} instances to persist.
      * @throws IOException if an error occurs while performing the operation.
@@ -678,7 +689,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @NonNull
     protected List<Action> retrieveActions(@NonNull SCMHead head,
-                                           @NonNull SCMHeadEvent event,
+                                           @CheckForNull SCMHeadEvent event,
                                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         return Collections.emptyList();
@@ -688,8 +699,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * SPI for {@link #fetchActions(SCMSourceEvent,TaskListener)}. Fetches any actions that should be persisted for
      * objects related to the specified source.
      *
-     * @param event the event that triggered the request for fetching actions (may be used by implementations that
-     *              trust events to bypass remote queries for trusted events)
+     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
      * @return the list of {@link Action} instances to persist.
      * @throws IOException if an error occurs while performing the operation.
@@ -697,7 +709,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @since 2.0
      */
     @NonNull
-    protected List<Action> retrieveActions(@NonNull SCMSourceEvent event,
+    protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event,
                                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         return Collections.emptyList();
