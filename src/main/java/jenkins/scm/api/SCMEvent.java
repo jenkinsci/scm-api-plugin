@@ -65,7 +65,7 @@ import jenkins.util.Timer;
  * {@link SCMSource}, is to ensure that consumers do not have to trigger full rescans
  *
  * @param <P> the type of (provider specific) payload.
- * @since FIXME
+ * @since 2.0
  */
 public abstract class SCMEvent<P> {
 

@@ -267,7 +267,7 @@ public abstract class SCMFile {
     /**
      * Represents the type of a {@link SCMFile}.
      *
-     * @since FIXME
+     * @since 2.0
      */
     public enum Type {
         /**

@@ -43,7 +43,7 @@ import org.jvnet.localizer.Localizable;
  * Base class for categories of SCM things.
  *
  * @param <T> the type of thing.
- * @since FIXME
+ * @since 2.0
  */
 public abstract class SCMCategory<T> {
 

@@ -93,7 +93,7 @@ public interface SCMSourceCriteria extends Serializable {
          * @param path the path.
          * @return The results of the check.
          * @throws IOException if a remote network call failed and the result is therefore indeterminate.
-         * @since FIXME
+         * @since 2.0
          */
         public SCMProbeStat stat(@NonNull String path) throws IOException {
             if (exists(path)) {

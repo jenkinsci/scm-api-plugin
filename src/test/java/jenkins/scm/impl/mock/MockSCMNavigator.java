@@ -32,11 +32,14 @@ import hudson.model.Action;
 import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
+import jenkins.scm.api.SCMNavigatorEvent;
 import jenkins.scm.api.SCMNavigatorOwner;
 import jenkins.scm.api.SCMSourceObserver;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -106,17 +109,18 @@ public class MockSCMNavigator extends SCMNavigator {
 
     @NonNull
     @Override
-    public Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
-                                                                @NonNull TaskListener listener)
+    public List<Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
+                                        @NonNull SCMNavigatorEvent event,
+                                        @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        Map<Class<? extends Action>, Action> result = new HashMap<Class<? extends Action>, Action>();
-        result.put(MockSCMLink.class, new MockSCMLink("organization"));
+        List<Action> result = new ArrayList<Action>();
+        result.add(new MockSCMLink("organization"));
         String description = controller().getDescription();
         String displayName = controller().getDisplayName();
         String url = controller().getUrl();
         String iconClassName = controller().getOrgIconClassName();
         if (description != null || displayName != null || url != null || iconClassName != null) {
-            result.put(MockMetadataAction.class, new MockMetadataAction(description, displayName, url, iconClassName));
+            result.add(new MockMetadataAction(description, displayName, url, iconClassName));
         }
         return result;
     }

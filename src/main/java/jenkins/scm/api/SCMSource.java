@@ -26,6 +26,7 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Action;
 import hudson.model.Item;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -68,7 +70,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
 
     /**
      * Replaceable pronoun of that points to a {@link SCMSource}. Defaults to {@code null} depending on the context.
-     * @since FIXME
+     * @since 2.0
      */
     public static final AlternativeUiTextProvider.Message<SCMSource> PRONOUN
             = new AlternativeUiTextProvider.Message<SCMSource>();
@@ -77,14 +79,14 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * explicitly pass the {@link SCMSourceCriteria} while legacy implementations can still continue to work
      * without having to be rewritten.
      *
-     * @since FIXME
+     * @since 2.0
      */
     private static final ThreadLocal<SCMSourceCriteria> compatibilityHack = new ThreadLocal<SCMSourceCriteria>();
     /**
      * A special marker value used by {@link #getCriteria()} and stored in {@link #compatibilityHack} to signal
      * that {@link #getCriteria()} should return {@code null}.
      *
-     * @since FIXME
+     * @since 2.0
      */
     private static final SCMSourceCriteria nullSCMSourceCriteria = new SCMSourceCriteria() {
         /**
@@ -239,7 +241,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @see SCMEvent#isPayloadTrusted()
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     public final <O extends SCMHeadObserver> O fetch(@CheckForNull SCMSourceCriteria criteria,
@@ -264,7 +266,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @see SCMEvent#isPayloadTrusted()
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     public final <O extends SCMHeadObserver> O fetch(@NonNull O observer, @NonNull SCMHeadEvent<?> event,
@@ -376,7 +378,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @see SCMEvent#isPayloadTrusted()
-     * @since FIXME
+     * @since 2.0
      */
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria,
                             @NonNull SCMHeadObserver observer,
@@ -575,11 +577,11 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Fetches any actions that should be persisted for objects related to the specified revision. For example,
      * if a {@link Run} is building a specific {@link SCMRevision}, then this method would be called to populate
      * any {@link Action} instances for that {@link Run}. <strong>NOTE: unlike
-     * {@link #fetchActions(SCMHead, TaskListener)}, {@link #fetchActions(TaskListener)} or
-     * {@link SCMNavigator#fetchActions(SCMNavigatorOwner, TaskListener)}</strong> there is no guarantee that
-     * this method will ever be called more than once for any {@link Run}. <strong>
-     * {@link #fetchActions(SCMHead, TaskListener)} must have been called at least once before calling this method.
-     * </strong>
+     * {@link #fetchActions(SCMHead, SCMHeadEvent, TaskListener)}, {@link #fetchActions(SCMSourceEvent, TaskListener)}
+     * or {@link SCMNavigator#fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)}</strong> there is no
+     * guarantee that this method will ever be called more than once for any {@link Run}. <strong>
+     * {@link #fetchActions(SCMHead, SCMHeadEvent, TaskListener)} must have been called at least once before calling
+     * this method. </strong>
      *
      * @param revision the {@link SCMRevision}
      * @param listener the listener to report progress on.
@@ -587,20 +589,21 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * values indicate actions that should be removed if present.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
-    public final Map<Class<? extends Action>, Action> fetchActions(@NonNull SCMRevision revision,
-                                                                   @CheckForNull TaskListener listener)
+    public final List<Action> fetchActions(@NonNull SCMRevision revision,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        return tidyActionMap(retrieveActions(revision, defaultListener(listener)));
+        return Util.fixNull(retrieveActions(revision, event, defaultListener(listener)));
     }
 
     /**
      * Fetches any actions that should be persisted for objects related to the specified head. For example,
      * if a {@link Job} is associated with a specific {@link SCMHead}, then this method would be called to refresh
-     * any {@link Action} instances of that {@link Job}. <strong>{@link #fetchActions(TaskListener)} must have
-     * been called at least once before calling this method.</strong>
+     * any {@link Action} instances of that {@link Job}. <strong>{@link #fetchActions(SCMSourceEvent,TaskListener)}
+     * must have been called at least once before calling this method.</strong>
      *
      * @param head the {@link SCMHead}
      * @param listener the listener to report progress on.
@@ -608,109 +611,96 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * values indicate actions that should be removed if present.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
-    public final Map<Class<? extends Action>, Action> fetchActions(@NonNull SCMHead head,
-                                                                   @CheckForNull TaskListener listener)
+    public final List<Action> fetchActions(@NonNull SCMHead head,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        return tidyActionMap(retrieveActions(head, defaultListener(listener)));
+        return Util.fixNull(retrieveActions(head, event, defaultListener(listener)));
     }
 
     /**
      * Fetches any actions that should be persisted for objects related to the specified source. For example,
      * if a {@link Item} is associated with a specific {@link SCMSource}, then this method would be called to refresh
      * any {@link Action} instances of that {@link Item}. <strong>If this {@link SCMSource} belongs to a
-     * {@link SCMNavigator} then {@link SCMNavigator#fetchActions(SCMNavigatorOwner, TaskListener)} must have been
-     * called at least once before calling this method.</strong>
+     * {@link SCMNavigator} then {@link SCMNavigator#fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)}
+     * must have been called at least once before calling this method.</strong>
      *
      * @param listener the listener to report progress on.
      * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
      * values indicate actions that should be removed if present.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
-    public final Map<Class<? extends Action>, Action> fetchActions(@CheckForNull TaskListener listener)
+    public final List<Action> fetchActions(@CheckForNull SCMSourceEvent event,
+                                           @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        return tidyActionMap(retrieveActions(defaultListener(listener)));
+        return Util.fixNull(retrieveActions(event, defaultListener(listener)));
     }
 
     /**
-     * SPI for {@link #fetchActions(SCMRevision, TaskListener)}. Fetches any actions that should be persisted for
+     * SPI for {@link #fetchActions(SCMRevision, SCMHeadEvent, TaskListener)}. Fetches any actions that should be persisted for
      * objects related to the specified revision.
      *
      * @param revision the {@link SCMRevision}
+     * @param event the event that triggered the request for fetching actions (may be used by implementations that
+     *              trust events to bypass remote queries for trusted events)
      * @param listener the listener to report progress on.
-     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
-     * values indicate actions that should be removed if present.
+     * @return the list of {@link Action} instances to persist.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMRevision revision,
-                                                                   @NonNull TaskListener listener)
+    protected List<Action> retrieveActions(@NonNull SCMRevision revision,
+                                           @NonNull SCMHeadEvent event,
+                                           @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return Collections.emptyMap();
+        return Collections.emptyList();
     }
 
     /**
-     * SPI for {@link #fetchActions(SCMHead, TaskListener)}. Fetches any actions that should be persisted for objects
+     * SPI for {@link #fetchActions(SCMHead, SCMHeadEvent, TaskListener)}. Fetches any actions that should be persisted for objects
      * related to the specified head.
      *
      * @param head the {@link SCMHead}
+     * @param event the event that triggered the request for fetching actions (may be used by implementations that
+     *              trust events to bypass remote queries for trusted events)
      * @param listener the listener to report progress on.
-     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
-     * values indicate actions that should be removed if present.
+     * @return the list of {@link Action} instances to persist.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMHead head,
-                                                                   @NonNull TaskListener listener)
+    protected List<Action> retrieveActions(@NonNull SCMHead head,
+                                           @NonNull SCMHeadEvent event,
+                                           @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return Collections.emptyMap();
+        return Collections.emptyList();
     }
 
     /**
-     * SPI for {@link #fetchActions(TaskListener)}. Fetches any actions that should be persisted for
+     * SPI for {@link #fetchActions(SCMSourceEvent,TaskListener)}. Fetches any actions that should be persisted for
      * objects related to the specified source.
      *
+     * @param event the event that triggered the request for fetching actions (may be used by implementations that
+     *              trust events to bypass remote queries for trusted events)
      * @param listener the listener to report progress on.
-     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
-     * values indicate actions that should be removed if present.
+     * @return the list of {@link Action} instances to persist.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull TaskListener listener)
+    protected List<Action> retrieveActions(@NonNull SCMSourceEvent event,
+                                           @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return Collections.emptyMap();
-    }
-
-    static Map<Class<? extends Action>, Action> tidyActionMap(Map<Class<? extends Action>, Action> map) {
-        if (map == null) return Collections.emptyMap();
-        for (Iterator<Class<? extends Action>> iterator = map.keySet().iterator(); iterator.hasNext(); ) {
-            Class<? extends Action> clazz = iterator.next();
-            boolean isSubclass = false;
-            for (Class<? extends Action> c : map.keySet()) {
-                if (clazz == c) {
-                    continue;
-                }
-                if (c.isAssignableFrom(clazz)) {
-                    isSubclass = true;
-                    break;
-                }
-            }
-            if (isSubclass) {
-                iterator.remove();
-            }
-        }
-        return map;
+        return Collections.emptyList();
     }
 
     /**
@@ -787,7 +777,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     /**
      * Tests if this {@link SCMSource} can instantiate a {@link SCMSourceCriteria.Probe}
      * @return {@code true} if and only if {@link #createProbe(SCMHead, SCMRevision)} has been implemented.
-     * @since FIXME
+     * @since 2.0
      */
     public boolean canProbe() {
         return MethodUtils.isOverridden(SCMSource.class, getClass(), "createProbe", SCMHead.class, SCMRevision.class);
@@ -803,7 +793,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IllegalArgumentException if the {@link SCMRevision#getHead()} is not equal to the supplied {@link SCMHead}
      * @throws IOException if the probe creation failed due to an IO exception.
      * @see #canProbe()
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     public final SCMProbe newProbe(@NonNull SCMHead head, @CheckForNull SCMRevision revision) throws IOException {
@@ -827,7 +817,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @see #canProbe()
      * @see #newProbe(SCMHead, SCMRevision)
      * @see #fromSCMFileSystem(SCMHead, SCMRevision)
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     protected SCMProbe createProbe(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision)
@@ -842,7 +832,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @param head the {@link SCMHead}.
      * @param revision the {@link SCMRevision}.
      * @return the {@link SCMSourceCriteria.Probe} or {@code null} if this source cannot be probed.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     protected final SCMProbe fromSCMFileSystem(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision) {
@@ -949,7 +939,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Get the term used in the UI to represent this kind of {@link SCMSource}. Must start with a capital letter.
      *
      * @return the term or {@code null} to fall back to the calling context's default.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     public String getPronoun() {
@@ -961,7 +951,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * exactly one {@link SCMCategory#isUncategorized()} instance in the returned set.
      *
      * @return the set of {@link SCMHeadCategory} that this {@link SCMSource} supports.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     public final Set<? extends SCMHeadCategory> getCategories() {
@@ -990,7 +980,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @param category the category.
      * @return {@code true} if the supplied category is enabled for this {@link SCMSource} instance.
-     * @since FIXME
+     * @since 2.0
      */
     protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
         return true;
@@ -1000,7 +990,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Checks the {@link Thread#interrupted()} and throws an {@link InterruptedException} if it was set.
      *
      * @throws InterruptedException if interrupted.
-     * @since FIXME
+     * @since 2.0
      */
     protected final void checkInterrupt() throws InterruptedException {
         if (Thread.interrupted()) {
@@ -1012,7 +1002,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Callback from the {@link SCMSourceOwner} after the {@link SCMSourceOwner} has been saved. Can be used to
      * register the {@link SCMSourceOwner} for a call-back hook from the backing SCM that this source is for.
      *
-     * @since FIXME
+     * @since 2.0
      */
     public void afterSave() {}
 

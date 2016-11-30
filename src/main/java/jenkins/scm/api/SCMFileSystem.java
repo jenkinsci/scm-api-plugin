@@ -131,7 +131,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @param changeLogStream the destination to stream the changes to.
      * @return {@code true} if there are changes, {@code false} if there were no changes.
      * @throws UnsupportedOperationException if this {@link SCMFileSystem} does not support changelog querying.
-     * @since FIXME
+     * @since 2.0
      */
     public boolean changesSince(@CheckForNull SCMRevision revision, @NonNull OutputStream changeLogStream)
             throws UnsupportedOperationException {
@@ -187,7 +187,7 @@ public abstract class SCMFileSystem implements Closeable {
      *
      * @param scm the {@link SCMSource}.
      * @return {@code true} if and only if the supplied {@link SCM} is supported by at least one {@link Builder}.
-     * @since FIXME
+     * @since 2.0
      */
     public static boolean supports(@NonNull SCM scm) {
         scm.getClass(); // throw NPE if null
@@ -252,7 +252,7 @@ public abstract class SCMFileSystem implements Closeable {
      *
      * @param source the {@link SCMSource}.
      * @return {@code true} if and only if the supplied {@link SCMSource} is supported by at least one {@link Builder}.
-     * @since FIXME
+     * @since 2.0
      */
     public static boolean supports(@NonNull SCMSource source) {
         source.getClass(); // throw NPE if null

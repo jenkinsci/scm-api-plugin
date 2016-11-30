@@ -34,7 +34,7 @@ import java.io.IOException;
  * so implementations are strongly recommended to provide caching of results from {@link #stat(String)} and
  * {@link #lastModified()}.
  *
- * @since FIXME
+ * @since 2.0
  */
 public abstract class SCMProbe extends SCMSourceCriteria.Probe implements Closeable {
     /**

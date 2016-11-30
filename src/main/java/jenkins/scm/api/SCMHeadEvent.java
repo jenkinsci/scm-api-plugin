@@ -44,7 +44,7 @@ import jenkins.scm.impl.SCMTriggerListener;
  * Base class for events relating to {@link SCMHead} instances.
  *
  * @param <P> the (provider specific) payload.
- * @since FIXME
+ * @since 2.0
  */
 public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
 

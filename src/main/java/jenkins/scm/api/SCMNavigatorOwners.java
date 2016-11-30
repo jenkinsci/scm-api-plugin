@@ -35,7 +35,7 @@ import jenkins.model.Jenkins;
 /**
  * Provides a means to lookup the {@link SCMNavigatorOwners} that own {@link SCMNavigatorOwner} instances.
  *
- * @since FIXME
+ * @since 2.0
  */
 public abstract class SCMNavigatorOwners implements ExtensionPoint, Iterable<SCMNavigatorOwner> {
 

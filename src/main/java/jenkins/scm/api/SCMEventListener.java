@@ -30,7 +30,7 @@ import hudson.ExtensionPoint;
 /**
  * Base class for listeners to {@link SCMEvent}s
  *
- * @since FIXME
+ * @since 2.0
  */
 public class SCMEventListener implements ExtensionPoint {
 

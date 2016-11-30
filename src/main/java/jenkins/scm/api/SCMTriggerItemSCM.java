@@ -37,7 +37,7 @@ import org.apache.tools.ant.ExtensionPoint;
  * Extension point to allow modern {@link SCM} implementations to auto-register call-back hooks for
  * {@link SCMTriggerItem} instaces without having to implement a custom {@link Trigger}.
  *
- * @since FIXME
+ * @since 2.0
  * @see SCMTriggerItemSCMNotifier
  */
 public abstract class SCMTriggerItemSCM extends ExtensionPoint {

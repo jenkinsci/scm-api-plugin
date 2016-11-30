@@ -36,7 +36,7 @@ import org.jvnet.localizer.Localizable;
 /**
  * Base class for categories of {@link SCMSource}, for example: repository, depot, vob, etc.
  *
- * @since FIXME
+ * @since 2.0
  */
 public abstract class SCMSourceCategory extends SCMCategory<SCMSource> {
     /**

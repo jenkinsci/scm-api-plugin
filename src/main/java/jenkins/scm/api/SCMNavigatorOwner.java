@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * An {@link Item} that owns {@link SCMNavigator} instances.
  *
- * @since FIXME
+ * @since 2.0
  */
 public interface SCMNavigatorOwner extends SCMSourceOwner {
     /**

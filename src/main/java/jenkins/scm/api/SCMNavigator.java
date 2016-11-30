@@ -27,6 +27,7 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Action;
 import hudson.model.Item;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -54,7 +56,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     /**
      * Replaceable pronoun of that points to a {@link SCMNavigator}. Defaults to {@code null} depending on the context.
      *
-     * @since FIXME
+     * @since 2.0
      */
     public static final AlternativeUiTextProvider.Message<SCMNavigator> PRONOUN
             = new AlternativeUiTextProvider.Message<SCMNavigator>();
@@ -87,7 +89,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * @param event    the event from which the operation should be scoped.
      * @throws IOException          if scanning fails
      * @throws InterruptedException if scanning is interrupted
-     * @since FIXME
+     * @since 2.0
      */
     public void visitSources(@NonNull SCMSourceObserver observer, @NonNull SCMSourceEvent<?> event)
             throws IOException, InterruptedException {
@@ -104,7 +106,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * @param event    the event from which the operation should be scoped.
      * @throws IOException          if scanning fails
      * @throws InterruptedException if scanning is interrupted
-     * @since FIXME
+     * @since 2.0
      */
     public void visitSources(@NonNull SCMSourceObserver observer, @NonNull SCMHeadEvent<?> event)
             throws IOException, InterruptedException {
@@ -120,7 +122,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * @param observer   a recipient of progress notifications and a source of contextual information
      * @throws IOException          if scanning fails
      * @throws InterruptedException if scanning is interrupted
-     * @since FIXME
+     * @since 2.0
      */
     public void visitSource(@NonNull String sourceName, @NonNull SCMSourceObserver observer)
             throws IOException, InterruptedException {
@@ -132,7 +134,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * exactly one {@link SCMCategory#isUncategorized()} instance in the returned set.
      *
      * @return the set of {@link SCMSourceCategory} that this {@link SCMNavigator} supports.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     public final Set<? extends SCMSourceCategory> getCategories() {
@@ -165,7 +167,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      *
      * @param category the category.
      * @return {@code true} if the supplied category is enabled for this {@link SCMNavigator} instance.
-     * @since FIXME
+     * @since 2.0
      */
     protected boolean isCategoryEnabled(@NonNull SCMSourceCategory category) {
         return true;
@@ -183,7 +185,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * Get the term used in the UI to represent this kind of {@link SCMNavigator}. Must start with a capital letter.
      *
      * @return the term or {@code null} to fall back to the calling context's default.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     public String getPronoun() {
@@ -201,13 +203,14 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * values indicate actions that should be removed if present.
      * @throws IOException          if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
-    public final Map<Class<? extends Action>, Action> fetchActions(@NonNull SCMNavigatorOwner owner,
-                                                                   @CheckForNull TaskListener listener)
+    public final List<Action> fetchActions(@NonNull SCMNavigatorOwner owner,
+                                           @CheckForNull SCMNavigatorEvent event,
+                                           @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        return SCMSource.tidyActionMap(retrieveActions(owner, defaultListener(listener)));
+        return Util.fixNull(retrieveActions(owner, event, defaultListener(listener)));
     }
 
     /**
@@ -220,13 +223,14 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * values indicate actions that should be removed if present.
      * @throws IOException          if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
-    public Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
-                                                                @NonNull TaskListener listener)
+    public List<Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
+                                        @CheckForNull SCMNavigatorEvent event,
+                                        @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return Collections.emptyMap();
+        return Collections.emptyList();
     }
 
     /**
@@ -253,7 +257,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * Checks the {@link Thread#interrupted()} and throws an {@link InterruptedException} if it was set.
      *
      * @throws InterruptedException if interrupted.
-     * @since FIXME
+     * @since 2.0
      */
     protected final void checkInterrupt() throws InterruptedException {
         if (Thread.interrupted()) {
@@ -266,7 +270,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * register the {@link SCMNavigatorOwner} for a call-back hook from the backing SCM that this navigator is for.
      *
      * @param owner the {@link SCMNavigatorOwner}.
-     * @since FIXME
+     * @since 2.0
      */
     public void afterSave(@NonNull SCMNavigatorOwner owner) {
     }

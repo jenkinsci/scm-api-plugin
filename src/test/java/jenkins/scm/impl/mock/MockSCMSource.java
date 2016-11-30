@@ -33,13 +33,16 @@ import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.ListBoxModel;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
+import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMProbe;
 import jenkins.scm.api.SCMProbeStat;
@@ -47,6 +50,7 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
+import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
@@ -165,36 +169,36 @@ public class MockSCMSource extends SCMSource {
 
     @NonNull
     @Override
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull TaskListener listener)
+    protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        Map<Class<? extends Action>, Action> result = new HashMap<Class<? extends Action>, Action>();
-        result.put(MockSCMLink.class, new MockSCMLink("source"));
+        List<Action> result = new ArrayList<Action>();
+        result.add(new MockSCMLink("source"));
         String description = controller().getDescription(repository);
         String displayName = controller().getDisplayName(repository);
         String url = controller().getUrl(repository);
         String iconClassName = controller().getRepoIconClassName();
         if (description != null || displayName != null || url != null || iconClassName != null) {
-            result.put(MockMetadataAction.class, new MockMetadataAction(description, displayName, url, iconClassName));
+            result.add(new MockMetadataAction(description, displayName, url, iconClassName));
         }
         return result;
     }
 
     @NonNull
     @Override
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMRevision revision,
-                                                                   @NonNull TaskListener listener)
+    protected List<Action> retrieveActions(@NonNull SCMRevision revision,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return Collections.<Class<? extends Action>, Action>singletonMap(MockSCMLink.class,
-                new MockSCMLink("revision"));
+        return Collections.<Action>singletonList(new MockSCMLink("revision"));
     }
 
     @NonNull
     @Override
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMHead head,
-                                                                   @NonNull TaskListener listener)
+    protected List<Action> retrieveActions(@NonNull SCMHead head,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return Collections.<Class<? extends Action>, Action>singletonMap(MockSCMLink.class,
-                new MockSCMLink("branch"));
+        return Collections.<Action>singletonList(new MockSCMLink("branch"));
     }
 
     @Override

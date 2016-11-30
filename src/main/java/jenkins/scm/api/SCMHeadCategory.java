@@ -36,7 +36,7 @@ import org.jvnet.localizer.Localizable;
 /**
  * Base class for categories of {@link SCMHead}, for example: branches, tags, change requests, mainlines, features, etc.
  *
- * @since FIXME
+ * @since 2.0
  */
 public abstract class SCMHeadCategory extends SCMCategory<SCMHead> {
 

@@ -65,7 +65,7 @@ public abstract class SCMSourceObserver {
      * This method is designed to provide a <i>hint</i> to {@link SCMNavigator} implementations.
      *
      * @return the subset of project names that this observer is interested in or {@code null}.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     public Set<String> getIncludes() {
@@ -100,7 +100,7 @@ public abstract class SCMSourceObserver {
      * Returns information about whether the observer wants more results.
      *
      * @return {@code true} if the observer is still observing or {@code false} to signal that it is ok to stop early.
-     * @since FIXME
+     * @since 2.0
      */
     public boolean isObserving() {
         return true;
@@ -113,7 +113,7 @@ public abstract class SCMSourceObserver {
      * @param delegate     the delegate
      * @param projectNames the project names to watch out for.
      * @return an observer that wraps the supplied delegate.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     public static <O extends SCMSourceObserver> SCMSourceObserver.Filter<O> filter(O delegate, String... projectNames) {
@@ -235,7 +235,7 @@ public abstract class SCMSourceObserver {
      * An observer that filters the observed sources to a subset of named instances.
      *
      * @param <O> the type of observer being filtered.
-     * @since FIXME
+     * @since 2.0
      */
     public static class Filter<O extends SCMSourceObserver> extends Wrapped<O> {
 

@@ -51,7 +51,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
      * The set of {@link SCMHeadCategory} singletons for this type of {@link SCMSource}
      *
      * @see #getCategories()
-     * @since FIXME
+     * @since 2.0
      */
     @GuardedBy("this")
     protected transient Set<SCMHeadCategory> categories;
@@ -165,7 +165,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
      * Get the term used in the UI to represent this kind of {@link SCMSource}. Must start with a capital letter.
      *
      * @return the term or {@code null} to fall back to the calling context's default.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     public String getPronoun() {
@@ -177,7 +177,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
      * exactly one {@link SCMCategory#isUncategorized()} instance in the returned set.
      *
      * @return the set of {@link SCMHeadCategory} that this {@link SCMSource} supports.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     public synchronized final Set<SCMHeadCategory> getCategories() {
@@ -208,7 +208,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
      *
      * @return the singleton {@link SCMHeadCategory} instances for this type of {@link SCMSource}
      * @see #getCategories()
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     @GuardedBy("this")

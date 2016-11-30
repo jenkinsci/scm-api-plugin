@@ -41,7 +41,7 @@ import org.jenkins.ui.icon.IconSpec;
 public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> implements IconSpec {
     /**
      * The set of {@link SCMSourceCategory} singletons for this type of {@link SCMNavigator}
-     * @since FIXME
+     * @since 2.0
      * @see #getCategories()
      */
     @GuardedBy("this")
@@ -111,7 +111,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
      * Get the term used in the UI to represent this kind of {@link SCMNavigator}. Must start with a capital letter.
      *
      * @return the term or {@code null} to fall back to the calling context's default.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     public String getPronoun() {
@@ -123,7 +123,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
      * exactly one {@link SCMCategory#isUncategorized()} instance in the returned set.
      *
      * @return the set of {@link SCMSourceCategory} that this {@link SCMNavigator} supports.
-     * @since FIXME
+     * @since 2.0
      * @see #createCategories()
      */
     @NonNull
@@ -153,7 +153,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
      * Creates the singleton {@link SCMSourceCategory} instances that this type of {@link SCMNavigator} is capable of
      * producing.
      * @return the singleton {@link SCMSourceCategory} instances for this type of {@link SCMNavigator}
-     * @since FIXME
+     * @since 2.0
      * @see #getCategories()
      */
     @NonNull

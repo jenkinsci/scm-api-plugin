@@ -65,7 +65,7 @@ public abstract class SCMHeadObserver {
      * This method is designed to provide a <i>hint</i> to {@link SCMSource} implementations.
      *
      * @return the subset of {@link SCMHead} instances that this observer is interested in or {@code null}.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     public Set<SCMHead> getIncludes() {
@@ -136,7 +136,7 @@ public abstract class SCMHeadObserver {
      *
      * @param headName the head to watch out for.
      * @return an observer that selects the revision of a specific head.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     public static Named named(@NonNull String headName) {
@@ -147,7 +147,7 @@ public abstract class SCMHeadObserver {
      * Creates an observer that selects the first revision it finds. Also useful for quick checks of non-empty.
      *
      * @return an observer that selects the first revision of a any head.
-     * @since FIXME
+     * @since 2.0
      */
     @NonNull
     public static Any any() {
@@ -544,7 +544,7 @@ public abstract class SCMHeadObserver {
      * original observer via {@link #unwrap()}.
      *
      * @param <O> the type of wrapped {@link SCMHeadObserver}
-     * @since FIXME
+     * @since 2.0
      */
     public static abstract class Wrapped<O extends SCMHeadObserver> extends SCMHeadObserver {
         /**
@@ -600,7 +600,7 @@ public abstract class SCMHeadObserver {
      * {@link SCMHeadObserver}.
      *
      * @param <O> the type of wrapped {@link SCMHeadObserver}
-     * @since FIXME
+     * @since 2.0
      */
     public static class Filter<O extends SCMHeadObserver> extends Wrapped<O> {
         /**
