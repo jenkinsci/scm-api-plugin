@@ -618,40 +618,55 @@ public class MySCMSource extends SCMSource {
 
     @NonNull
     @Override
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull TaskListener listener)
+    protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event,
+                                           @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        Map<Class<? extends Action>, Action> result = new HashMap<>();
+        List<Action> result = new ArrayList<>();
         // if your SCM provides support for metadata at the "SCMSource" level
         // then you probably want to return at least a `jenkins.branch.MetadataAction`
         // from this method. The listener can be used to log the interactions
         // with the backing source control system.
+        //
+        // When you implement event support, if you have events that can be trusted
+        // you may want to use the payloads of those events when populating the
+        // actions (if that will avoid extra network calls and give the same result)
         return result;
     }
 
     @NonNull
     @Override
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMHead head,
-                                                                   @NonNull TaskListener listener)
+    protected List<Action> retrieveActions(@NonNull SCMHead head,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        Map<Class<? extends Action>, Action> result = new HashMap<>();
+        List<Action> result = new ArrayList<>();
         // if your SCM provides support for metadata at the "SCMHead" level
         // then you probably want to return the correct metadata actions
         // from this method. The listener can be used to log the interactions
         // with the backing source control system.
+        //
+        // When you implement event support, if you have events that can be trusted
+        // you may want to use the payloads of those events when populating the
+        // actions (if that will avoid extra network calls and give the same result)
         return result;
     }
 
     @NonNull
     @Override
-    protected Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMRevision revision,
-                                                                   @NonNull TaskListener listener)
+    protected List<Action> retrieveActions(@NonNull SCMRevision revision,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        Map<Class<? extends Action>, Action> result = new HashMap<>();
+        List<Action> result = new ArrayList<>();
         // if your SCM provides support for metadata at the "SCMRevision" level
         // then you probably want to return the correct metadata actions
         // from this method. The listener can be used to log the interactions
         // with the backing source control system.
-        return result;
+        //
+        // When you implement event support, if you have events that can be trusted
+        // you may want to use the payloads of those events when populating the
+        // actions (if that will avoid extra network calls and give the same result)
+       return result;
     }
 
     // This method is only required if you have more than one category and
@@ -821,6 +836,14 @@ public class MyChangeRequestSCMHead extends ChangeRequestSCMHead {
         this.action = action;
     }
 
+    public String getId() {
+        // ...
+    }
+
+    public SCMHead getTarget() {
+        // ...
+    }
+
     @NonNull
     @Override
     public ChangeRequestAction getChangeRequestAction() {
@@ -928,14 +951,19 @@ public class MySCMNavigator extends SCMNavigator {
 
     @NonNull
     @Override
-    public Map<Class<? extends Action>, Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
-                                                                @NonNull TaskListener listener)
+    public List<Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
+                                        @CheckForNull SCMNavigatorEvent event,
+                                        @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        Map<Class<? extends Action>, Action> result = new HashMap<>();
+        List<Action> result = new ArrayList<>();
         // if your SCM provides support for metadata at the "SCMNavigator" level
         // then you probably want to return at least a `jenkins.branch.MetadataAction`
         // from this method. The listener can be used to log the interactions
         // with the backing source control system.
+        //
+        // When you implement event support, if you have events that can be trusted
+        // you may want to use the payloads of those events when populating the
+        // actions (if that will avoid extra network calls and give the same result)
         return result;
     }
 

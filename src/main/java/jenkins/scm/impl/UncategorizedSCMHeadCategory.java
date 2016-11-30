@@ -34,7 +34,7 @@ import org.jvnet.localizer.Localizable;
 /**
  * Standard category for uncategorized instances.
  *
- * @since FIXME
+ * @since 2.0
  */
 public final class UncategorizedSCMHeadCategory extends SCMHeadCategory {
     /**

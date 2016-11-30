@@ -32,7 +32,7 @@ import jenkins.scm.api.SCMSourceObserver;
 /**
  * A {@link SCMSourceObserver.ProjectObserver} that does nothing.
  *
- * @since FIXME
+ * @since 2.0
  */
 public class NoOpProjectObserver extends SCMSourceObserver.ProjectObserver {
     /**

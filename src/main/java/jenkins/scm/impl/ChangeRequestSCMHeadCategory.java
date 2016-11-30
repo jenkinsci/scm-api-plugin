@@ -35,7 +35,7 @@ import org.jvnet.localizer.Localizable;
 /**
  * Standard category for {@link ChangeRequestSCMHead} instances.
  *
- * @since FIXME
+ * @since 2.0
  */
 public final class ChangeRequestSCMHeadCategory extends SCMHeadCategory {
     /**

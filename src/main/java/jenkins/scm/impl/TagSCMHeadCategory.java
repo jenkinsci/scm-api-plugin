@@ -36,7 +36,7 @@ import org.jvnet.localizer.Localizable;
 /**
  * Standard category for {@link SCMHead} instances that have a {@link TagAction}.
  *
- * @since FIXME
+ * @since 2.0
  */
 public final class TagSCMHeadCategory extends SCMHeadCategory {
     /**

@@ -43,7 +43,7 @@ import jenkins.triggers.SCMTriggerItem;
  * A {@link SCMEventListener} that will trigger the post commit hooks enabled by {@link SCMTrigger} for any
  * {@link SCMHeadEvent} which return a positive match against a {@link SCM} through {@link SCMHeadEvent#isMatch(SCM)}.
  *
- * @since FIXME
+ * @since 2.0
  */
 @Extension
 public class SCMTriggerListener extends SCMEventListener {
