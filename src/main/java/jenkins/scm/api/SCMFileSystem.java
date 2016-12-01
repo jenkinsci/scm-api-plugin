@@ -49,9 +49,17 @@ import java.io.OutputStream;
  */
 public abstract class SCMFileSystem implements Closeable {
 
+    /**
+     * The revision that this file system is pinned on.
+     */
     @CheckForNull
     private final SCMRevision rev;
 
+    /**
+     * Constructor.
+     *
+     * @param rev the revision.
+     */
     protected SCMFileSystem(@CheckForNull SCMRevision rev) {
         this.rev = rev;
     }
@@ -74,9 +82,10 @@ public abstract class SCMFileSystem implements Closeable {
      * @return A <code>long</code> value representing the time the {@link SCMFileSystem} was
      * last modified, measured in milliseconds since the epoch
      * (00:00:00 GMT, January 1, 1970) or {@code 0L} if the operation is unsupported.
-     * @throws IOException if an error occurs while performing the operation.
+     * @throws IOException          if an error occurs while performing the operation.
+     * @throws InterruptedException if interrupted while performing the operation.
      */
-    public abstract long lastModified() throws IOException;
+    public abstract long lastModified() throws IOException, InterruptedException;
 
     /**
      * If this inspector is looking at the specific commit,
@@ -131,10 +140,12 @@ public abstract class SCMFileSystem implements Closeable {
      * @param changeLogStream the destination to stream the changes to.
      * @return {@code true} if there are changes, {@code false} if there were no changes.
      * @throws UnsupportedOperationException if this {@link SCMFileSystem} does not support changelog querying.
+     * @throws IOException                   if an error occurs while performing the operation.
+     * @throws InterruptedException          if interrupted while performing the operation.
      * @since 2.0
      */
     public boolean changesSince(@CheckForNull SCMRevision revision, @NonNull OutputStream changeLogStream)
-            throws UnsupportedOperationException {
+            throws UnsupportedOperationException, IOException, InterruptedException {
         throw new UnsupportedOperationException();
     }
 
@@ -143,9 +154,12 @@ public abstract class SCMFileSystem implements Closeable {
      *
      * @param scm the {@link SCM}.
      * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull SCM scm) {
+    public static SCMFileSystem of(@NonNull SCM scm) throws IOException, InterruptedException {
         return of(scm, null);
     }
 
@@ -156,22 +170,56 @@ public abstract class SCMFileSystem implements Closeable {
      * @param scm the {@link SCM}.
      * @param rev the specified {@link SCMRevision}.
      * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull SCM scm, @CheckForNull SCMRevision rev) {
+    public static SCMFileSystem of(@NonNull SCM scm, @CheckForNull SCMRevision rev)
+            throws IOException, InterruptedException {
         scm.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
+        Throwable failure = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(scm)) {
-                SCMFileSystem inspector = b.build(scm, rev);
-                if (inspector != null) {
-                    if (inspector.isFixedRevision()) {
-                        return inspector;
+                try {
+                    SCMFileSystem inspector = b.build(scm, rev);
+                    if (inspector != null) {
+                        if (inspector.isFixedRevision()) {
+                            return inspector;
+                        }
+                        if (fallBack == null) {
+                            fallBack = inspector;
+                        }
                     }
-                    if (fallBack == null) {
-                        fallBack = inspector;
+                } catch (IOException e) {
+                    if (failure == null) {
+                        failure = e;
                     }
+                    // TODO else { failure.addSuppressed(e); } // once Java 7
+                } catch (InterruptedException e) {
+                    if (failure == null) {
+                        failure = e;
+                    }
+                    // TODO else { failure.addSuppressed(e); } // once Java 7
+                } catch (RuntimeException e) {
+                    if (failure == null) {
+                        failure = e;
+                    }
+                    // TODO else { failure.addSuppressed(e); } // once Java 7
                 }
+            }
+        }
+        if (fallBack == null) {
+            if (failure instanceof IOException) {
+                throw (IOException) failure;
+            }
+            if (failure instanceof InterruptedException) {
+                throw (InterruptedException) failure;
+            }
+            //noinspection ConstantConditions
+            if (failure instanceof RuntimeException) {
+                throw (RuntimeException) failure;
             }
         }
         return fallBack;
@@ -206,9 +254,13 @@ public abstract class SCMFileSystem implements Closeable {
      * @param source the {@link SCMSource}.
      * @param head   the specified {@link SCMHead}.
      * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull SCMSource source, @NonNull SCMHead head) {
+    public static SCMFileSystem of(@NonNull SCMSource source, @NonNull SCMHead head)
+            throws IOException, InterruptedException {
         return of(source, head, null);
     }
 
@@ -221,23 +273,56 @@ public abstract class SCMFileSystem implements Closeable {
      * @param head   the specified {@link SCMHead}.
      * @param rev    the specified {@link SCMRevision}.
      * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
     public static SCMFileSystem of(@NonNull SCMSource source, @NonNull SCMHead head,
-                                   @CheckForNull SCMRevision rev) {
+                                   @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
         source.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
+        Throwable failure = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(source)) {
-                SCMFileSystem inspector = b.build(source, head, rev);
-                if (inspector != null) {
-                    if (inspector.isFixedRevision()) {
-                        return inspector;
+                try {
+                    SCMFileSystem inspector = b.build(source, head, rev);
+                    if (inspector != null) {
+                        if (inspector.isFixedRevision()) {
+                            return inspector;
+                        }
+                        if (fallBack == null) {
+                            fallBack = inspector;
+                        }
                     }
-                    if (fallBack == null) {
-                        fallBack = inspector;
+                } catch (IOException e) {
+                    if (failure == null) {
+                        failure = e;
                     }
+                    // TODO else { failure.addSuppressed(e); } // once Java 7
+                } catch (InterruptedException e) {
+                    if (failure == null) {
+                        failure = e;
+                    }
+                    // TODO else { failure.addSuppressed(e); } // once Java 7
+                } catch (RuntimeException e) {
+                    if (failure == null) {
+                        failure = e;
+                    }
+                    // TODO else { failure.addSuppressed(e); } // once Java 7
                 }
+            }
+        }
+        if (fallBack == null) {
+            if (failure instanceof IOException) {
+                throw (IOException) failure;
+            }
+            if (failure instanceof InterruptedException) {
+                throw (InterruptedException) failure;
+            }
+            //noinspection ConstantConditions
+            if (failure instanceof RuntimeException) {
+                throw (RuntimeException) failure;
             }
         }
         return fallBack;
@@ -296,9 +381,13 @@ public abstract class SCMFileSystem implements Closeable {
          * @param rev the specified {@link SCMRevision}.
          * @return the corresponding {@link SCMFileSystem} or {@code null} if this builder cannot create a {@link
          * SCMFileSystem} for the specified {@link SCM}.
+         * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+         *                              (such as the remote system being unavailable)
+         * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
          */
         @CheckForNull
-        public abstract SCMFileSystem build(@NonNull SCM scm, @CheckForNull SCMRevision rev);
+        public abstract SCMFileSystem build(@NonNull SCM scm, @CheckForNull SCMRevision rev)
+                throws IOException, InterruptedException;
 
         /**
          * Given a {@link SCMSource}, a {@link SCMHead} and a {@link SCMRevision} this method should try to build a
@@ -311,10 +400,13 @@ public abstract class SCMFileSystem implements Closeable {
          * @param head   the specified {@link SCMHead}.
          * @param rev    the specified {@link SCMRevision}.
          * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+         * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+         *                              (such as the remote system being unavailable)
+         * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
          */
         @CheckForNull
         public SCMFileSystem build(@NonNull SCMSource source, @NonNull SCMHead head,
-                                   @CheckForNull SCMRevision rev) {
+                                   @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
             return build(source.build(head, rev), rev);
         }
     }

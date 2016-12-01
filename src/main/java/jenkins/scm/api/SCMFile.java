@@ -40,6 +40,16 @@ import org.kohsuke.stapler.WebApp;
  * @author Kohsuke Kawaguchi
  */
 public abstract class SCMFile {
+
+    /**
+     * Cache of the last modified timestamp, to allow repeated calls to minimize the number of network round trips.
+     */
+    private Long modified;
+    /**
+     * Cache of the file type information, to allow repeated calls to minimize the number of network round trips.
+     */
+    private Type type;
+
     /**
      * Gets the file name of this file without any path portion, such as just "foo.txt"
      * <p>This method is the equivalent of {@link File#getName()}.</p>
@@ -64,10 +74,11 @@ public abstract class SCMFile {
      *
      * @return Always non-null. If this method is not a directory, this method returns
      * an empty iterable.
-     * @throws IOException if an error occurs while performing the operation.
+     * @throws IOException          if an error occurs while performing the operation.
+     * @throws InterruptedException if interrupted while performing the operation.
      */
     @NonNull
-    public abstract Iterable<SCMFile> children() throws IOException;
+    public abstract Iterable<SCMFile> children() throws IOException, InterruptedException;
 
     /**
      * Returns the time that the {@link SCMFile} was last modified.
@@ -77,8 +88,33 @@ public abstract class SCMFile {
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
      *                               created a nonexistent instance via {@link #child(String)})
      * @throws IOException           if an error occurs while performing the operation.
+     * @throws InterruptedException  if interrupted while performing the operation.
      */
-    public abstract long lastModified() throws IOException;
+    public long lastModified() throws IOException, InterruptedException {
+        return modified != null ? modified : (modified = modified());
+    }
+
+    /**
+     * Proactively seeds the last modified information where that has been already obtained in a different request.
+     *
+     * @param modified the time that the {@link SCMFile} was last modified.
+     * @since 2.0
+     */
+    protected final void modified(long modified) {
+        this.modified = modified;
+    }
+
+    /**
+     * Returns the time that the {@link SCMFile} was last modified.
+     *
+     * @return A <code>long</code> value representing the time the file was last modified, measured in milliseconds
+     * since the epoch (00:00:00 GMT, January 1, 1970) or {@code 0L} if the operation is unsupported.
+     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
+     *                               created a nonexistent instance via {@link #child(String)})
+     * @throws IOException           if an error occurs while performing the operation.
+     * @throws InterruptedException  if interrupted while performing the operation.
+     */
+    protected abstract long modified() throws IOException, InterruptedException;
 
     /**
      * Returns true if this object represents something that exists.
@@ -86,10 +122,11 @@ public abstract class SCMFile {
      * <p>NOTE: Typically to minimize round trips, {@link #getType()} would be preferred</p>
      *
      * @return true if this object represents something that exists.
-     * @throws IOException if an error occurs while performing the operation.
+     * @throws IOException          if an error occurs while performing the operation.
+     * @throws InterruptedException if interrupted while performing the operation.
      * @see #getType()
      */
-    public final boolean exists() throws IOException {
+    public final boolean exists() throws IOException, InterruptedException {
         return !Type.NONEXISTENT.equals(getType());
     }
 
@@ -99,10 +136,11 @@ public abstract class SCMFile {
      * <p>NOTE: Typically to minimize round trips, {@link #getType()} would be preferred</p>
      *
      * @return true if this object represents a file.
-     * @throws IOException if an error occurs while performing the operation.
+     * @throws IOException          if an error occurs while performing the operation.
+     * @throws InterruptedException if interrupted while performing the operation.
      * @see #getType()
      */
-    public final boolean isFile() throws IOException {
+    public final boolean isFile() throws IOException, InterruptedException {
         return Type.REGULAR_FILE.equals(getType());
     }
 
@@ -112,10 +150,11 @@ public abstract class SCMFile {
      * <p>NOTE: Typically to minimize round trips, {@link #getType()} would be preferred</p>
      *
      * @return true if this object represents a directory.
-     * @throws IOException if an error occurs while performing the operation.
+     * @throws IOException          if an error occurs while performing the operation.
+     * @throws InterruptedException if interrupted while performing the operation.
      * @see #getType()
      */
-    public final boolean isDirectory() throws IOException {
+    public final boolean isDirectory() throws IOException, InterruptedException {
         return Type.DIRECTORY.equals(getType());
     }
 
@@ -124,10 +163,35 @@ public abstract class SCMFile {
      *
      * @return the {@link Type} of this object, specifically {@link Type#NONEXISTENT} if this {@link SCMFile} instance
      * does not exist in the remote system (e.g. if you created a nonexistent instance via {@link #child(String)})
-     * @throws IOException if an error occurs while performing the operation.
+     * @throws IOException          if an error occurs while performing the operation.
+     * @throws InterruptedException if interrupted while performing the operation.
      */
     @NonNull
-    public abstract Type getType() throws IOException;
+    public Type getType() throws IOException, InterruptedException {
+        return type != null ? type : (type = type());
+    }
+
+    /**
+     * Proactively seeds the type information where that has been already obtained in a different request.
+     *
+     * @param type the type of this object.
+     * @since 2.0
+     */
+    protected final void type(@NonNull Type type) {
+        this.type = type;
+    }
+
+    /**
+     * The type of this object.
+     *
+     * @return the {@link Type} of this object, specifically {@link Type#NONEXISTENT} if this {@link SCMFile} instance
+     * does not exist in the remote system (e.g. if you created a nonexistent instance via {@link #child(String)})
+     * @throws IOException          if an error occurs while performing the operation.
+     * @throws InterruptedException if interrupted while performing the operation.
+     * @since 2.0
+     */
+    @NonNull
+    protected abstract Type type() throws IOException, InterruptedException;
 
     /**
      * Reads the content of this file.
@@ -135,10 +199,12 @@ public abstract class SCMFile {
      * @return an open stream to read the file content. The caller must close the stream.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
      *                               created a nonexistent instance via {@link #child(String)})
-     * @throws IOException           if this object represents a directory.
+     * @throws IOException           if this object represents a directory or if an error occurs while performing the
+     *                               operation.
+     * @throws InterruptedException  if interrupted while performing the operation.
      */
     @NonNull
-    public abstract InputStream content() throws IOException;
+    public abstract InputStream content() throws IOException, InterruptedException;
 
     /**
      * A convenience method that reads the content and then turns it into a byte array.
@@ -146,10 +212,12 @@ public abstract class SCMFile {
      * @return the file content as a byte array.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
      *                               created a nonexistent instance via {@link #child(String)})
-     * @throws IOException           if this object represents a directory.
+     * @throws IOException           if this object represents a directory or if an error occurs while performing the
+     *                               operation.
+     * @throws InterruptedException  if interrupted while performing the operation.
      */
     @NonNull
-    public byte[] contentAsBytes() throws IOException {
+    public byte[] contentAsBytes() throws IOException, InterruptedException {
         final InputStream is = content();
         try {
             return IOUtils.toByteArray(is);
@@ -164,10 +232,12 @@ public abstract class SCMFile {
      * @return the file content as a string.
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
      *                               created a nonexistent instance via {@link #child(String)})
-     * @throws IOException           if this object represents a directory.
+     * @throws IOException           if this object represents a directory or if an error occurs while performing the
+     *                               operation.
+     * @throws InterruptedException  if interrupted while performing the operation.
      */
     @NonNull
-    public String contentAsString() throws IOException {
+    public String contentAsString() throws IOException, InterruptedException {
         final InputStream is = content();
         try {
             return IOUtils.toString(is, contentEncoding());
@@ -186,9 +256,10 @@ public abstract class SCMFile {
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
      *                               created a nonexistent instance via {@link #child(String)})
      * @throws IOException           if an error occurs while performing the operation.
+     * @throws InterruptedException  if interrupted while performing the operation.
      */
     @NonNull
-    public String contentMimeType() throws IOException {
+    public String contentMimeType() throws IOException, InterruptedException {
         return getMimeType(getName());
     }
 
@@ -201,8 +272,9 @@ public abstract class SCMFile {
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
      *                               created a nonexistent instance via {@link #child(String)})
      * @throws IOException           if an error occurs while performing the operation.
+     * @throws InterruptedException  if interrupted while performing the operation.
      */
-    public boolean isContentBinary() throws IOException {
+    public boolean isContentBinary() throws IOException, InterruptedException {
         return !isContentText();
     }
 
@@ -213,8 +285,9 @@ public abstract class SCMFile {
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
      *                               created a nonexistent instance via {@link #child(String)})
      * @throws IOException           if an error occurs while performing the operation.
+     * @throws InterruptedException  if interrupted while performing the operation.
      */
-    public boolean isContentText() throws IOException {
+    public boolean isContentText() throws IOException, InterruptedException {
         return StringUtils.startsWithIgnoreCase(contentMimeType(), "text/");
     }
 
@@ -229,9 +302,10 @@ public abstract class SCMFile {
      * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
      *                               created a nonexistent instance via {@link #child(String)})
      * @throws IOException           if an error occurs while performing the operation.
+     * @throws InterruptedException  if interrupted while performing the operation.
      */
     @NonNull
-    public Charset contentEncoding() throws IOException {
+    public Charset contentEncoding() throws IOException, InterruptedException {
         return Charset.defaultCharset();
     }
 
@@ -242,7 +316,7 @@ public abstract class SCMFile {
      * @return the mime type.
      */
     @NonNull
-    private String getMimeType(@NonNull String fileName) {
+    private static String getMimeType(@NonNull String fileName) {
         int idx = fileName.lastIndexOf('/');
         fileName = fileName.substring(idx + 1);
         idx = fileName.lastIndexOf('\\');
