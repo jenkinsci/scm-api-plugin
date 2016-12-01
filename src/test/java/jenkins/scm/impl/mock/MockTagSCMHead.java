@@ -25,44 +25,13 @@
 
 package jenkins.scm.impl.mock;
 
-import jenkins.scm.api.actions.MetadataAction;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.scm.api.mixin.TagSCMHead;
 
-public class MockMetadataAction extends MetadataAction {
-    private final String description;
-    private final String displayName;
-    private final String url;
-    private final String iconClassName;
+public class MockTagSCMHead extends MockSCMHead implements TagSCMHead {
 
-    public MockMetadataAction(String description, String displayName, String url, String iconClassName) {
-        this.description = description;
-        this.displayName = displayName;
-        this.url = url;
-        this.iconClassName = iconClassName;
-    }
-
-    @Override
-    public String getObjectDescription() {
-        return description;
-    }
-
-    @Override
-    public String getObjectDisplayName() {
-        return displayName;
-    }
-
-    @Override
-    public String getObjectUrl() {
-        return url;
-    }
-
-    @Override
-    public String getAvatarIconClassName() {
-        return iconClassName;
-    }
-
-    @Override
-    public String getAvatarDescription() {
-        return iconClassName == null ? null : "Mock SCM";
+    public MockTagSCMHead(@NonNull String name) {
+        super(name);
     }
 
 }

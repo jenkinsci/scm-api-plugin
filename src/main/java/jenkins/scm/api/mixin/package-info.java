@@ -23,36 +23,13 @@
  *
  */
 
-package jenkins.scm.impl.mock;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead;
-import jenkins.scm.api.SCMHead;
-
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
-    private final String target;
-    private final Integer number;
-
-    public MockChangeRequestSCMHead(Integer number, String target) {
-        super("CR-" + number);
-        this.number = number;
-        this.target = target;
-    }
-
-    @NonNull
-    @Override
-    public String getId() {
-        return number.toString();
-    }
-
-    @NonNull
-    @Override
-    public SCMHead getTarget() {
-        return new MockSCMHead(target);
-    }
-
-    public Integer getNumber() {
-        return number;
-    }
-
-}
+/**
+ * The {@linkplain jenkins.scm.api.mixin.SCMHeadMixin mix-in} interfaces used by {@link jenkins.scm.api.SCMHead SCMHead}
+ * implementations to advertise that a specific head is not just a regular branch but is actually a special type of
+ * branch such as a {@linkplain jenkins.scm.api.mixin.ChangeRequestSCMHead change request} /
+ * {@linkplain jenkins.scm.api.mixin.TagSCMHead tag} / etc.
+ *
+ * @see jenkins.scm.api.SCMHead
+ * @since 2.0
+ */
+package jenkins.scm.api.mixin;

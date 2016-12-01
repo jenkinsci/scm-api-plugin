@@ -30,11 +30,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.actions.TagAction;
+import jenkins.scm.api.mixin.TagSCMHead;
 import org.jvnet.localizer.Localizable;
 
 /**
- * Standard category for {@link SCMHead} instances that have a {@link TagAction}.
+ * Standard category for {@link SCMHead} instances that implement {@link TagSCMHead}.
  *
  * @since 2.0
  */
@@ -62,6 +62,6 @@ public final class TagSCMHeadCategory extends SCMHeadCategory {
      */
     @Override
     public boolean isMatch(@NonNull SCMHead instance) {
-        return instance.getAction(TagAction.class) != null;
+        return instance instanceof TagSCMHead;
     }
 }

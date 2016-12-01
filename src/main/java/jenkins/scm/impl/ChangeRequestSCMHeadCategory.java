@@ -26,14 +26,14 @@ package jenkins.scm.impl;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.scm.api.ChangeRequestSCMHead;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMSource;
 import org.jvnet.localizer.Localizable;
 
 /**
- * Standard category for {@link ChangeRequestSCMHead} instances.
+ * Standard category for {@link SCMHead} instances that implement {@link ChangeRequestSCMHead}.
  *
  * @since 2.0
  */

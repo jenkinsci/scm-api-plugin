@@ -23,36 +23,16 @@
  *
  */
 
-package jenkins.scm.impl.mock;
+package jenkins.scm.api.mixin;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import jenkins.scm.api.SCMHead;
 
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
-    private final String target;
-    private final Integer number;
-
-    public MockChangeRequestSCMHead(Integer number, String target) {
-        super("CR-" + number);
-        this.number = number;
-        this.target = target;
-    }
-
-    @NonNull
-    @Override
-    public String getId() {
-        return number.toString();
-    }
-
-    @NonNull
-    @Override
-    public SCMHead getTarget() {
-        return new MockSCMHead(target);
-    }
-
-    public Integer getNumber() {
-        return number;
-    }
-
+/**
+ * Mixin interface to identify {@link SCMHead} instances that correspond to a semi-immutable tag.
+ * Tags cannot be changed once created, but it may be possible to delete a tag and recreate a new tag with the same
+ * name as a previous tag.
+ *
+ * @since 2.0
+ */
+public interface TagSCMHead {
 }

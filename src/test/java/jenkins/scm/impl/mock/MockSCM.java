@@ -50,7 +50,6 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.actions.TagAction;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -85,7 +84,7 @@ public class MockSCM extends SCM {
             this.head = new MockChangeRequestSCMHead(number, target);
         } else {
             this.head =
-                    (head.startsWith("TAG:") ? new MockSCMHead(head.substring(4), true) : new MockSCMHead(head, false));
+                    (head.startsWith("TAG:") ? new MockTagSCMHead(head.substring(4)) : new MockSCMHead(head));
         }
         this.revision = revision == null ? null : new MockSCMRevision(this.head, revision);
     }
@@ -124,7 +123,7 @@ public class MockSCM extends SCM {
         if (head instanceof MockChangeRequestSCMHead) {
             return "CR-" + ((MockChangeRequestSCMHead) head).getNumber();
         }
-        if (head.getAction(TagAction.class) != null) {
+        if (head instanceof MockTagSCMHead) {
             return "TAG:" + head.getName();
         }
         return head.getName();

@@ -23,38 +23,37 @@
  *
  */
 
-package jenkins.scm.api.actions;
+package jenkins.scm.api.mixin;
 
-import hudson.model.InvisibleAction;
-import java.io.Serializable;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMSource;
 import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Indicates that an {@link SCMHead} represents a tag rather than a branch. Tags are at least semi-immutable, in other
- * words a tag cannot be changed after it has been created, but it may be replaced (deleted and a new tag created with
- * the same name)
+ * Mixin interface to identify {@link SCMHead} instances that correspond to a change request.
  *
- * @since FIXME
+ * @since 2.0
  */
-@ExportedBean
-public class TagAction extends InvisibleAction implements Serializable {
+public interface ChangeRequestSCMHead extends SCMHeadMixin {
 
-    private static final long serialVersionUID = 1L;
-
+    /**
+     * Identifier of this change request.
+     * Expected to be unique among requests coming from a given {@link SCMSource}.
+     *
+     * @return an ID of some kind, such as a pull request number (decimal) or a Gerrit change ID
+     */
     @Exported
-    public boolean isTag() {
-        return true;
-    }
+    @NonNull
+    String getId();
 
-    @Override
-    public int hashCode() {
-        return 0;
-    }
+    /**
+     * Branch to which this change would be merged or applied if it were accepted.
+     *
+     * @return a “target” or “base” branch
+     */
+    @Exported
+    @NonNull
+    SCMHead getTarget();
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj != null && getClass().equals(obj.getClass());
-    }
 }

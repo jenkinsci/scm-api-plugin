@@ -35,9 +35,7 @@ import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import jenkins.scm.api.SCMHead;
@@ -51,6 +49,8 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceEvent;
+import jenkins.scm.api.metadata.ContributorMetadataAction;
+import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
@@ -122,7 +122,7 @@ public class MockSCMSource extends SCMSource {
             for (final String branch : controller().listBranches(repository)) {
                 checkInterrupt();
                 String revision = controller().getRevision(repository, branch);
-                MockSCMHead head = new MockSCMHead(branch, false);
+                MockSCMHead head = new MockSCMHead(branch);
                 if (includes != null && !includes.contains(head)) {
                     continue;
                 }
@@ -135,7 +135,7 @@ public class MockSCMSource extends SCMSource {
             for (final String tag : controller().listTags(repository)) {
                 checkInterrupt();
                 String revision = controller().getRevision(repository, tag);
-                MockSCMHead head = new MockSCMHead(tag, true);
+                MockSCMHead head = new MockTagSCMHead(tag);
                 if (includes != null && !includes.contains(head)) {
                     continue;
                 }
@@ -177,8 +177,11 @@ public class MockSCMSource extends SCMSource {
         String displayName = controller().getDisplayName(repository);
         String url = controller().getUrl(repository);
         String iconClassName = controller().getRepoIconClassName();
-        if (description != null || displayName != null || url != null || iconClassName != null) {
-            result.add(new MockMetadataAction(description, displayName, url, iconClassName));
+        if (description != null || displayName != null || url != null) {
+            result.add(new ObjectMetadataAction(displayName, description, url));
+        }
+        if (iconClassName != null) {
+            result.add(new MockAvatarMetadataAction(iconClassName));
         }
         return result;
     }
@@ -198,7 +201,21 @@ public class MockSCMSource extends SCMSource {
                                            @CheckForNull SCMHeadEvent event,
                                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return Collections.<Action>singletonList(new MockSCMLink("branch"));
+        List<Action> result = new ArrayList<Action>();
+        if (head instanceof MockChangeRequestSCMHead) {
+            result.add(new ContributorMetadataAction(
+                    "bob",
+                    "Bob Smith",
+                    "bob@example.com"
+            ));
+            result.add(new ObjectMetadataAction(
+                    String.format("Change request #%d", ((MockChangeRequestSCMHead) head).getNumber()),
+                    null,
+                    "http://changes.example.com/" + ((MockChangeRequestSCMHead) head).getId()
+            ));
+        }
+        result.add(new MockSCMLink("branch"));
+        return result;
     }
 
     @Override

@@ -25,34 +25,41 @@
 
 package jenkins.scm.impl.mock;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead;
-import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.metadata.AvatarMetadataAction;
 
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
-    private final String target;
-    private final Integer number;
+public class MockAvatarMetadataAction extends AvatarMetadataAction {
+    private final String iconClassName;
 
-    public MockChangeRequestSCMHead(Integer number, String target) {
-        super("CR-" + number);
-        this.number = number;
-        this.target = target;
+    public MockAvatarMetadataAction( String iconClassName) {
+        this.iconClassName = iconClassName;
     }
 
-    @NonNull
     @Override
-    public String getId() {
-        return number.toString();
+    public String getAvatarIconClassName() {
+        return iconClassName;
     }
 
-    @NonNull
     @Override
-    public SCMHead getTarget() {
-        return new MockSCMHead(target);
+    public String getAvatarDescription() {
+        return iconClassName == null ? null : "Mock SCM";
     }
 
-    public Integer getNumber() {
-        return number;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        MockAvatarMetadataAction that = (MockAvatarMetadataAction) o;
+
+        return iconClassName != null ? iconClassName.equals(that.iconClassName) : that.iconClassName == null;
     }
 
+    @Override
+    public int hashCode() {
+        return iconClassName != null ? iconClassName.hashCode() : 0;
+    }
 }

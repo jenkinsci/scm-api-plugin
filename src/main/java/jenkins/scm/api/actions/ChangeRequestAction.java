@@ -26,98 +26,61 @@ package jenkins.scm.api.actions;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.InvisibleAction;
-import hudson.model.TaskListener;
 import java.io.Serializable;
 import java.net.URL;
 import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMHeadObserver;
-import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.metadata.ContributorMetadataAction;
+import jenkins.scm.api.metadata.ObjectMetadataAction;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Indicates that an {@link SCMHead} represents a registered proposed change, such as a pull request.
- * <p>Intended to capture concepts common to popular code review systems and which might warrant generic UI representation.
- * Fields may be null in case the corresponding concept does not exist in the system being represented.
- * <p>Should be restricted to those aspects of a change which are either immutable
- * or otherwise not affected by changes to the head {@link SCMRevision}
- * (as opposed to, say, mergeability status).
- * Should also be restricted to short metadata which can be quickly retrieved during {@link SCMSource#retrieve(SCMHeadObserver, TaskListener)}.
- * @see SCMHead#getAllActions
+ * Class retained for binary compatibility only for instances upgrading and deserializing data from disk.
  * @since 1.1
+ * @deprecated use {@link ContributorMetadataAction} for the author information, {@link ObjectMetadataAction} for the
+ * title and links and {@link ChangeRequestSCMHead#getId()} and
+ * {@link ChangeRequestSCMHead#getTarget()}
  */
-@ExportedBean
+@Restricted(DoNotUse.class)
+@Deprecated
 public abstract class ChangeRequestAction extends InvisibleAction implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Identifier of this change request.
-     * Expected to be unique among requests coming from a given {@link SCMSource}.
-     * @return an ID of some kind, such as a pull request number (decimal) or a Gerrit change ID
-     */
-    @Exported
     @CheckForNull
     public String getId() {
         return null;
     }
 
-    /**
-     * Link to web representation of change.
-     * @return an HTTP(S) permalink
-     */
-    @Exported
     @CheckForNull
     public URL getURL() {
         return null;
     }
 
-    /**
-     * Display title.
-     * @return a summary message
-     */
-    @Exported
     @CheckForNull
     public String getTitle() {
         return null;
     }
 
-    /**
-     * Username of author of the proposed change.
-     * @return a user login name or other unique user identifier
-     */
-    @Exported
     @CheckForNull
     public String getAuthor() {
         return null;
     }
 
-    /**
-     * Human name of author of proposed change.
-     * @return First M. Last, etc.
-     */
-    @Exported
     @CheckForNull
     public String getAuthorDisplayName() {
         return null;
     }
 
-    /**
-     * Email address of author of proposed change.
-     * @return a valid email address
-     */
-    @Exported
     @CheckForNull
     public String getAuthorEmail() {
         return null;
     }
 
-    /**
-     * Branch to which this change would be merged or applied if it were accepted.
-     * @return a “target” or “base” branch
-     */
-    @Exported
     @CheckForNull
     public SCMHead getTarget() {
         return null;

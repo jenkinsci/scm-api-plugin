@@ -23,36 +23,27 @@
  *
  */
 
-package jenkins.scm.impl.mock;
+package jenkins.scm.api.mixin;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead;
+import java.io.Serializable;
 import jenkins.scm.api.SCMHead;
+import org.kohsuke.stapler.export.Exported;
 
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
-    private final String target;
-    private final Integer number;
-
-    public MockChangeRequestSCMHead(Integer number, String target) {
-        super("CR-" + number);
-        this.number = number;
-        this.target = target;
-    }
-
+/**
+ * Interface to allow declaring mixin interfaces for {@link SCMHead} subclasses. Do not implement this interface
+ * directly, rather extend from {@link SCMHead} and implement the appropriate mixins such as
+ * {@link ChangeRequestSCMHead} and {@link TagSCMHead}
+ *
+ * @since 2.0
+ */
+public interface SCMHeadMixin extends Comparable<SCMHead>, Serializable {
+    /**
+     * Returns the name.
+     *
+     * @return the name.
+     */
+    @Exported
     @NonNull
-    @Override
-    public String getId() {
-        return number.toString();
-    }
-
-    @NonNull
-    @Override
-    public SCMHead getTarget() {
-        return new MockSCMHead(target);
-    }
-
-    public Integer getNumber() {
-        return number;
-    }
-
+    String getName();
 }

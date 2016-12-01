@@ -25,9 +25,9 @@
 
 package jenkins.scm.impl;
 
-import jenkins.scm.api.ChangeRequestSCMHead;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.actions.TagAction;
+import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
+import jenkins.scm.impl.mock.MockSCMHead;
+import jenkins.scm.impl.mock.MockTagSCMHead;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -35,8 +35,6 @@ import org.junit.runner.RunWith;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(Theories.class)
 public class UncategorizedSCMHeadCategoryTest {
@@ -49,22 +47,17 @@ public class UncategorizedSCMHeadCategoryTest {
 
     @Theory
     public void given_tagHead_when_isMatch_then_confirmMatch(UncategorizedSCMHeadCategory instance) throws Exception {
-        SCMHead mock = mock(SCMHead.class);
-        TagAction tag = mock(TagAction.class);
-        when(mock.getAction(TagAction.class)).thenReturn(tag);
-        assertThat(instance.isMatch(mock), is(true));
+        assertThat(instance.isMatch(new MockTagSCMHead("1.0")), is(true));
     }
 
     @Theory
     public void given_regularHead_when_isMatch_then_confirmMatch(UncategorizedSCMHeadCategory instance) throws Exception {
-        SCMHead mock = mock(SCMHead.class);
-        when(mock.getAction(TagAction.class)).thenReturn(null);
-        assertThat(instance.isMatch(mock), is(true));
+        assertThat(instance.isMatch(new MockSCMHead("master")), is(true));
     }
 
     @Theory
     public void given_changeRequestHead_when_isMatch_then_confirmMatch(UncategorizedSCMHeadCategory instance) throws Exception {
-        assertThat(instance.isMatch(mock(ChangeRequestSCMHead.class)), is(true));
+        assertThat(instance.isMatch(new MockChangeRequestSCMHead(1, "master")), is(true));
     }
 
 }

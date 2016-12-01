@@ -26,14 +26,13 @@
 package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.Action;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import jenkins.scm.api.actions.ChangeRequestAction;
-import jenkins.scm.api.actions.TagAction;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead;
+import jenkins.scm.api.mixin.TagSCMHead;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
@@ -42,10 +41,6 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.jvnet.localizer.Localizable;
 
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -137,22 +132,31 @@ public class SCMCategoryTest {
         UncategorizedSCMHeadCategory u = new UncategorizedSCMHeadCategory();
         ChangeRequestSCMHeadCategory c = new ChangeRequestSCMHeadCategory();
         TagSCMHeadCategory t = new TagSCMHeadCategory();
-        SCMHead mh = new SCMHead("basic");
-        SCMHead th = new SCMHead("basic"){
-            @NonNull
-            @Override
-            public List<? extends Action> getAllActions() {
-                return Collections.singletonList(new TagAction());
+        final SCMHead mh = new SCMHead("basic");
+        class TagSCMHeadImpl extends SCMHead implements TagSCMHead {
+            public TagSCMHeadImpl(@NonNull String name) {
+                super(name);
             }
         };
-        ChangeRequestSCMHead ch = new ChangeRequestSCMHead("basic") {
+        SCMHead th = new TagSCMHeadImpl("basic");
+        class ChangeRequestSCMHeadImpl extends SCMHead implements ChangeRequestSCMHead {
+            public ChangeRequestSCMHeadImpl(@NonNull String name) {
+                super(name);
+            }
+
             @NonNull
             @Override
-            public ChangeRequestAction getChangeRequestAction() {
-                return new ChangeRequestAction() {
-                };
+            public String getId() {
+                return "mock";
             }
-        };
+
+            @NonNull
+            @Override
+            public SCMHead getTarget() {
+                return mh;
+            }
+        }
+        SCMHead ch = new ChangeRequestSCMHeadImpl("basic");
         assertThat(u.isMatch(mh, Arrays.asList(u, c, t)), is(true));
         assertThat(u.isMatch(ch, Arrays.asList(c, u, t)), is(false));
         assertThat(u.isMatch(th, Arrays.asList(c, u, t)), is(false));

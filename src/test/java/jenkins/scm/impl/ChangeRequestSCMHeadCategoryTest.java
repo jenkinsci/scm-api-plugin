@@ -25,9 +25,10 @@
 
 package jenkins.scm.impl;
 
-import jenkins.scm.api.ChangeRequestSCMHead;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import jenkins.scm.api.SCMHead;
-import org.junit.Test;
+import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
+import jenkins.scm.impl.mock.MockSCMHead;
 import org.junit.experimental.theories.DataPoint;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -48,12 +49,12 @@ public class ChangeRequestSCMHeadCategoryTest {
 
     @Theory
     public void given_changeRequestHead_when_isMatch_then_confirmMatch(ChangeRequestSCMHeadCategory instance) throws Exception {
-        assertThat(instance.isMatch(mock(ChangeRequestSCMHead.class)), is(true));
+        assertThat(instance.isMatch(new MockChangeRequestSCMHead(1, "master")), is(true));
     }
 
     @Theory
     public void given_regularHead_when_isMatch_then_rejectMatch(ChangeRequestSCMHeadCategory instance) throws Exception {
-        assertThat(instance.isMatch(mock(SCMHead.class)), is(false));
+        assertThat(instance.isMatch(new MockSCMHead("master")), is(false));
     }
 
 }
