@@ -748,33 +748,38 @@ The `jenkins.scm.api.SCMSource` implementation will also need a Stapler view for
 
 You will need to have implemented your own `SCMHead` and `SCMRevision` subclasses.
 
-* For regular branch and tag like things, you will want to extend from `SCMHead` directly. When the backing object in source control is more like a tag, then the `SCMHead.getActions()` should return a `TagAction` to identify that the head is a tag.
+* For regular branch like things, you will want to extend from `SCMHead` directly.
 +
 [source,java]
 ----
 public class MySCMHead extends SCMHead {
-    private static final TagAction TAG_ACTION = new TagAction();
     private static final long serialVersionUID = 1L;
 
-    private boolean tag;
-
-    public MockSCMHead(@NonNull String name, boolean tag) {
+    public MySCMHead(@NonNull String name) {
         super(name);
-        this.tag = tag;
-    }
-
-    @NonNull
-    @Override
-    public List<? extends Action> getAllActions() {
-        if (tag) {
-            List<Action> actions = new ArrayList<Action>(super.getAllActions());
-            actions.add(TAG_ACTION);
-            return actions;
-        } else {
-            return super.getAllActions();
-        }
     }
 }
+----
+
+* When the backing object in source control is more like a tag, then add in the `TagSCMHead` mixin interface to identify that the head is a tag.
++
+[source,java]
+----
+public class MyTagSCMHead extends MySCMHead implements TagSCMHead {
+    private static final long serialVersionUID = 1L;
+
+    public MyTagSCMHead(@NonNull String name) {
+        super(name);
+    }
+}
+----
+
+[TIP]
+====
+Both tags and regular branches can normally use the same `SCMRevision` implementation:
+
+[source,java]
+----
 public class MySCMRevision extends SCMRevision {
     private static final long serialVersionUID = 1L;
 
@@ -819,36 +824,34 @@ public class MySCMRevision extends SCMRevision {
 
 * Change request like things are special. For one, the actual strategy used to determine what to build can be different from a regular head. The change request may be built against the original baseline revision, or it mat be built against the current revision of the original baseline branch.
 +
-For this reason change request like things should extend from `ChangeRequestSCMHead` to flag for implementers that they need to think somewhat differently about how the change request should be exposed via the SCM API.
+You should consider whether it makes sense for change request like things to extend the same base class you used for branch and tag like thing or whether you should extend from `SCMHead` directly.
+In either case you should implement the `ChangeRequestSCMHead` mix-in interface.
 +
 Another important concern with change request like things is where the change request can originate from untrusted users.
 Implementers should always make it configurable whether change request like things will be excluded from the `SCMSource` and also where possible to differentiate between trusted and untrusted users.
 +
 [source,java]
 ----
-public class MyChangeRequestSCMHead extends ChangeRequestSCMHead {
+public class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
     private static final long serialVersionUID = 1L;
 
-    private final MyChangeRequestAction action;
+    private final String id;
+    private final MySCMHead target;
 
-    public MyChangeRequestSCMHead(MyChangeRequestAction action) {
-        super("Change/" + action.getId()); // because My SCM calls Change Requests Change/### where ### is the change ID
-        this.action = action;
+    public MyChangeRequestSCMHead(String id, MySCMHead target) {
+        super("Change/" + id); // because My SCM calls Change Requests Change/### where ### is the change ID
+        this.id = id;
+        this.target = target;
     }
 
     public String getId() {
-        // ...
+        return id;
     }
 
     public SCMHead getTarget() {
-        // ...
+        return target;
     }
 
-    @NonNull
-    @Override
-    public ChangeRequestAction getChangeRequestAction() {
-        return action;
-    }
 }
 public class MyChangeRequestSCMRevision extends SCMRevision {
     private static final long serialVersionUID = 1L;
