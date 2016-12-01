@@ -90,7 +90,7 @@ public abstract class SCMFile {
      * @throws IOException           if an error occurs while performing the operation.
      * @throws InterruptedException  if interrupted while performing the operation.
      */
-    public long lastModified() throws IOException, InterruptedException {
+    public final long lastModified() throws IOException, InterruptedException {
         return modified != null ? modified : (modified = modified());
     }
 
@@ -167,7 +167,7 @@ public abstract class SCMFile {
      * @throws InterruptedException if interrupted while performing the operation.
      */
     @NonNull
-    public Type getType() throws IOException, InterruptedException {
+    public final Type getType() throws IOException, InterruptedException {
         return type != null ? type : (type = type());
     }
 
