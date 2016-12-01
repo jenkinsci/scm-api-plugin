@@ -844,10 +844,14 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @param head the {@link SCMHead}.
      * @param revision the {@link SCMRevision}.
      * @return the {@link SCMSourceCriteria.Probe} or {@code null} if this source cannot be probed.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      * @since 2.0
      */
     @CheckForNull
-    protected final SCMProbe fromSCMFileSystem(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision) {
+    protected final SCMProbe fromSCMFileSystem(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision)
+            throws IOException, InterruptedException {
         final SCMFileSystem fileSystem = SCMFileSystem.of(this, head, revision);
         if (fileSystem != null) {
             // we can build a generic probe from the SCMFileSystem
@@ -859,7 +863,11 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                 @NonNull
                 @Override
                 public SCMProbeStat stat(@NonNull String path) throws IOException {
-                    return SCMProbeStat.fromType(fileSystem.child(path).getType());
+                    try {
+                        return SCMProbeStat.fromType(fileSystem.child(path).getType());
+                    } catch (InterruptedException e) {
+                        throw new IOException("Interrupted", e);
+                    }
                 }
 
                 /**
@@ -886,6 +894,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                     try {
                         return fileSystem.lastModified();
                     } catch (IOException e) {
+                        return 0L;
+                    } catch (InterruptedException e) {
                         return 0L;
                     }
                 }
