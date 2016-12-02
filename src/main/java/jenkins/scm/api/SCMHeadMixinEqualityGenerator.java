@@ -29,6 +29,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -125,11 +127,16 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
                 // somebody else created it while we were waiting for the write lock
                 return result;
             }
-            ClassLoader loader = type.getClassLoader();
+            final ClassLoader loader = type.getClassLoader();
             SCMHeadMixinEqualityGenerator generator;
             generator = generators.get(loader);
             if (generator == null) {
-                generator = new SCMHeadMixinEqualityGenerator(loader);
+                generator = AccessController.doPrivileged(new PrivilegedAction<SCMHeadMixinEqualityGenerator>() {
+                    @Override
+                    public SCMHeadMixinEqualityGenerator run() {
+                        return new SCMHeadMixinEqualityGenerator(loader);
+                    }
+                });
                 generators.put(loader, generator);
             }
             result = generator.create(type);
