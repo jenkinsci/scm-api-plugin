@@ -23,12 +23,16 @@
  */
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.WebApp;
@@ -42,13 +46,44 @@ import org.kohsuke.stapler.WebApp;
 public abstract class SCMFile {
 
     /**
-     * Cache of the last modified timestamp, to allow repeated calls to minimize the number of network round trips.
+     * The parent {@link SCMFile} or {@code null} for the root.
      */
-    private Long modified;
+    @CheckForNull
+    private final SCMFile parent;
+    /**
+     * The name of this {@link SCMFile}
+     */
+    private final String name;
     /**
      * Cache of the file type information, to allow repeated calls to minimize the number of network round trips.
+     * We cache the type information because too many people think that
+     * {@code File f; if (f.exists() && f.isFile()) ...} is a good code pattern, ignoring the fact that
+     * {@link File#isFile()} includes and existence check. We provide {@link #getType()} to avoid the need for
+     * such calling styles, but when people are replicating local code it can be easier to keep the logic
+     * the same as the code you are replicating - which is why we cache this here.
      */
     private Type type;
+
+    /**
+     * Constructor for the root entry.
+     *
+     * @since 2.0
+     */
+    protected SCMFile() {
+        this.parent = null;
+        this.name = "";
+    }
+
+    /**
+     * Constructor for any entry that is not the root.
+     *
+     * @param parent the parent reference or {@code null} if this is the root object.
+     * @since 2.0
+     */
+    protected SCMFile(@NonNull SCMFile parent, String name) {
+        this.parent = parent;
+        this.name = name;
+    }
 
     /**
      * Gets the file name of this file without any path portion, such as just "foo.txt"
@@ -57,7 +92,52 @@ public abstract class SCMFile {
      * @return the file name of this file without any path portion.
      */
     @NonNull
-    public abstract String getName();
+    public final String getName() {
+        return name;
+    }
+
+    /**
+     * Gets the file name including the path portion, such as "foo/bar/manchu.txt". Will never end in {@code /}.
+     *
+     * @return the pathname of this file.
+     * @since 2.0
+     */
+    @NonNull
+    public String getPath() {
+        if (parent == null) {
+            // root node
+            return "";
+        }
+        List<String> names = new ArrayList<String>();
+        SCMFile ptr = this;
+        while (ptr != null && !ptr.isRoot()) {
+            names.add(ptr.getName());
+            ptr = ptr.parent();
+        }
+        Collections.reverse(names);
+        return StringUtils.join(names, "/");
+    }
+
+    /**
+     * Tests if this instance is the root of the filesystem.
+     *
+     * @return {@code true} if this instance is the root of the filesystem.
+     * @since 2.0
+     */
+    public final boolean isRoot() {
+        return parent == null;
+    }
+
+    /**
+     * Retrieves the parent {@link SCMFile} instance.
+     *
+     * @return the parent or {@code null} if this instance is the root already.
+     * @since 2.0
+     */
+    @CheckForNull
+    public SCMFile parent() {
+        return parent;
+    }
 
     /**
      * Constructs a child/descendant {@link SCMFile} instance path relative from this object.
@@ -90,31 +170,7 @@ public abstract class SCMFile {
      * @throws IOException           if an error occurs while performing the operation.
      * @throws InterruptedException  if interrupted while performing the operation.
      */
-    public final long lastModified() throws IOException, InterruptedException {
-        return modified != null ? modified : (modified = modified());
-    }
-
-    /**
-     * Proactively seeds the last modified information where that has been already obtained in a different request.
-     *
-     * @param modified the time that the {@link SCMFile} was last modified.
-     * @since 2.0
-     */
-    protected final void modified(long modified) {
-        this.modified = modified;
-    }
-
-    /**
-     * Returns the time that the {@link SCMFile} was last modified.
-     *
-     * @return A <code>long</code> value representing the time the file was last modified, measured in milliseconds
-     * since the epoch (00:00:00 GMT, January 1, 1970) or {@code 0L} if the operation is unsupported.
-     * @throws FileNotFoundException if this {@link SCMFile} instance does not exist in the remote system (e.g. if you
-     *                               created a nonexistent instance via {@link #child(String)})
-     * @throws IOException           if an error occurs while performing the operation.
-     * @throws InterruptedException  if interrupted while performing the operation.
-     */
-    protected abstract long modified() throws IOException, InterruptedException;
+    public abstract long lastModified() throws IOException, InterruptedException;
 
     /**
      * Returns true if this object represents something that exists.
