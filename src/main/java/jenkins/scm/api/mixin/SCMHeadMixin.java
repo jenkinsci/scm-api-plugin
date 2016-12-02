@@ -63,6 +63,6 @@ public interface SCMHeadMixin extends Comparable<SCMHead>, Serializable {
 
     @Restricted(NoExternalUse.class)
     interface Equality {
-        boolean equals(SCMHeadMixin o1, SCMHeadMixin o2);
+        boolean equals(@NonNull SCMHeadMixin o1, @NonNull SCMHeadMixin o2);
     }
 }

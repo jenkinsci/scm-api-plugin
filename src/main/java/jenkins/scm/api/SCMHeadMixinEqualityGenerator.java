@@ -152,7 +152,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
      *
      * @param parent the parent classloader.
      */
-    private SCMHeadMixinEqualityGenerator(@NonNull ClassLoader parent) {
+    private SCMHeadMixinEqualityGenerator(ClassLoader parent) {
         super(parent);
     }
 
@@ -220,7 +220,9 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
         // now we define the class
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         String name = SCMHeadMixin.class.getPackage().getName() + ".internal." + type.getName();
-        cw.visit(Opcodes.V1_7, ACC_PUBLIC, name.replace('.', '/'), null, Type
+
+        // TODO Move to 1.7 opcodes once baseline 1.612+
+        cw.visit(Opcodes.V1_6, ACC_PUBLIC, name.replace('.', '/'), null, Type
                 .getInternalName(Object.class), new String[]{Type.getInternalName(SCMHeadMixin.Equality.class)});
         generateDefaultConstructor(cw);
         generateEquals(cw, properties.values());
@@ -246,7 +248,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
      * @param cw      the {@link ClassWriter}
      * @param methods the property getters.
      */
-    private void generateEquals(ClassWriter cw, Collection<Method> methods) {
+    private void generateEquals(@NonNull ClassWriter cw, @NonNull Collection<Method> methods) {
         String scmHeadMixinDescriptor = Type.getDescriptor(SCMHeadMixin.class);
         MethodVisitor mv = cw.visitMethod(
                 ACC_PUBLIC,
@@ -396,7 +398,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
      *
      * @param cw the {@link ClassWriter}.
      */
-    private void generateDefaultConstructor(ClassWriter cw) {
+    private void generateDefaultConstructor(@NonNull ClassWriter cw) {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
@@ -415,7 +417,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
          * {@inheritDoc}
          */
         @Override
-        public boolean equals(SCMHeadMixin o1, SCMHeadMixin o2) {
+        public boolean equals(@NonNull SCMHeadMixin o1, @NonNull SCMHeadMixin o2) {
             return true;
         }
     }
@@ -442,7 +444,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
          * {@inheritDoc}
          */
         @Override
-        public boolean equals(SCMHeadMixin o1, SCMHeadMixin o2) {
+        public boolean equals(@NonNull SCMHeadMixin o1, @NonNull SCMHeadMixin o2) {
             for (Method p : props) {
                 Object p1;
                 try {

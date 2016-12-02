@@ -78,6 +78,7 @@ public abstract class SCMFile {
      * Constructor for any entry that is not the root.
      *
      * @param parent the parent reference or {@code null} if this is the root object.
+     * @param name   the name of this entry.
      * @since 2.0
      */
     protected SCMFile(@NonNull SCMFile parent, String name) {
