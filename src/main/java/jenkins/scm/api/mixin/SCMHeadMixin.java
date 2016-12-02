@@ -28,12 +28,26 @@ package jenkins.scm.api.mixin;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Serializable;
 import jenkins.scm.api.SCMHead;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 
 /**
  * Interface to allow declaring mixin interfaces for {@link SCMHead} subclasses. Do not implement this interface
  * directly, rather extend from {@link SCMHead} and implement the appropriate mixins such as
  * {@link ChangeRequestSCMHead} and {@link TagSCMHead}
+ * <p>
+ * Two {@link SCMHeadMixin} implementations are equal if and only if:
+ * <ul>
+ *     <li>They both are the same class</li>
+ *     <li>They both have the same {@link SCMHeadMixin#getName()}</li>
+ *     <li>For each implemented {@link SCMHeadMixin} sub-interface, they both return the same values from all Java
+ *     Bean property getters declared on the sub-interface. Thus, for example {@link ChangeRequestSCMHead}
+ *     implementations are only considered equal if {@link ChangeRequestSCMHead#getId()} and
+ *     {@link ChangeRequestSCMHead#getTarget()} are also equal</li>
+ * </ul>
+ * The {@link Object#hashCode()} for a {@link SCMHeadMixin} implementation must be equal to the
+ *     {@link String#hashCode()} of {@link SCMHeadMixin#getName()}
  *
  * @since 2.0
  */
@@ -46,4 +60,9 @@ public interface SCMHeadMixin extends Comparable<SCMHead>, Serializable {
     @Exported
     @NonNull
     String getName();
+
+    @Restricted(NoExternalUse.class)
+    interface Equality {
+        boolean equals(SCMHeadMixin o1, SCMHeadMixin o2);
+    }
 }

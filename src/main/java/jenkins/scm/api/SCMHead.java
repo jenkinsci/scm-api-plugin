@@ -35,6 +35,7 @@ import hudson.util.AlternativeUiTextProvider;
 import java.util.Collections;
 import java.util.List;
 import jenkins.scm.api.actions.ChangeRequestAction;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import jenkins.scm.api.mixin.SCMHeadMixin;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -46,6 +47,24 @@ import org.kohsuke.stapler.export.ExportedBean;
  * rather than passing a {@link String} around. Each {@link SCMSource} implementation may want to have their own
  * subclasses in order assist to differentiating between different classes of head via the {@link SCMHeadMixin}
  * interfaces.
+ * <p>
+ * <strong>Please note the equality contract for {@link SCMHeadMixin} implementations:</strong>
+ * Two {@link SCMHeadMixin} implementations are equal if and only if:
+ * <ul>
+ *     <li>They both are the same class</li>
+ *     <li>They both have the same {@link SCMHeadMixin#getName()}</li>
+ *     <li>For each implemented {@link SCMHeadMixin} sub-interface, they both return the same values from all Java
+ *     Bean property getters declared on the sub-interface. Thus, for example {@link ChangeRequestSCMHead}
+ *     implementations are only considered equal if {@link ChangeRequestSCMHead#getId()} and
+ *     {@link ChangeRequestSCMHead#getTarget()} are also equal</li>
+ * </ul>
+ * The contract for {@link Object#hashCode()} is:
+ * <ul>
+ *     <li>{@link Object#hashCode()} for a {@link SCMHeadMixin} implementation must be equal to the
+ *     {@link String#hashCode()} of {@link SCMHeadMixin#getName()}</li>
+ * </ul>
+ * The {@link SCMHead#equals(Object)} and {@link SCMHead#hashCode()} methods enforce the above requirements and
+ * are final.
  *
  * @author Stephen Connolly
  */
@@ -100,7 +119,18 @@ public class SCMHead implements SCMHeadMixin {
     }
 
     /**
-     * {@inheritDoc}
+     * Indicates whether some other object is "equal to" this one.
+     * Two {@link SCMHeadMixin} implementations are equal if and only if:
+     * <ul>
+     *     <li>They both are the same class</li>
+     *     <li>They both have the same {@link SCMHeadMixin#getName()}</li>
+     *     <li>For each implemented {@link SCMHeadMixin} sub-interface, they both return the same values from all Java
+     *     Bean property getters declared on the sub-interface. Thus, for example {@link ChangeRequestSCMHead}
+     *     implementations are only considered equal if {@link ChangeRequestSCMHead#getId()} and
+     *     {@link ChangeRequestSCMHead#getTarget()} are also equal</li>
+     * </ul>
+     * @param o the object to compare with.
+     *          @return true if and only if the two objects are equal.
      */
     @Override
     public final boolean equals(Object o) {
@@ -114,6 +144,9 @@ public class SCMHead implements SCMHeadMixin {
         SCMHead scmHead = (SCMHead) o;
 
         if (!name.equals(scmHead.name)) {
+            return false;
+        }
+        if (!SCMHeadMixinEqualityGenerator.getOrCreate(getClass()).equals(this,scmHead)) {
             return false;
         }
 
