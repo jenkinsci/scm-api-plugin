@@ -40,7 +40,7 @@ import static org.junit.Assert.assertThat;
 public class UncategorizedSCMHeadCategoryTest {
 
     @DataPoint
-    public static UncategorizedSCMHeadCategory defInstance = new UncategorizedSCMHeadCategory();
+    public static UncategorizedSCMHeadCategory defInstance = UncategorizedSCMHeadCategory.DEFAULT;
 
     @DataPoint
     public static UncategorizedSCMHeadCategory custInstance = new UncategorizedSCMHeadCategory(Messages._UncategorizedSCMHeadCategory_DisplayName());

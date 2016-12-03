@@ -40,10 +40,17 @@ import java.io.OutputStream;
 
 /**
  * A virtual file system for a specific {@link SCM} potentially pinned to a specific {@link SCMRevision}. In contrast
- * to {@link SCMProbe}, implementations should not cache results (while some DVCS implementations may need to perform
- * a local checkout in order to be able to implement this API it should be noted that in such cases the local checkout
- * is not a cache but rather a copy of the immutable revisions - this may look and sound like a cache but it isn't
- * as the revision itself is immutable.
+ * to {@link SCMProbe}, implementations should not cache results between {@link SCMFileSystem} instantiations.
+ * <p>
+ * While some DVCS implementations may need to perform a local checkout in order to be able to implement this API it
+ * should be noted that in such cases the local checkout is not a cache but rather a copy of the immutable revisions
+ * - this may look and sound like a cache but it isn't as the revision itself is immutable. When a new
+ * {@link SCMFileSystem} if being instantiated against a {@code null} {@link SCMRevision} the DVCS system can re-use
+ * the previous local checkout <em>after reconfirming that the current revision for the head matches that of the local
+ * checkout.</em>
+ * <p>
+ * Where the {@link #getRevision()} is {@code null} or {@link SCMRevision#isDeterministic()} a {@link SCMFileSystem}
+ * can choose to keep the results locally (up to {@link SCMFileSystem#close()}) or re-query against the remote.
  *
  * @author Stephen Connolly
  */
@@ -234,7 +241,9 @@ public abstract class SCMFileSystem implements Closeable {
      * {@link #of(SCM, SCMRevision)} as it will always return {@code null}.
      *
      * @param scm the {@link SCMSource}.
-     * @return {@code true} if and only if the supplied {@link SCM} is supported by at least one {@link Builder}.
+     * @return {@code true} if {@link SCMFileSystem#of(SCM)} / {@link #of(SCM, SCMRevision)} could return a
+     * {@link SCMFileSystem} implementation, {@code false} if {@link SCMFileSystem#of(SCM)} /
+     * {@link #of(SCM, SCMRevision)} will always return {@code null} for the supplied {@link SCM}.
      * @since 2.0
      */
     public static boolean supports(@NonNull SCM scm) {
@@ -336,7 +345,9 @@ public abstract class SCMFileSystem implements Closeable {
      * {@link #of(SCMSource, SCMHead, SCMRevision)} as it will always return {@code null}.
      *
      * @param source the {@link SCMSource}.
-     * @return {@code true} if and only if the supplied {@link SCMSource} is supported by at least one {@link Builder}.
+     * @return {@code true} if {@link #of(SCMSource, SCMHead)} / {@link #of(SCMSource, SCMHead, SCMRevision)} could
+     * return a {@link SCMFileSystem} implementation, {@code false} if {@link #of(SCMSource, SCMHead)} /
+     * {@link #of(SCMSource, SCMHead, SCMRevision)} will always return {@code null} for the supplied {@link SCMSource}.
      * @since 2.0
      */
     public static boolean supports(@NonNull SCMSource source) {

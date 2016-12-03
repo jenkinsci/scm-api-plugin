@@ -40,7 +40,7 @@ import static org.junit.Assert.assertThat;
 public class TagSCMHeadCategoryTest {
 
     @DataPoint
-    public static TagSCMHeadCategory defInstance = new TagSCMHeadCategory();
+    public static TagSCMHeadCategory defInstance = TagSCMHeadCategory.DEFAULT;
 
     @DataPoint
     public static TagSCMHeadCategory custInstance = new TagSCMHeadCategory(Messages._TagSCMHeadCategory_DisplayName());

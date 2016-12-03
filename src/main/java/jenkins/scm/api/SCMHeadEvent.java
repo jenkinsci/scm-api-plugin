@@ -189,6 +189,13 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
                 for (final SCMEventListener l : ExtensionList.lookup(SCMEventListener.class)) {
                     try {
                         l.onSCMHeadEvent(event);
+                    } catch (LinkageError e) {
+                        LogRecord lr = new LogRecord(Level.WARNING,
+                                "SCMEventListener.onSCMHeadEvent(SCMHeadEvent) {0} propagated an exception"
+                        );
+                        lr.setThrown(e);
+                        lr.setParameters(new Object[]{l});
+                        LOGGER.log(lr);
                     } catch (Error e) {
                         throw e;
                     } catch (Throwable e) {
@@ -206,11 +213,31 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
         }
     }
 
+    /**
+     * This {@link SCMHeadObserver} wraps a delegate {@link SCMHeadObserver} such that only those {@link SCMHead}
+     * instances that are both mentioned in the event and actually available from the source are observed by the
+     * delegate.
+     * @param <O> the delegate observer class.
+     */
     private class Validated<O extends SCMHeadObserver> extends SCMHeadObserver.Wrapped<O> {
+        /**
+         * The {@link SCMHead} instances we are interested in.
+         */
         private final Set<SCMHead> includes;
+        /**
+         * The heads and revisions mentioned in the event.
+         */
         private final Map<SCMHead, SCMRevision> untrusted;
+        /**
+         * The actual heads and revisions confirmed by the source.
+         */
         private final Map<SCMHead, SCMRevision> trusted;
 
+        /**
+         * Constructor.
+         * @param delegate the delegate.
+         * @param source the source to validate against.
+         */
         private Validated(O delegate, SCMSource source) {
             super(delegate);
             untrusted = new HashMap<SCMHead, SCMRevision>(SCMHeadEvent.this.heads(source));
@@ -222,6 +249,9 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
             trusted = new HashMap<SCMHead, SCMRevision>(untrusted.size());
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
             if (untrusted.containsKey(head)) {
@@ -231,6 +261,9 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
             }
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean isObserving() {
             return !untrusted.isEmpty() && super.isObserving();
@@ -240,6 +273,9 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
             return trusted;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Set<SCMHead> getIncludes() {
             return includes;

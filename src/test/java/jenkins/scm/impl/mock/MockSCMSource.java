@@ -260,9 +260,9 @@ public class MockSCMSource extends SCMSource {
         @Override
         protected SCMHeadCategory[] createCategories() {
             return new SCMHeadCategory[]{
-                    new UncategorizedSCMHeadCategory(),
-                    new ChangeRequestSCMHeadCategory(),
-                    new TagSCMHeadCategory()
+                    UncategorizedSCMHeadCategory.DEFAULT,
+                    ChangeRequestSCMHeadCategory.DEFAULT,
+                    TagSCMHeadCategory.DEFAULT
             };
         }
     }

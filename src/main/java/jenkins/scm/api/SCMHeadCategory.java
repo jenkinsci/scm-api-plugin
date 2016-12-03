@@ -76,17 +76,20 @@ public abstract class SCMHeadCategory extends SCMCategory<SCMHead> {
                 return categories;
             }
         }
-        categories.add(new UncategorizedSCMHeadCategory());
+        categories.add(UncategorizedSCMHeadCategory.DEFAULT);
         return categories;
     }
 
     /**
      * Reduces a list of categories into a single composite category.
      *
-     * @param categories the list of categories.
+     * @param categories the list of categories (must contain at least one element).
      * @return a composite category.
      */
     public static SCMHeadCategory union(List<SCMHeadCategory> categories) {
+        if (categories.isEmpty()) {
+            throw new IllegalArgumentException("Cannot reduce an empty list");
+        }
         if (categories.size() == 1) {
             return categories.get(0);
         }

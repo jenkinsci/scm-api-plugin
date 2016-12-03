@@ -31,6 +31,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * Represents the result of an existence check which may optionally include details of an alternative name for the
  * object being checked for existence.
  *
+ * @see SCMProbe#stat(String)
  * @since 2.0
  */
 public class SCMProbeStat {

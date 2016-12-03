@@ -53,7 +53,7 @@ import jenkins.util.Timer;
  * implementation should make best effort to handle a {@link SCMSourceEvent} of {@link Type#CREATED} without
  * resorting to {@link SCMNavigator#visitSources(SCMSourceObserver)}</li>
  * <li>Creation of new {@link SCMHead} instances within a {@link SCMSource}, i.e. a {@link SCMSourceOwner}
- * implementation should make best effort to handle a {@link SCMSourceEvent} of {@link Type#CREATED} without
+ * implementation should make best effort to handle a {@link SCMHeadEvent} of {@link Type#CREATED} without
  * resorting to {@link SCMSource#fetch(SCMHeadObserver, TaskListener)} or
  * {@link SCMSource#fetch(SCMSourceCriteria, SCMHeadObserver, TaskListener)}</li>
  * <li>The update of a {@link SCMHead} instance to point to a new {@link SCMRevision}, i.e. a {@link SCMHeadEvent} of

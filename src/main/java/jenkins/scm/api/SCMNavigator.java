@@ -29,7 +29,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.util.AlternativeUiTextProvider;
@@ -42,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.TransientActionFactory;
 
 /**
  * An API for discovering new and navigating already discovered {@link SCMSource}s within an organization.
@@ -195,6 +198,15 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * Fetches any actions that should be persisted for objects related to the specified owner. For example,
      * if a {@link Item} owns a specific {@link SCMNavigator}, then this method would be called to refresh
      * any {@link Action} instances of that {@link Item}.
+     * <p>
+     * It is the responsibility of the caller to ensure that these {@link Action} instances are exposed on the
+     * {@link Item} for example by providing a {@link TransientActionFactory} implementation that reports these
+     * persisted actions separately (for example {@link AbstractProject#getActions()} returns an immutable list,
+     * so there is no way to persist the actions from this method against those sub-classes, instead the actions
+     * need to be persisted by some side mechanism and then injected into the {@link Actionable#getAllActions()}
+     * through a {@link TransientActionFactory} ignoring the cognitive dissonance triggered by adding non-transient
+     * actions through a transient action factory... think of it instead as a {@code TemporalActionFactory} that adds
+     * actions that can change over time)
      *
      * @param owner    the owner of this {@link SCMNavigator}.
      * @param event    the (optional) even to use when fetching the actions. Where the implementation is

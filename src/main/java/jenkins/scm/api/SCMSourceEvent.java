@@ -132,6 +132,13 @@ public abstract class SCMSourceEvent<P> extends SCMEvent<P> {
                 for (final SCMEventListener l : ExtensionList.lookup(SCMEventListener.class)) {
                     try {
                         l.onSCMSourceEvent(event);
+                    } catch (LinkageError e) {
+                        LogRecord lr = new LogRecord(Level.WARNING,
+                                "SCMEventListener.onSCMSourceEvent(onSCMSourceEvent) {0} propagated an exception"
+                        );
+                        lr.setThrown(e);
+                        lr.setParameters(new Object[]{l});
+                        LOGGER.log(lr);
                     } catch (Error e) {
                         throw e;
                     } catch (Throwable e) {

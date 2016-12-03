@@ -40,9 +40,14 @@ import org.jvnet.localizer.Localizable;
  */
 public final class TagSCMHeadCategory extends SCMHeadCategory {
     /**
+     * The {@link TagSCMHeadCategory} singleton with the default naming.
+     */
+    public static final TagSCMHeadCategory DEFAULT = new TagSCMHeadCategory();
+
+    /**
      * Constructs a {@link TagSCMHeadCategory} using the default naming.
      */
-    public TagSCMHeadCategory() {
+    private TagSCMHeadCategory() {
         super("tags", Messages._TagSCMHeadCategory_DisplayName());
     }
 

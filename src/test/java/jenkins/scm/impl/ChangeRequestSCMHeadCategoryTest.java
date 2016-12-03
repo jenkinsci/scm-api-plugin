@@ -42,7 +42,7 @@ import static org.mockito.Mockito.mock;
 public class ChangeRequestSCMHeadCategoryTest {
 
     @DataPoint
-    public static ChangeRequestSCMHeadCategory defInstance = new ChangeRequestSCMHeadCategory();
+    public static ChangeRequestSCMHeadCategory defInstance = ChangeRequestSCMHeadCategory.DEFAULT;
 
     @DataPoint
     public static ChangeRequestSCMHeadCategory custInstance = new ChangeRequestSCMHeadCategory(Messages._ChangeRequestSCMHeadCategory_DisplayName());

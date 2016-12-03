@@ -38,9 +38,14 @@ import org.jvnet.localizer.Localizable;
  */
 public final class UncategorizedSCMHeadCategory extends SCMHeadCategory {
     /**
+     * The {@link UncategorizedSCMHeadCategory} singleton with the default naming.
+     */
+    public static final UncategorizedSCMHeadCategory DEFAULT = new UncategorizedSCMHeadCategory();
+
+    /**
      * Constructs a {@link UncategorizedSCMHeadCategory} using the default naming.
      */
-    public UncategorizedSCMHeadCategory() {
+    private UncategorizedSCMHeadCategory() {
         super(Messages._UncategorizedSCMHeadCategory_DisplayName());
     }
 

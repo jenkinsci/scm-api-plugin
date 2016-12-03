@@ -111,6 +111,13 @@ public abstract class SCMNavigatorEvent<P> extends SCMEvent<P> {
                 for (final SCMEventListener l : ExtensionList.lookup(SCMEventListener.class)) {
                     try {
                         l.onSCMNavigatorEvent(event);
+                    } catch (LinkageError e) {
+                        LogRecord lr = new LogRecord(Level.WARNING,
+                                "SCMEventListener.onSCMNavigatorEvent(onSCMNavigatorEvent) {0} propagated an exception"
+                        );
+                        lr.setThrown(e);
+                        lr.setParameters(new Object[]{l});
+                        LOGGER.log(lr);
                     } catch (Error e) {
                         throw e;
                     } catch (Throwable e) {

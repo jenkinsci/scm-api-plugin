@@ -28,7 +28,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -47,6 +49,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.TransientActionFactory;
 import net.jcip.annotations.GuardedBy;
 
 /**
@@ -607,6 +610,15 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * if a {@link Job} is associated with a specific {@link SCMHead}, then this method would be called to refresh
      * any {@link Action} instances of that {@link Job}. <strong>{@link #fetchActions(SCMSourceEvent,TaskListener)}
      * must have been called at least once before calling this method.</strong>
+     * <p>
+     * Where a {@link SCMHead} is associated with a {@link Item} or {@link Job}, it is the responsibility of the
+     * caller to ensure that these {@link Action} instances are exposed on the {@link Item} / {@link Job} for example
+     * by providing a {@link TransientActionFactory} implementation that reports these persisted actions separately
+     * (for example {@link AbstractProject#getActions()} returns an immutable list, so there is no way to persist the
+     * actions from this method against those sub-classes, instead the actions need to be persisted by some side
+     * mechanism and then injected into the {@link Actionable#getAllActions()} through a {@link TransientActionFactory}
+     * ignoring the cognitive dissonance triggered by adding non-transient actions through a transient action factory...
+     * think of it instead as a {@code TemporalActionFactory} that adds actions that can change over time)
      *
      * @param head the {@link SCMHead}
      * @param event    the (optional) even to use when fetching the actions. Where the implementation is
@@ -633,6 +645,15 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * any {@link Action} instances of that {@link Item}. <strong>If this {@link SCMSource} belongs to a
      * {@link SCMNavigator} then {@link SCMNavigator#fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)}
      * must have been called at least once before calling this method.</strong>
+     * <p>
+     * Where a {@link SCMSource} is associated with a specific {@link Item}, it is the responsibility of the
+     * caller to ensure that these {@link Action} instances are exposed on the {@link Item} for example by providing a
+     * {@link TransientActionFactory} implementation that reports these persisted actions separately (for example
+     * {@link AbstractProject#getActions()} returns an immutable list, so there is no way to persist the actions from
+     * this method against those sub-classes, instead the actions need to be persisted by some side mechanism
+     * and then injected into the {@link Actionable#getAllActions()} through a {@link TransientActionFactory}
+     * ignoring the cognitive dissonance triggered by adding non-transient actions through a transient action factory...
+     * think of it instead as a {@code TemporalActionFactory} that adds actions that can change over time)
      *
      * @param event    the (optional) even to use when fetching the actions. Where the implementation is
      *                 able to trust the event, it may use the event payload to reduce the number of

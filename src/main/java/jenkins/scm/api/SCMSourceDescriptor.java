@@ -195,7 +195,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
                 }
             }
             if (!haveDefault) {
-                categories.add(new UncategorizedSCMHeadCategory());
+                categories.add(UncategorizedSCMHeadCategory.DEFAULT);
             }
             this.categories = Collections.unmodifiableSet(categories);
         }
@@ -213,7 +213,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
     @NonNull
     @GuardedBy("this")
     protected SCMHeadCategory[] createCategories() {
-        return new SCMHeadCategory[]{new UncategorizedSCMHeadCategory()};
+        return new SCMHeadCategory[]{UncategorizedSCMHeadCategory.DEFAULT};
     }
 
 

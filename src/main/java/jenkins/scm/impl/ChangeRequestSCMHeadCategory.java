@@ -39,9 +39,14 @@ import org.jvnet.localizer.Localizable;
  */
 public final class ChangeRequestSCMHeadCategory extends SCMHeadCategory {
     /**
+     * The {@link ChangeRequestSCMHeadCategory} singleton with the default naming.
+     */
+    public static final ChangeRequestSCMHeadCategory DEFAULT = new ChangeRequestSCMHeadCategory();
+
+    /**
      * Constructs a {@link ChangeRequestSCMHeadCategory} using the default naming.
      */
-    public ChangeRequestSCMHeadCategory() {
+    private ChangeRequestSCMHeadCategory() {
         super("change-requests", Messages._ChangeRequestSCMHeadCategory_DisplayName());
     }
 
