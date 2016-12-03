@@ -39,7 +39,7 @@ import static org.mockito.Mockito.mock;
 public class UncategorizedSCMSourceCategoryTest {
 
     @DataPoint
-    public static UncategorizedSCMSourceCategory defInstance = new UncategorizedSCMSourceCategory();
+    public static UncategorizedSCMSourceCategory defInstance = UncategorizedSCMSourceCategory.DEFAULT;
 
     @DataPoint
     public static UncategorizedSCMSourceCategory custInstance = new UncategorizedSCMSourceCategory(Messages._UncategorizedSCMSourceCategory_DisplayName());

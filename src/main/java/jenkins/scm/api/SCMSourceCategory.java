@@ -34,7 +34,7 @@ import jenkins.scm.impl.UncategorizedSCMSourceCategory;
 import org.jvnet.localizer.Localizable;
 
 /**
- * Base class for categories of {@link SCMSource}, for example: repository, depot, vob, etc.
+ * Base class for categories of {@link SCMSource}, for example: repository, depot, VOB, etc.
  *
  * @since 2.0
  */
@@ -75,7 +75,7 @@ public abstract class SCMSourceCategory extends SCMCategory<SCMSource> {
                 return categories;
             }
         }
-        categories.add(new UncategorizedSCMSourceCategory());
+        categories.add(UncategorizedSCMSourceCategory.DEFAULT);
         return categories;
     }
 

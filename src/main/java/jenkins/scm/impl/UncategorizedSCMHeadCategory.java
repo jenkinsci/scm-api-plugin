@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.SCMSourceDescriptor;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -51,9 +52,16 @@ public final class UncategorizedSCMHeadCategory extends SCMHeadCategory {
 
     /**
      * Constructs a {@link UncategorizedSCMHeadCategory} with customized naming. Use this constructor when the generic
-     * naming is not appropriate terminology for the specific {@link SCMSource}'s naming of branches
+     * naming is not appropriate terminology for the specific {@link SCMSource}'s naming of branches.
+     * <p>For example: the Accurev source control system uses the term "streams" to refer to the same thing that
+     * Git would call "branches", it would confuse Accurev users if we called their "streams" as "branches" so an
+     * Accurev specific provider would use this constructor to generate a singleton with the "streams" name.
+     * If there is a Git and Accurev source in the same context then
+     * {@link SCMHeadCategory#collectAndSimplify(Iterable)} will contain an {@link UncategorizedSCMHeadCategory} under
+     * the {@code default} key that has a {@link #getDisplayName()} of {@code Branches / Streams}
      *
-     * @param displayName the display name for change requests.
+     * @param displayName the display name for the uncategorized {@link SCMHead}s when the source control system uses a
+     *                    different terminology from "branches".
      */
     @SuppressFBWarnings("NP_METHOD_PARAMETER_TIGHTENS_ANNOTATION")
     public UncategorizedSCMHeadCategory(@NonNull Localizable displayName) {

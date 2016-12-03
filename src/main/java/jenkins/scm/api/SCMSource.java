@@ -510,9 +510,10 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     /**
      * Looks up a specific thingName based on some SCM-specific set of permissible syntaxes.
      * Delegates to {@link #retrieve(String, TaskListener)}.
-     * @param thingName might be a branch name, a tag name, a cryptographic hash, a thingName number, etc.
+     * @param thingName might be a branch name, a tag name, a cryptographic hash, a change request number, etc.
      * @param listener the task listener (optional)
-     * @return a valid thingName object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
+     * @return a valid {@link SCMRevision} corresponding to the argument, with a usable corresponding head, or
+     * {@code null} if malformed or not found
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since 1.3

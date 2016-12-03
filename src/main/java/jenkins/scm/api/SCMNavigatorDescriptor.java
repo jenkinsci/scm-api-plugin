@@ -142,7 +142,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
                 }
             }
             if (!haveDefault) {
-                categories.add(new UncategorizedSCMSourceCategory());
+                categories.add(UncategorizedSCMSourceCategory.DEFAULT);
             }
             this.categories = Collections.unmodifiableSet(categories);
         }
@@ -159,7 +159,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
     @NonNull
     @GuardedBy("this")
     protected SCMSourceCategory[] createCategories() {
-        return new SCMSourceCategory[]{new UncategorizedSCMSourceCategory()};
+        return new SCMSourceCategory[]{UncategorizedSCMSourceCategory.DEFAULT};
     }
 
     /**

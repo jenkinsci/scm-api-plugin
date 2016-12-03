@@ -26,6 +26,8 @@ package jenkins.scm.impl;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCategory;
@@ -38,17 +40,32 @@ import org.jvnet.localizer.Localizable;
  */
 public final class UncategorizedSCMSourceCategory extends SCMSourceCategory {
     /**
+     * The {@link UncategorizedSCMSourceCategory} singleton with the default naming.
+     */
+    public static final UncategorizedSCMSourceCategory DEFAULT = new UncategorizedSCMSourceCategory();
+
+    /**
      * Constructs a {@link UncategorizedSCMSourceCategory} using the default naming.
      */
-    public UncategorizedSCMSourceCategory() {
+    private UncategorizedSCMSourceCategory() {
         super(Messages._UncategorizedSCMSourceCategory_DisplayName());
     }
 
     /**
      * Constructs a {@link UncategorizedSCMSourceCategory} with customized naming. Use this constructor when the generic
      * naming is not appropriate terminology for the specific {@link SCMNavigator}'s naming of repositories.
+     * <p>For example: the Accurev source control system uses the term "depots" to refer to the same thing that
+     * Git would call "repositories", it would confuse Accurev users if we called their "depots" as "repositories"
+     * (especially as Accurev uses the term "repository" to refer to the Accurev server) so an
+     * Accurev specific provider would use this constructor to generate a singleton with the "depots" name.
+     * If there is a Git and Accurev navigator in the same context then
+     * {@link SCMSourceCategory#collectAndSimplify(Iterable)} will contain an {@link UncategorizedSCMSourceCategory} under
+     * the {@code default} key that has a {@link #getDisplayName()} of {@code Depots / Repositories} (which may indeed
+     * confuse the Accurev users who have not been exposed to Git, but as both are in use they should have
+     * been prepared for the different terminology)
      *
-     * @param displayName the display name for change requests.
+     * @param displayName the display name for the uncategorized {@link SCMSource}s when the source control system uses
+     *                    a different terminology from "repositories".
      */
     @SuppressFBWarnings("NP_METHOD_PARAMETER_TIGHTENS_ANNOTATION")
     public UncategorizedSCMSourceCategory(@NonNull Localizable displayName) {
