@@ -232,8 +232,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     /**
      * Fetches the latest heads and corresponding revisions scoped against a specific event.
      * Implementers are free to cache intermediary results but the call must always check the validity of any
-     * intermediary caches. Where the event {@link SCMEvent#isPayloadTrusted()}, implementations are free to use
-     * the event information to check the validity of any intermediary caches..
+     * intermediary caches.
      *
      * @param <O> Observer type.
      * @param criteria the criteria to use.
@@ -243,7 +242,6 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return the provided observer.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @see SCMEvent#isPayloadTrusted()
      * @since 2.0
      */
     @NonNull
@@ -258,8 +256,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     /**
      * Fetches the latest heads and corresponding revisions scoped against a specific event.
      * Implementers are free to cache intermediary results but the call must always check the validity of any
-     * intermediary caches. Where the event {@link SCMEvent#isPayloadTrusted()}, implementations are free to use
-     * the event information to check the validity of any intermediary caches..
+     * intermediary caches.
      *
      * @param <O> Observer type.
      * @param observer an optional observer of interim results.
@@ -268,7 +265,6 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return the provided observer.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @see SCMEvent#isPayloadTrusted()
      * @since 2.0
      */
     @NonNull
@@ -361,8 +357,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * If the supplied event is one that the implementer trusts, then the implementer may be able to optimize
      * retrieval to minimize round trips.
      * Implementers are free to cache intermediary results but the call must always check the validity of any
-     * intermediary caches. Where the event {@link SCMEvent#isPayloadTrusted()}, implementations are free to use
-     * the event information to check the validity of any intermediary caches..
+     * intermediary caches.
      * <p>
      * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
      * otherwise it will be impossible for users to interrupt the operation.</strong>
@@ -380,7 +375,6 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @param listener the task listener.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @see SCMEvent#isPayloadTrusted()
      * @since 2.0
      */
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria,
