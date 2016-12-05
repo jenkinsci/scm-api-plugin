@@ -191,9 +191,7 @@ public class SCMHead implements SCMHeadMixin {
     @NonNull
     public List<? extends Action> getAllActions() {
         // TODO should be deleted but old versions of blue ocean api rely on this
-        return this instanceof ChangeRequestSCMHead
-                ? Collections.<Action>singletonList(getAction(ChangeRequestAction.class))
-                :Collections.<Action>emptyList();
+        return Collections.emptyList();
     }
 
     /**
@@ -211,7 +209,7 @@ public class SCMHead implements SCMHeadMixin {
     @CheckForNull
     public <T extends Action> T getAction(@NonNull Class<T> type) {
         // TODO should be deleted but old versions of blue ocean api rely on this
-        return ChangeRequestAction.class.equals(type) ? (T)new ChangeRequestAction(){} : null;
+        return null;
     }
 
     /**

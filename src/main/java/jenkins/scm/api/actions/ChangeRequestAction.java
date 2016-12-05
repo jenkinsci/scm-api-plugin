@@ -45,7 +45,7 @@ import org.kohsuke.stapler.export.Exported;
  * title and links and {@link ChangeRequestSCMHead#getId()} and
  * {@link ChangeRequestSCMHead#getTarget()}
  */
-@Restricted(NoExternalUse.class) // TODO should be DoNotUse.class but old versions of blue ocean api rely
+@Restricted(DoNotUse.class) // TODO should be DoNotUse.class but old versions of blue ocean api rely
 @Deprecated
 public abstract class ChangeRequestAction extends InvisibleAction implements Serializable {
 
