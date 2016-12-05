@@ -89,11 +89,13 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      * <p>
      * <strong>NOTE:</strong> if and only if {@link #isMatch(SCMNavigator)} <i>always</i> returns {@code false} then
      * the value returned here does not matter and a dummy value can be returned instead.
+     * <p>
+     * <strong>DO NOT TRUST THE RETURN VALUES.</strong> Data from events should only be used as a rumour that requires
+     * verification.
      *
      * @return the name of the {@link SCMSource}
      */
     @NonNull
-    @EventData(Trustability.UNTRUSTED)
     public abstract String getSourceName();
 
     /**
@@ -118,7 +120,6 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      * not relevant to the supplied {@link SCMSource}
      */
     @NonNull
-    @EventData(Trustability.UNTRUSTED)
     public abstract Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source);
 
     /**

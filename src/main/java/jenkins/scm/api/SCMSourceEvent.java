@@ -88,11 +88,13 @@ public abstract class SCMSourceEvent<P> extends SCMEvent<P> {
      * Returns the name of the {@link SCMSource}, such as a repository name within an organization; may be used as an
      * {@link Item#getName}. Must be the same as the name that would be passed to
      * {@link SCMSourceObserver#observe(String)} by any {@link SCMNavigator} that {@link #isMatch(SCMNavigator)}.
+     * <p>
+     * <strong>DO NOT TRUST THE RETURN VALUES.</strong> Data from events should only be used as a rumour that requires
+     * verification.
      *
      * @return the name of the {@link SCMSource}
      */
     @NonNull
-    @EventData(Trustability.UNTRUSTED)
     public abstract String getSourceName();
 
     /**

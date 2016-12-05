@@ -46,6 +46,16 @@ import jenkins.util.Timer;
  * on top of the SCM API
  * will be able to respond to every event.
  * <h2>Information for SCM API consumers</h2>
+ * <p>
+ * Consumers of events should assume that the data from an event is unverified / untrusted.
+ * Events should be used to scope queries against the {@link SCMNavigator} / {@link SCMSource} to which they relate.
+ * In all other respects, consumers should treat the event payload and information derived from the payload as
+ * being <em>just a rumour</em>.
+ * <p>
+ * NOTE: Implementations may retain their own internal tracking of portions of the event payload that are verified /
+ * trusted and use such internal information to assist in optimization of the processing of scoped queried, but at this
+ * time we are not exposing such partial trust information to consumers until we have established some patterns.
+ * <p>
  * The priority for consumers of the SCM API, in other words, implementations of {@link SCMNavigatorOwner} and
  * {@link SCMSourceOwner}, is to avoid full rescans as a means of detecting:
  * <ul>
@@ -61,8 +71,12 @@ import jenkins.util.Timer;
  * out-of-band, but it would be nice if the notification could be consolidated.</li>
  * </ul>
  * <h2>Information for SCM API providers</h2>
+ * <p>
  * The priority for implementers of the SCM API, in other words, implementations of {@link SCMNavigator} and
- * {@link SCMSource}, is to ensure that consumers do not have to trigger full rescans
+ * {@link SCMSource}, is to ensure that consumers do not have to trigger full rescans.
+ * <p>
+ * Where implementers can obtain some form of trust / verification about event payloads, please share your patterns
+ * with the maintainers of this API so that a generic set of patterns can be abstracted for exposure to consumers.
  *
  * @param <P> the type of (provider specific) payload.
  * @since 2.0
@@ -88,7 +102,6 @@ public abstract class SCMEvent<P> {
      * The (provider specific) payload of the event
      */
     @NonNull
-    @EventData()
     private final P payload;
 
     /**
@@ -171,59 +184,8 @@ public abstract class SCMEvent<P> {
      * @return the provider specific event payload.
      */
     @NonNull
-    @EventData()
     public P getPayload() {
         return payload;
-    }
-
-    /**
-     * Gets the trustability of the event payload data. <strong>NOTE: This information is generally of little interest
-     * to consumers of the SCM API.</strong>
-     * <p>
-     * Some source control systems may be able to generate and deliver
-     * events with content that can be trusted. The trust information can be used by implementations of the
-     * SCM API when overriding {@link SCMNavigator#visitSources(SCMSourceObserver, SCMSourceEvent)},
-     * {@link SCMNavigator#visitSources(SCMSourceObserver, SCMHeadEvent)} or
-     * {@link SCMSource#fetch(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)} to minimize round
-     * trip requests to the backing source control system.
-     *
-     * @return {@code true} if and only if the payload is trusted.
-     * @see #payloadTrustability()
-     */
-    public final boolean isPayloadTrusted() {
-        return payloadTrustability().trusted;
-    }
-
-    /**
-     * Extension point for implementations of the SCM API to identify events that are derived from a trusted payload.
-     * In most cases, there is very little to be gained from marking events as {@link Trustability#TRUSTED}:
-     * <ul>
-     *     <li>
-     *       Users often want to use webhooks to trigger jobs for reasons other than events coming from a trusted
-     *       source control system, so the implementation may need to be able to mark some events as trusted
-     *       and other events as untrusted.
-     *     </li>
-     *     <li>
-     *       Consumers will not be able to make fine-grained decisions on how to use the trust information and in
-     *       general will just forward the event to the {@link SCMSource} / {@link SCMNavigator} through methods
-     *       such as {@link SCMNavigator#visitSources(SCMSourceObserver, SCMSourceEvent)} and
-     *       {@link SCMSource#fetch(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)}
-     *     </li>
-     *     <li>
-     *       If you are overriding this method then you will also want to be providing a custom implementation of
-     *       at least one of {@link SCMNavigator#visitSources(SCMSourceObserver, SCMSourceEvent)},
-     *       {@link SCMNavigator#visitSources(SCMSourceObserver, SCMHeadEvent)}, and
-     *       {@link SCMSource#retrieve(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)}
-     *     </li>
-     * </ul>
-     * @return the trustability of the event payload.
-     * @see SCMNavigator#visitSources(SCMSourceObserver, SCMSourceEvent)
-     * @see SCMNavigator#visitSources(SCMSourceObserver, SCMHeadEvent)
-     * @see SCMSource#fetch(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)
-     * @see SCMSource#retrieve(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)
-     */
-    protected Trustability payloadTrustability() {
-        return Trustability.UNTRUSTED;
     }
 
     /**
@@ -321,48 +283,4 @@ public abstract class SCMEvent<P> {
         REMOVED
     }
 
-    /**
-     * Annotation used to flag parts of the event data that comes from the event payload itself.
-     */
-    @Documented
-    @Inherited
-    @Target({ElementType.METHOD, ElementType.FIELD, ElementType.LOCAL_VARIABLE})
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface EventData {
-        /**
-         * The trustability of the event data.
-         *
-         * @return The trustability of the event data.
-         */
-        Trustability value() default Trustability.PAYLOAD;
-    }
-
-    /**
-     * The trustability of the event payload data.
-     *
-     * @see #isPayloadTrusted()
-     * @see #payloadTrustability()
-     * @see EventData
-     */
-    public enum Trustability {
-        /**
-         * Signals that the {@link EventData} annotated method's return value or annotated field content is trusted.
-         */
-        TRUSTED(true),
-        /**
-         * Signals that the {@link EventData} annotated method's return value or annotated field content is untrusted.
-         */
-        UNTRUSTED(false),
-        /**
-         * Signals that the {@link EventData} annotated method's return value or annotated field content's is derived
-         * from the event payload. To determine the trustability of the data for a specific event,
-         * consult {@link #isPayloadTrusted()}.
-         */
-        PAYLOAD(false);
-        private final boolean trusted;
-
-        Trustability(boolean trusted) {
-            this.trusted = trusted;
-        }
-    }
 }
