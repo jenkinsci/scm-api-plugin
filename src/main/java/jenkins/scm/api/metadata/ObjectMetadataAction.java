@@ -35,7 +35,22 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Holds metadata about the object referenced by a {@link SCMRevision}, {@link SCMHead}, {@link SCMSource} or {@link SCMNavigator}.
+ * Holds metadata about the object referenced by a {@link SCMRevision}, {@link SCMHead}, {@link SCMSource} or
+ * {@link SCMNavigator}.
+ * <p>
+ * For example:
+ * <ul>
+ *     <li>A {@link SCMNavigator} implementation that corresponds to a GitHub Team could use the
+ *     {@link #getObjectUrl()} to point to the GitHub Team page, and the {@link #getObjectDisplayName()} to provide the
+ *     team name</li>
+ *     <li>A {@link SCMSource} implementation that corresponds to a GitHub Repository could use the
+ *     {@link #getObjectUrl()} to point to the GitHub repository, and the {@link #getObjectDescription()} to provide the
+ *     repository description name</li>
+ *     <li>A {@link SCMHead} implementation that corresponds to a GitHub Pull Request could use the 
+ *     {@link #getObjectUrl()} to point to the pull request on GitHub, the {@link #getObjectDisplayName()} to provide 
+ *     the title of the pull request and {@link #getObjectDescription()} to provide the description of the pull request
+ *     </li>
+ * </ul>
  *
  * @since 2.0
  */

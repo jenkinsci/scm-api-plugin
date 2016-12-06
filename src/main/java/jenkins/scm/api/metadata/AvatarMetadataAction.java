@@ -44,6 +44,13 @@ import org.kohsuke.stapler.export.ExportedBean;
 /**
  * Holds metadata about an avatar to be assoicated with a {@link SCMSource} or {@link SCMNavigator} (also valid for
  * {@link SCMRevision} and {@link SCMHead}, but would be considered unusual).
+ * <p>
+ * For example:
+ * <ul>
+ *     <li>A {@link SCMNavigator} implementation that corresponds to a GitHub Team could use the
+ *     {@link #getAvatarImageOf(String)} to return the GitHub Team logo</li>
+ *     </li>
+ * </ul>
  *
  * @since 2.0
  */
