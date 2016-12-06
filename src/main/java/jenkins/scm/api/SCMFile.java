@@ -78,10 +78,13 @@ public abstract class SCMFile {
      * Constructor for any entry that is not the root.
      *
      * @param parent the parent reference or {@code null} if this is the root object.
-     * @param name   the name of this entry.
+     * @param name   the name of this entry (cannot contain '/').
      * @since 2.0
      */
     protected SCMFile(@NonNull SCMFile parent, String name) {
+        if (name.indexOf('/') != -1) {
+            throw new IllegalArgumentException("Name cannot contain '/");
+        }
         this.parent = parent;
         this.name = name;
     }
