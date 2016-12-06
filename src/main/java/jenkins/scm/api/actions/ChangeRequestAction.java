@@ -39,13 +39,13 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * Class retained for binary compatibility only for instances upgrading and deserializing data from disk.
+ * Class retained for on-disk compatibility only for instances upgrading and deserializing data from disk.
  * @since 1.1
  * @deprecated use {@link ContributorMetadataAction} for the author information, {@link ObjectMetadataAction} for the
  * title and links and {@link ChangeRequestSCMHead#getId()} and
  * {@link ChangeRequestSCMHead#getTarget()}
  */
-@Restricted(DoNotUse.class) // TODO should be DoNotUse.class but old versions of blue ocean api rely
+@Restricted(DoNotUse.class)
 @Deprecated
 public abstract class ChangeRequestAction extends InvisibleAction implements Serializable {
 

@@ -129,8 +129,38 @@ public class SCMHead implements SCMHeadMixin {
      *     implementations are only considered equal if {@link ChangeRequestSCMHead#getId()} and
      *     {@link ChangeRequestSCMHead#getTarget()} are also equal</li>
      * </ul>
+     * <p>
+     *     By way of example, any implementation of {@link ChangeRequestSCMHead} will have their equals behave like so:
+     * <pre>
+     *     public static class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
+     *         //...
+     *         // this method is implemented for you, but if you had to write it this is what you would
+     *         // have to write
+     *         public boolean equals(Object o) {
+     *             if (!super.equals(o)) {
+     *                 return false;
+     *             }
+     *             // can only be equal if they are the same class
+     *             MyChangeRequestSCMHead that = (MyChangeRequestSCMHead)o;
+     *             // because we implement ChangeRequestSCMHead and ChangeRequestSCMHead has a getId() method
+     *             String id1 = this.getId();
+     *             String id2 = that.getId();
+     *             if (id1 == null ? id2 != null : !id1.equals(id2)) {
+     *                 return false;
+     *             }
+     *             // because we implement ChangeRequestSCMHead and ChangeRequestSCMHead has a getTarget() method
+     *             SCMHead t1 = this.getTarget();
+     *             SCMHead t2 = that.getTarget();
+     *             if (t1 == null ? t2 != null : !t1.equals(t2)) {
+     *                 return false;
+     *             }
+     *             // we do not implement any other interfaces extending SCMHeadMixin, so we must be equal
+     *             return true;
+     *         }
+     *     }
+     * </pre>
      * @param o the object to compare with.
-     *          @return true if and only if the two objects are equal.
+     * @return true if and only if the two objects are equal.
      */
     @Override
     public final boolean equals(Object o) {
@@ -187,10 +217,10 @@ public class SCMHead implements SCMHeadMixin {
      * {@link SCMHead}
      */
     @Restricted(DoNotUse.class)
-    @Deprecated
+    @Deprecated // this is do not use because you should not use it
     @NonNull
     public List<? extends Action> getAllActions() {
-        // TODO should be deleted but old versions of blue ocean api rely on this
+        // TODO should be deleted but old versions of blue ocean api call this method
         return Collections.emptyList();
     }
 
@@ -205,10 +235,10 @@ public class SCMHead implements SCMHeadMixin {
      * {@link SCMHead}
      */
     @Restricted(DoNotUse.class)
-    @Deprecated
+    @Deprecated // this is do not use because you should not use it
     @CheckForNull
     public <T extends Action> T getAction(@NonNull Class<T> type) {
-        // TODO should be deleted but old versions of blue ocean api rely on this
+        // TODO should be deleted but old versions of blue ocean api call this method
         return null;
     }
 

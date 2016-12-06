@@ -49,13 +49,14 @@ import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import jenkins.scm.api.SCM2;
 import jenkins.scm.api.SCMHead;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.xml.sax.SAXException;
 
-public class MockSCM extends SCM {
+public class MockSCM extends SCM2 {
     private final String controllerId;
     private final String repository;
     private final SCMHead head;

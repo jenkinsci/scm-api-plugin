@@ -26,15 +26,10 @@
 package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.model.Cause;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
 import jenkins.util.Timer;
@@ -283,4 +278,36 @@ public abstract class SCMEvent<P> {
         REMOVED
     }
 
-}
+    protected abstract static class Dispatcher<E extends SCMEvent<?>> implements Runnable {
+        private final E event;
+
+        public Dispatcher(E event) {
+            this.event = event;
+        }
+
+        protected abstract void log(SCMEventListener l, Throwable e);
+        protected abstract void fire(SCMEventListener l, E event);
+
+        @Override
+        public void run() {
+            String oldName = Thread.currentThread().getName();
+            try {
+                Thread.currentThread().setName(String.format("%s %tc / %s",
+                        event.getClass(), event.getTimestamp(), oldName)
+                );
+                for (final SCMEventListener l : ExtensionList.lookup(SCMEventListener.class)) {
+                    try {
+                        fire(l, event);
+                    } catch (LinkageError e) {
+                        log(l, e);
+                    } catch (Error e) {
+                        throw e;
+                    } catch (Throwable e) {
+                        log(l, e);
+                    }
+                }
+            } finally {
+                Thread.currentThread().setName(oldName);
+            }
+        }
+    }}

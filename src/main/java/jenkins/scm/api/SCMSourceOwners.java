@@ -67,6 +67,7 @@ public abstract class SCMSourceOwners implements ExtensionPoint, Iterable<SCMSou
          * {@inheritDoc}
          */
         public Iterator<SCMSourceOwner> iterator() {
+            // TODO use JENKINS-40252 implementation once available in baseline core.
             Jenkins j = Jenkins.getActiveInstance();
             return j.getAllItems(SCMSourceOwner.class).iterator();
         }

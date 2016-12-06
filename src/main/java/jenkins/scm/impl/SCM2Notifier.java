@@ -33,14 +33,14 @@ import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 import hudson.scm.SCM;
 import hudson.triggers.SCMTrigger;
-import jenkins.scm.api.SCMTriggerItemSCM;
+import jenkins.scm.api.SCM2;
 import jenkins.triggers.SCMTriggerItem;
 
 /**
- * This class is responsible for firing the {@link SCMTriggerItemSCM#afterSave(SCMTriggerItem, SCM)} event.
+ * This class is responsible for firing the {@link jenkins.scm.api.SCM2#afterSave(SCMTriggerItem)} event.
  */
 @Extension
-public class SCMTriggerItemSCMNotifier extends SaveableListener {
+public class SCM2Notifier extends SaveableListener {
 
     /**
      * {@inheritDoc}
@@ -61,18 +61,10 @@ public class SCMTriggerItemSCMNotifier extends SaveableListener {
             // must have the trigger enabled and not opted out of post commit hooks
             return;
         }
-        // grab the extension list to save looking it up inside the loop
-        final ExtensionList<SCMTriggerItemSCM> receivers = ExtensionList.lookup(SCMTriggerItemSCM.class);
-        if (receivers.isEmpty()) {
-            // if we have no receivers, we're not going to do anything anyway, so save iterating the SCMs
-            return;
-        }
         for (SCM scm : item.getSCMs()) {
-            for (SCMTriggerItemSCM receiver : receivers) {
-                if (receiver.isMatch(scm)) {
-                    // we have a winner
-                    receiver.afterSave(item, scm);
-                }
+            if (scm instanceof SCM2) {
+                // we have a winner
+                ((SCM2) scm).afterSave(item);
             }
         }
     }

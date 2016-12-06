@@ -58,14 +58,15 @@ public abstract class SCMSourceObserver {
     public abstract TaskListener getListener();
 
     /**
-     * Returns the subset of project names that this observer is interested in or {@code null} if
-     * interested in all project names.
+     * Returns the subset of "project" names that this observer is interested in or {@code null} if
+     * interested in all "project" names.
      * <p>
      * <strong>Implementations should not assume that the {@link #getIncludes()} will be honoured.</strong>
      * This method is designed to provide a <i>hint</i> to {@link SCMNavigator} implementations.
      *
-     * @return the subset of project names that this observer is interested in or {@code null}.
+     * @return the subset of "project" names that this observer is interested in or {@code null}.
      * @since 2.0
+     * @see #observe(String) for the definition of "project" names
      */
     @CheckForNull
     public Set<String> getIncludes() {

@@ -29,6 +29,7 @@ import hudson.model.TaskListener;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
@@ -60,7 +61,8 @@ public class NullSCMSource extends SCMSource {
      */
     @Override
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
-                            @NonNull TaskListener listener) throws IOException, InterruptedException {
+                            @CheckForNull SCMHeadEvent<?> event,  @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
 
     }
 

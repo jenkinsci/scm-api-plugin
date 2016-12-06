@@ -73,7 +73,7 @@ public class SCMTriggerListener extends SCMEventListener {
                         continue;
                     }
                     for (SCM scm : scmTriggerItem.getSCMs()) {
-                        if (!event.isMatch(scm)) {
+                        if (event.isMatch(scm)) {
                             // only interested in SCMs that match the event
                             LOGGER.log(Level.INFO, "Triggering polling of {0}", project.getFullName());
                             Cause[] causes = event.asCauses();

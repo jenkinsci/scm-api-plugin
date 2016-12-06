@@ -370,7 +370,8 @@ public abstract class SCMFileSystem implements Closeable {
          * Checks if this {@link Builder} supports the supplied {@link SCM}.
          *
          * @param source the {@link SCM}.
-         * @return {@code true} if and only if the supplied {@link SCM} is supported by this {@link Builder}.
+         * @return {@code true} if and only if the supplied {@link SCM} is supported by this {@link Builder},
+         * {@code false} if {@link #build(SCM, SCMRevision)} will <strong>always</strong> return {@code null}.
          */
         public abstract boolean supports(SCM source);
 
@@ -378,7 +379,9 @@ public abstract class SCMFileSystem implements Closeable {
          * Checks if this {@link Builder} supports the supplied {@link SCMSource}.
          *
          * @param source the {@link SCMSource}.
-         * @return {@code true} if and only if the supplied {@link SCMSource} is supported by this {@link Builder}.
+         * @return {@code true} if and only if the supplied {@link SCMSource} is supported by this {@link Builder},
+         * {@code false} if {@link #build(SCMSource, SCMHead, SCMRevision)} will <strong>always</strong> return
+         * {@code null}.
          */
         public abstract boolean supports(SCMSource source);
 

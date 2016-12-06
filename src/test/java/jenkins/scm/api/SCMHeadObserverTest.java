@@ -33,7 +33,9 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -102,6 +104,20 @@ public class SCMHeadObserverTest {
 
     @Test
     public void filter() throws Exception {
+        SCMHead head1 = new SCMHead("bar");
+        SCMRevision revision1 = mock(SCMRevision.class);
+        SCMHead head2 = new SCMHead("foo");
+        SCMRevision revision2 = mock(SCMRevision.class);
+        SCMHeadObserver.Filter<SCMHeadObserver.Collector>
+                instance = SCMHeadObserver.filter(SCMHeadObserver.collect(), head2);
+        assertThat("Observing from the start", instance.isObserving(), is(true));
+        assertThat("Wants only selected head", instance.getIncludes(), contains(head2));
+        instance.observe(head1, revision1);
+        assertThat("Still observing before match", instance.isObserving(), is(true));
+        instance.observe(head2, revision2);
+        assertThat("Stops observing after selected observation", instance.isObserving(), is(false));
+        assertThat(instance.unwrap().result(), hasEntry(head2,revision2));
+        assertThat(instance.unwrap().result(), not(hasKey(head1)));
 
     }
 

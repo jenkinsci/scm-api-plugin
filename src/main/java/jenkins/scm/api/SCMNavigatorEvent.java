@@ -80,7 +80,7 @@ public abstract class SCMNavigatorEvent<P> extends SCMEvent<P> {
      * @param event the event to fire.
      */
     public static void fireNow(@NonNull final SCMNavigatorEvent<?> event) {
-        executorService().execute(new SCMNavigatorEvent.Dispatcher(event));
+        executorService().execute(new DispatcherImpl(event));
     }
 
     /**
@@ -91,48 +91,27 @@ public abstract class SCMNavigatorEvent<P> extends SCMEvent<P> {
      * @param delayUnits the units of time in which the delay is expressed.
      */
     public static void fireLater(@NonNull final SCMNavigatorEvent<?> event, long delay, TimeUnit delayUnits) {
-        executorService().schedule(new SCMNavigatorEvent.Dispatcher(event), delay, delayUnits);
+        executorService().schedule(new DispatcherImpl(event), delay, delayUnits);
     }
 
-    private static class Dispatcher implements Runnable {
-        private final SCMNavigatorEvent<?> event;
-
-        public Dispatcher(SCMNavigatorEvent<?> event) {
-            this.event = event;
+    private static class DispatcherImpl extends SCMEvent.Dispatcher<SCMNavigatorEvent<?>> {
+        private DispatcherImpl(SCMNavigatorEvent<?> event) {
+            super(event);
         }
 
         @Override
-        public void run() {
-            String oldName = Thread.currentThread().getName();
-            try {
-                Thread.currentThread().setName(String.format("SCMNavigatorEvent %tc / %s",
-                        event.getTimestamp(), oldName)
-                );
-                for (final SCMEventListener l : ExtensionList.lookup(SCMEventListener.class)) {
-                    try {
-                        l.onSCMNavigatorEvent(event);
-                    } catch (LinkageError e) {
-                        LogRecord lr = new LogRecord(Level.WARNING,
-                                "SCMEventListener.onSCMNavigatorEvent(onSCMNavigatorEvent) {0} propagated an exception"
-                        );
-                        lr.setThrown(e);
-                        lr.setParameters(new Object[]{l});
-                        LOGGER.log(lr);
-                    } catch (Error e) {
-                        throw e;
-                    } catch (Throwable e) {
-                        LogRecord lr = new LogRecord(Level.WARNING,
-                                "SCMEventListener.onSCMNavigatorEvent(SCMNavigatorEvent) {0} propagated an exception"
-                        );
-                        lr.setThrown(e);
-                        lr.setParameters(new Object[]{l});
-                        LOGGER.log(lr);
-                    }
-                }
-            } finally {
-                Thread.currentThread().setName(oldName);
-            }
+        protected void log(SCMEventListener l, Throwable e) {
+            LogRecord lr = new LogRecord(Level.WARNING,
+                    "SCMEventListener.onSCMSourceEvent(SCMSourceEvent) {0} propagated an exception"
+            );
+            lr.setThrown(e);
+            lr.setParameters(new Object[]{l});
+            LOGGER.log(lr);
+        }
+
+        @Override
+        protected void fire(SCMEventListener l, SCMNavigatorEvent<?> event) {
+            l.onSCMNavigatorEvent(event);
         }
     }
-
 }

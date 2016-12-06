@@ -35,6 +35,7 @@ import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import jenkins.scm.api.SCMFile;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMProbe;
 import jenkins.scm.api.SCMProbeStat;
@@ -97,19 +98,10 @@ public class SingleSCMSource extends SCMSource {
         return scm;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @NonNull
-    @Override
-    protected synchronized void retrieve(@NonNull SCMHeadObserver observer,
-                                         @NonNull TaskListener listener)
-            throws IOException {
-    }
-
     @Override
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
-                            @NonNull TaskListener listener) throws IOException, InterruptedException {
+                            @CheckForNull SCMHeadEvent<?> event, @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
         if (head == null) {
             head = new SCMHead(name);
             revisionHash = new SCMRevisionImpl(head);

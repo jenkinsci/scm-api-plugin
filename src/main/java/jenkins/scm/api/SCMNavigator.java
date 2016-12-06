@@ -209,12 +209,11 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * actions that can change over time)
      *
      * @param owner    the owner of this {@link SCMNavigator}.
-     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
      *                 able to trust the event, it may use the event payload to reduce the number of
      *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
-     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
-     * values indicate actions that should be removed if present.
+     * @return the list of {@link Action} instances to persist.
      * @throws IOException          if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since 2.0
@@ -232,18 +231,17 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * should be persisted for objects related to the specified owner.
      *
      * @param owner    the owner of this {@link SCMNavigator}.
-     * @param event    the (optional) even to use when fetching the actions. Where the implementation is
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
      *                 able to trust the event, it may use the event payload to reduce the number of
      *                 network calls required to obtain the actions.
      * @param listener the listener to report progress on.
-     * @return the map of {@link Action} instances to persist, keyed by the class of action. Keys with {@code null}
-     * values indicate actions that should be removed if present.
+     * @return the list of {@link Action} instances to persist.
      * @throws IOException          if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since 2.0
      */
     @NonNull
-    public List<Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
+    protected List<Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
                                         @CheckForNull SCMNavigatorEvent event,
                                         @NonNull TaskListener listener)
             throws IOException, InterruptedException {
@@ -285,6 +283,8 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     /**
      * Callback from the {@link SCMNavigatorOwner} after the {@link SCMNavigatorOwner} has been saved. Can be used to
      * register the {@link SCMNavigatorOwner} for a call-back hook from the backing SCM that this navigator is for.
+     * Implementations are responsible for ensuring that they do not create duplicate registrations and that orphaned
+     * registrations are removed eventually.
      *
      * @param owner the {@link SCMNavigatorOwner}.
      * @since 2.0

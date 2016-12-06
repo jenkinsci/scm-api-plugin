@@ -116,7 +116,8 @@ public class MockSCMSource extends SCMSource {
 
     @Override
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
-                            @NonNull TaskListener listener) throws IOException, InterruptedException {
+                            @CheckForNull SCMHeadEvent<?> event, @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
         Set<SCMHead> includes = observer.getIncludes();
         if (includeBranches) {
             for (final String branch : controller().listBranches(repository)) {
