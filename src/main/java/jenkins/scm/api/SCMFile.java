@@ -83,7 +83,7 @@ public abstract class SCMFile {
      */
     protected SCMFile(@NonNull SCMFile parent, String name) {
         if (name.indexOf('/') != -1) {
-            throw new IllegalArgumentException("Name cannot contain '/");
+            throw new IllegalArgumentException("Name cannot contain '/'");
         }
         this.parent = parent;
         this.name = name;
