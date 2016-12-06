@@ -33,8 +33,6 @@ import hudson.model.InvisibleAction;
 /**
  * {@link Action} added to {@link AbstractBuild} to remember
  * which revision is built in the given build.
- *
- * @author Stephen Connolly
  */
 public class SCMRevisionAction extends InvisibleAction {
     /**

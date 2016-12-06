@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 CloudBees, Inc.
+ * Copyright (c) 2015-2016 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,30 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Actionable;
+import hudson.model.Item;
+import hudson.model.TaskListener;
 import hudson.util.AlternativeUiTextProvider;
+import hudson.util.LogTaskListener;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.model.TransientActionFactory;
 
 /**
  * An API for discovering new and navigating already discovered {@link SCMSource}s within an organization.
  * An implementation does not need to cache existing discoveries, but some form of caching is strongly recommended
  * where the backing provider of repositories has a rate limiter on API calls.
+ *
  * @since 0.3-beta-1
  */
 public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator> implements ExtensionPoint {
@@ -42,22 +58,126 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     /**
      * Replaceable pronoun of that points to a {@link SCMNavigator}. Defaults to {@code null} depending on the context.
      *
-     * @since FIXME
+     * @since 2.0
      */
     public static final AlternativeUiTextProvider.Message<SCMNavigator> PRONOUN
             = new AlternativeUiTextProvider.Message<SCMNavigator>();
 
-    protected SCMNavigator() {}
+    /**
+     * Constructor.
+     */
+    protected SCMNavigator() {
+    }
 
     /**
      * Looks for SCM sources in a configured place.
      * After this method completes, no further calls may be made to the {@code observer} or its child callbacks.
+     * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
+     * otherwise it will be impossible for users to interrupt the operation.</strong>
+     *
      * @param observer a recipient of progress notifications and a source of contextual information
-     * @throws IOException if scanning fails
+     * @throws IOException          if scanning fails
      * @throws InterruptedException if scanning is interrupted
      */
     public abstract void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException;
 
+    /**
+     * Looks for SCM sources in a configured place (scoped against a specific event).
+     * After this method completes, no further calls may be made to the {@code observer} or its child callbacks.
+     * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
+     * otherwise it will be impossible for users to interrupt the operation.</strong>
+     *
+     * @param observer a recipient of progress notifications and a source of contextual information
+     * @param event    the event from which the operation should be scoped.
+     * @throws IOException          if scanning fails
+     * @throws InterruptedException if scanning is interrupted
+     * @since 2.0
+     */
+    public void visitSources(@NonNull SCMSourceObserver observer, @NonNull SCMSourceEvent<?> event)
+            throws IOException, InterruptedException {
+        visitSources(SCMSourceObserver.filter(observer, event.getSourceName()));
+    }
+
+    /**
+     * Looks for SCM sources in a configured place (scoped against a specific event).
+     * After this method completes, no further calls may be made to the {@code observer} or its child callbacks.
+     * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
+     * otherwise it will be impossible for users to interrupt the operation.</strong>
+     *
+     * @param observer a recipient of progress notifications and a source of contextual information
+     * @param event    the event from which the operation should be scoped.
+     * @throws IOException          if scanning fails
+     * @throws InterruptedException if scanning is interrupted
+     * @since 2.0
+     */
+    public void visitSources(@NonNull SCMSourceObserver observer, @NonNull SCMHeadEvent<?> event)
+            throws IOException, InterruptedException {
+        visitSources(SCMSourceObserver.filter(observer, event.getSourceName()));
+    }
+
+    /**
+     * Looks for the named SCM source in a configured place.
+     * Implementers must ensure that after this method completes, no further calls may be made to the {@code observer}
+     * or its child callbacks. Implementations are <strong>strongly encouraged</strong> to override this method.
+     *
+     * @param sourceName the source to visit.
+     * @param observer   a recipient of progress notifications and a source of contextual information
+     * @throws IOException          if scanning fails
+     * @throws InterruptedException if scanning is interrupted
+     * @since 2.0
+     */
+    public void visitSource(@NonNull String sourceName, @NonNull SCMSourceObserver observer)
+            throws IOException, InterruptedException {
+        visitSources(SCMSourceObserver.filter(observer, sourceName));
+    }
+
+    /**
+     * Returns the set of {@link SCMSourceCategory} that this {@link SCMNavigator} supports. There will always be
+     * exactly one {@link SCMCategory#isUncategorized()} instance in the returned set.
+     *
+     * @return the set of {@link SCMSourceCategory} that this {@link SCMNavigator} supports.
+     * @since 2.0
+     */
+    @NonNull
+    public final Set<? extends SCMSourceCategory> getCategories() {
+        Set<? extends SCMSourceCategory> result = getDescriptor().getCategories();
+        if (result.size() > 1
+                && MethodUtils.isOverridden(SCMNavigator.class,
+                getClass(),
+                "isCategoryEnabled",
+                SCMSourceCategory.class)
+                ) {
+            // if result has only one entry then it must be the default, so will never be filtered
+            // if we didn't override the category enabled check, then none will be disabled
+            result = new LinkedHashSet<SCMSourceCategory>(result);
+            for (Iterator<? extends SCMSourceCategory> iterator = result.iterator(); iterator.hasNext(); ) {
+                SCMSourceCategory category = iterator.next();
+                if (!category.isUncategorized() && !isCategoryEnabled(category)) {
+                    // only keep the enabled non-default categories
+                    iterator.remove();
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Sub-classes can override this method to filter the categories that are available from a specific source. For
+     * example a source type might be capable of having mainline branches, user branches, merge requests and
+     * release tags while a specific instance of the source may be configured to only have mainline branches and
+     * release tags.
+     *
+     * @param category the category.
+     * @return {@code true} if the supplied category is enabled for this {@link SCMNavigator} instance.
+     * @since 2.0
+     */
+    protected boolean isCategoryEnabled(@NonNull SCMSourceCategory category) {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SCMNavigatorDescriptor getDescriptor() {
         return (SCMNavigatorDescriptor) super.getDescriptor();
@@ -67,10 +187,109 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * Get the term used in the UI to represent this kind of {@link SCMNavigator}. Must start with a capital letter.
      *
      * @return the term or {@code null} to fall back to the calling context's default.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     public String getPronoun() {
         return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getPronoun());
     }
+
+    /**
+     * Fetches any actions that should be persisted for objects related to the specified owner. For example,
+     * if a {@link Item} owns a specific {@link SCMNavigator}, then this method would be called to refresh
+     * any {@link Action} instances of that {@link Item}.
+     * <p>
+     * It is the responsibility of the caller to ensure that these {@link Action} instances are exposed on the
+     * {@link Item} for example by providing a {@link TransientActionFactory} implementation that reports these
+     * persisted actions separately (for example {@link AbstractProject#getActions()} returns an immutable list,
+     * so there is no way to persist the actions from this method against those sub-classes, instead the actions
+     * need to be persisted by some side mechanism and then injected into the {@link Actionable#getAllActions()}
+     * through a {@link TransientActionFactory} ignoring the cognitive dissonance triggered by adding non-transient
+     * actions through a transient action factory... think of it instead as a {@code TemporalActionFactory} that adds
+     * actions that can change over time)
+     *
+     * @param owner    the owner of this {@link SCMNavigator}.
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
+     * @param listener the listener to report progress on.
+     * @return the list of {@link Action} instances to persist.
+     * @throws IOException          if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    public final List<Action> fetchActions(@NonNull SCMNavigatorOwner owner,
+                                           @CheckForNull SCMNavigatorEvent event,
+                                           @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Util.fixNull(retrieveActions(owner, event, defaultListener(listener)));
+    }
+
+    /**
+     * SPI for {@link #fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)}. Fetches any actions that
+     * should be persisted for objects related to the specified owner.
+     *
+     * @param owner    the owner of this {@link SCMNavigator}.
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
+     * @param listener the listener to report progress on.
+     * @return the list of {@link Action} instances to persist.
+     * @throws IOException          if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    protected List<Action> retrieveActions(@NonNull SCMNavigatorOwner owner,
+                                        @CheckForNull SCMNavigatorEvent event,
+                                        @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Turns a possibly {@code null} {@link TaskListener} reference into a guaranteed non-null reference.
+     *
+     * @param listener a possibly {@code null} {@link TaskListener} reference.
+     * @return guaranteed non-null {@link TaskListener}.
+     */
+    @NonNull
+    protected final TaskListener defaultListener(@CheckForNull TaskListener listener) {
+        if (listener == null) {
+            Level level;
+            try {
+                level = Level.parse(System.getProperty(getClass().getName() + ".defaultListenerLevel", "FINE"));
+            } catch (IllegalArgumentException e) {
+                level = Level.FINE;
+            }
+            return new LogTaskListener(Logger.getLogger(getClass().getName()), level);
+        }
+        return listener;
+    }
+
+    /**
+     * Checks the {@link Thread#interrupted()} and throws an {@link InterruptedException} if it was set.
+     *
+     * @throws InterruptedException if interrupted.
+     * @since 2.0
+     */
+    protected final void checkInterrupt() throws InterruptedException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
+    }
+
+    /**
+     * Callback from the {@link SCMNavigatorOwner} after the {@link SCMNavigatorOwner} has been saved. Can be used to
+     * register the {@link SCMNavigatorOwner} for a call-back hook from the backing SCM that this navigator is for.
+     * Implementations are responsible for ensuring that they do not create duplicate registrations and that orphaned
+     * registrations are removed eventually.
+     *
+     * @param owner the {@link SCMNavigatorOwner}.
+     * @since 2.0
+     */
+    public void afterSave(@NonNull SCMNavigatorOwner owner) {
+    }
+
 }

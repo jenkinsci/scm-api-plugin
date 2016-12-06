@@ -26,24 +26,31 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.AbstractItem;
-import hudson.model.Descriptor;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Actionable;
+import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.LogTaskListener;
-import net.jcip.annotations.GuardedBy;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.TransientActionFactory;
+import net.jcip.annotations.GuardedBy;
 
 /**
  * A {@link SCMSource} is responsible for fetching {@link SCMHead} and corresponding {@link SCMRevision} instances from
@@ -66,10 +73,49 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
 
     /**
      * Replaceable pronoun of that points to a {@link SCMSource}. Defaults to {@code null} depending on the context.
-     * @since FIXME
+     * @since 2.0
      */
     public static final AlternativeUiTextProvider.Message<SCMSource> PRONOUN
             = new AlternativeUiTextProvider.Message<SCMSource>();
+    /**
+     * This thread local allows us to refactor the {@link SCMSource} API so that there are now implementations that
+     * explicitly pass the {@link SCMSourceCriteria} while legacy implementations can still continue to work
+     * without having to be rewritten.
+     *
+     * @since 2.0
+     */
+    private static final ThreadLocal<SCMSourceCriteria> compatibilityHack = new ThreadLocal<SCMSourceCriteria>();
+    /**
+     * A special marker value used by {@link #getCriteria()} and stored in {@link #compatibilityHack} to signal
+     * that {@link #getCriteria()} should return {@code null}.
+     *
+     * @since 2.0
+     */
+    private static final SCMSourceCriteria nullSCMSourceCriteria = new SCMSourceCriteria() {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isHead(@NonNull Probe probe, @NonNull TaskListener listener) throws IOException {
+            return true;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int hashCode() {
+            return getClass().hashCode();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean equals(Object obj) {
+            return super.equals(obj);
+        }
+    };
 
     /**
      * The ID of this source.
@@ -133,6 +179,10 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @CheckForNull
     protected final SCMSourceCriteria getCriteria() {
+        SCMSourceCriteria hack = compatibilityHack.get();
+        if (hack != null) {
+            return hack == nullSCMSourceCriteria ? null : hack;
+        }
         final SCMSourceOwner owner = getOwner();
         if (owner == null) {
             return null;
@@ -153,9 +203,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @NonNull
     public final <O extends SCMHeadObserver> O fetch(@NonNull O observer,
-                                                        @CheckForNull TaskListener listener)
+                                                     @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        retrieve(observer, defaultListener(listener));
+        _retrieve(getCriteria(), observer, null, defaultListener(listener));
         return observer;
     }
 
@@ -163,14 +213,196 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
      * but the call must always check the validity of any intermediary caches.
      *
+     * @param <O> Observer type.
+     * @param criteria the criteria to use.
      * @param observer an optional observer of interim results.
-     * @param listener the task listener.
+     * @param listener the task listener
+     * @return the provided observer.
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      */
     @NonNull
-    protected abstract void retrieve(@NonNull SCMHeadObserver observer,
+    public final <O extends SCMHeadObserver> O fetch(@CheckForNull SCMSourceCriteria criteria, @NonNull O observer,
+                                                     @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        _retrieve(criteria, observer, null, defaultListener(listener));
+        return observer;
+    }
+
+    /**
+     * Fetches the latest heads and corresponding revisions scoped against a specific event.
+     * Implementers are free to cache intermediary results but the call must always check the validity of any
+     * intermediary caches.
+     *
+     * @param <O> Observer type.
+     * @param criteria the criteria to use.
+     * @param observer an optional observer of interim results.
+     * @param event the (optional) event from which the fetch should be scoped.
+     * @param listener the task listener
+     * @return the provided observer.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    public final <O extends SCMHeadObserver> O fetch(@CheckForNull SCMSourceCriteria criteria,
+                                                     @NonNull O observer, @CheckForNull SCMHeadEvent<?> event,
+                                                     @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        _retrieve(criteria, observer, event, defaultListener(listener));
+        return observer;
+    }
+
+    /**
+     * Fetches the latest heads and corresponding revisions scoped against a specific event.
+     * Implementers are free to cache intermediary results but the call must always check the validity of any
+     * intermediary caches.
+     *
+     * @param <O> Observer type.
+     * @param observer an optional observer of interim results.
+     * @param event the (optional) event from which the fetch should be scoped.
+     * @param listener the task listener
+     * @return the provided observer.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    public final <O extends SCMHeadObserver> O fetch(@NonNull O observer, @CheckForNull SCMHeadEvent<?> event,
+                                                     @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        _retrieve(getCriteria(), observer, event, defaultListener(listener));
+        return observer;
+    }
+
+    /**
+     * Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     *
+     * @param criteria the (optional) criteria.
+     * @param observer an observer of interim results.
+     * @param event the (optional) event from which the operation should be scoped.
+     * @param listener the task listener.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     */
+    @SuppressWarnings("deprecation")
+    private void _retrieve(@CheckForNull SCMSourceCriteria criteria,
+                           @NonNull SCMHeadObserver observer,
+                           @CheckForNull SCMHeadEvent<?> event,
+                           @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
+                SCMSourceCriteria.class, SCMHeadObserver.class, SCMHeadEvent.class, TaskListener.class)) {
+            // w00t this is a new implementation
+            retrieve(criteria, observer, event, defaultListener(listener));
+        } else if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
+                SCMSourceCriteria.class, SCMHeadObserver.class, TaskListener.class)) {
+            // a modern but still pre-2.0 implementation
+            if (event == null) {
+                retrieve(criteria, observer, defaultListener(listener));
+            } else if (event.isMatch(this)) {
+                retrieve(criteria, event.filter(this, observer), defaultListener(listener));
+            }
+        } else if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
+                SCMHeadObserver.class, TaskListener.class)){
+            // oh dear, realy old legacy implementation
+            SCMSourceCriteria hopefullyNull = compatibilityHack.get();
+            compatibilityHack.set(criteria == null ? nullSCMSourceCriteria : criteria);
+            try {
+                if (event == null) {
+                    retrieve(observer, defaultListener(listener));
+                } else if (event.isMatch(this)) {
+                    retrieve(event.filter(this, observer), defaultListener(listener));
+                }
+            } finally {
+                if (hopefullyNull != null) {
+                    // performance is going to be painful if you are nesting them
+                    compatibilityHack.set(hopefullyNull);
+                } else {
+                    compatibilityHack.remove(); // remove entry from ThreadLocalMap, set(null) would retain entry
+                }
+            }
+        } else {
+            throw new AbstractMethodError("Implement retrieve(SCMSourceCriteria,SCMHeadObserver,TaskListener)");
+        }
+    }
+
+
+    /**
+     * SPI: Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     *
+     * @param observer an optional observer of interim results.
+     * @param listener the task listener.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @deprecated prefer implementing {@link #retrieve(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)}
+     */
+    @Deprecated
+    protected void retrieve(@NonNull SCMHeadObserver observer, @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
+                SCMSourceCriteria.class, SCMHeadObserver.class, TaskListener.class)) {
+            retrieve(getCriteria(), observer, listener);
+        } else {
+            throw new AbstractMethodError("Implement retrieve(SCMSourceCriteria,SCMHeadObserver,TaskListener)");
+        }
+    }
+
+    /**
+     * SPI: Fetches the latest heads and corresponding revisions. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
+     * otherwise it will be impossible for users to interrupt the operation.</strong>
+     *
+     * @param criteria the criteria to use, if non-{@code null} them implementations <strong>must</strong>filter all
+     *                 {@link SCMHead} instances against the
+     *                 {@link SCMSourceCriteria#isHead(SCMSourceCriteria.Probe, TaskListener)}
+     *                 before passing through to the {@link SCMHeadObserver}.
+     * @param observer an optional observer of interim results.
+     * @param listener the task listener.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @deprecated prefer implementing {@link #retrieve(SCMSourceCriteria, SCMHeadObserver, SCMHeadEvent, TaskListener)}
+     */
+    @Deprecated
+    protected void retrieve(@CheckForNull SCMSourceCriteria criteria,
+                                     @NonNull SCMHeadObserver observer,
                                      @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+         _retrieve(criteria, observer, null, listener);
+    }
+
+    /**
+     * SPI: Fetches the latest heads and corresponding revisions that are originating from the supplied event.
+     * If the supplied event is one that the implementer trusts, then the implementer may be able to optimize
+     * retrieval to minimize round trips.
+     * Implementers are free to cache intermediary results but the call must always check the validity of any
+     * intermediary caches.
+     * <p>
+     * <strong>It is vitally important that implementations must periodically call {@link #checkInterrupt()}
+     * otherwise it will be impossible for users to interrupt the operation.</strong>
+     * <p>
+     * The default implementation wraps the {@link SCMHeadObserver} using
+     * {@link SCMHeadEvent#filter(SCMSource, SCMHeadObserver)} and delegates to
+     * {@link #retrieve(SCMSourceCriteria, SCMHeadObserver, TaskListener)}
+     *
+     * @param criteria the criteria to use, if non-{@code null} them implementations <strong>must</strong>filter all
+     *                 {@link SCMHead} instances against the
+     *                 {@link SCMSourceCriteria#isHead(SCMSourceCriteria.Probe, TaskListener)}
+     *                 before passing through to the {@link SCMHeadObserver}.
+     * @param observer an optional observer of interim results.
+     * @param event the (optional) event from which the operation should be scoped.
+     * @param listener the task listener.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    protected abstract void retrieve(@CheckForNull SCMSourceCriteria criteria,
+                            @NonNull SCMHeadObserver observer,
+                            @CheckForNull SCMHeadEvent<?> event,
+                            @NonNull TaskListener listener)
             throws IOException, InterruptedException;
 
     /**
@@ -229,7 +461,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
-     * Fetches the current list of heads. Implementers are free to cache intermediary results
+     * SPI: Fetches the current list of heads. Implementers are free to cache intermediary results
      * but the call must always check the validity of any intermediary caches.
      *
      * @param listener the task listener
@@ -239,11 +471,26 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @NonNull
     protected Set<SCMHead> retrieve(@NonNull TaskListener listener) throws IOException, InterruptedException {
-        return fetch(SCMHeadObserver.collect(), listener).result().keySet();
+        return retrieve(getCriteria(), listener);
     }
 
     /**
-     * Gets the current head revision of the specified head.
+     * SPI: Fetches the current list of heads. Implementers are free to cache intermediary results
+     * but the call must always check the validity of any intermediary caches.
+     *
+     * @param criteria the criteria to use for identifying heads.
+     * @param listener the task listener
+     * @return the current list of heads.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     */
+    @NonNull
+    protected Set<SCMHead> retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull TaskListener listener) throws IOException, InterruptedException {
+        return fetch(criteria, SCMHeadObserver.collect(), listener).result().keySet();
+    }
+
+    /**
+     * Gets the current head revision of the specified head. Does not check this against any {@link SCMSourceCriteria}.
      *
      * @param head     the head.
      * @param listener the task listener
@@ -258,7 +505,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
-     * Gets the current head revision of the specified head.
+     * SPI: Gets the current head revision of the specified head. Does not check this against any {@link SCMSourceCriteria}.
      *
      * @param head     the head.
      * @param listener the task listener
@@ -269,30 +516,31 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @CheckForNull
     protected SCMRevision retrieve(@NonNull SCMHead head, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return fetch(SCMHeadObserver.select(head), listener).result();
+        return fetch(null, SCMHeadObserver.select(head), listener).result();
     }
 
     /**
-     * Looks up a specific revision based on some SCM-specific set of permissible syntaxes.
+     * Looks up a specific thingName based on some SCM-specific set of permissible syntaxes.
      * Delegates to {@link #retrieve(String, TaskListener)}.
-     * @param revision might be a branch name, a tag name, a cryptographic hash, a revision number, etc.
+     * @param thingName might be a branch name, a tag name, a cryptographic hash, a change request number, etc.
      * @param listener the task listener (optional)
-     * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
+     * @return a valid {@link SCMRevision} corresponding to the argument, with a usable corresponding head, or
+     * {@code null} if malformed or not found
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since 1.3
      */
     @CheckForNull
-    public final SCMRevision fetch(@NonNull String revision, @CheckForNull TaskListener listener)
+    public final SCMRevision fetch(@NonNull String thingName, @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        return retrieve(revision, defaultListener(listener));
+        return retrieve(thingName, defaultListener(listener));
     }
 
     /**
-     * Looks up a specific revision based on some SCM-specific set of permissible syntaxes.
-     * The default implementation uses {@link #retrieve(SCMHeadObserver, TaskListener)}
+     * SPI: Looks up a specific revision based on some SCM-specific set of permissible syntaxes.
+     * The default implementation uses {@link #retrieve(SCMSourceCriteria, SCMHeadObserver, TaskListener)}
      * and looks for {@link SCMHead#getName} matching the argument (so typically only supporting branch names).
-     * @param revision might be a branch name, a tag name, a cryptographic hash, a revision number, etc.
+     * @param thingName might be a branch name, a tag name, a cryptographic hash, a revision number, etc.
      * @param listener the task listener
      * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
      * @throws IOException if an error occurs while performing the operation.
@@ -300,22 +548,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @since 1.3
      */
     @CheckForNull
-    protected SCMRevision retrieve(@NonNull final String revision, @NonNull TaskListener listener)
+    protected SCMRevision retrieve(@NonNull final String thingName, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        final AtomicReference<SCMRevision> result = new AtomicReference<SCMRevision>();
-        retrieve(new SCMHeadObserver() {
-            @Override
-            public void observe(SCMHead head, SCMRevision rev) {
-                if (head.getName().equals(revision)) {
-                    result.set(rev);
-                }
-            }
-            @Override
-            public boolean isObserving() {
-                return result.get() == null;
-            }
-        }, listener);
-        return result.get();
+        return fetch(null, SCMHeadObserver.named(thingName), listener).result();
     }
 
     /**
@@ -335,7 +570,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
-     * Looks up suggested revisions that could be passed to {@link #fetch(String, TaskListener)}.
+     * SPI: Looks up suggested revisions that could be passed to {@link #fetch(String, TaskListener)}.
      * There is no guarantee that all returned revisions are in fact valid, nor that all valid revisions are returned.
      * By default, calls {@link #retrieve(TaskListener)}, thus typically returning only branch names.
      * @param listener the task listener
@@ -352,6 +587,163 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             revisions.add(head.getName());
         }
         return revisions;
+    }
+
+    /**
+     * Fetches any actions that should be persisted for objects related to the specified revision. For example,
+     * if a {@link Run} is building a specific {@link SCMRevision}, then this method would be called to populate
+     * any {@link Action} instances for that {@link Run}. <strong>NOTE: unlike
+     * {@link #fetchActions(SCMHead, SCMHeadEvent, TaskListener)}, {@link #fetchActions(SCMSourceEvent, TaskListener)}
+     * or {@link SCMNavigator#fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)}</strong> there is no
+     * guarantee that this method will ever be called more than once for any {@link Run}. <strong>
+     * {@link #fetchActions(SCMHead, SCMHeadEvent, TaskListener)} must have been called at least once before calling
+     * this method. </strong>
+     *
+     * @param revision the {@link SCMRevision}
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
+     * @param listener the listener to report progress on.
+     * @return the list of {@link Action} instances to persist.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    public final List<Action> fetchActions(@NonNull SCMRevision revision,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Util.fixNull(retrieveActions(revision, event, defaultListener(listener)));
+    }
+
+    /**
+     * Fetches any actions that should be persisted for objects related to the specified head. For example,
+     * if a {@link Job} is associated with a specific {@link SCMHead}, then this method would be called to refresh
+     * any {@link Action} instances of that {@link Job}. <strong>{@link #fetchActions(SCMSourceEvent,TaskListener)}
+     * must have been called at least once before calling this method.</strong>
+     * <p>
+     * Where a {@link SCMHead} is associated with a {@link Item} or {@link Job}, it is the responsibility of the
+     * caller to ensure that these {@link Action} instances are exposed on the {@link Item} / {@link Job} for example
+     * by providing a {@link TransientActionFactory} implementation that reports these persisted actions separately
+     * (for example {@link AbstractProject#getActions()} returns an immutable list, so there is no way to persist the
+     * actions from this method against those sub-classes, instead the actions need to be persisted by some side
+     * mechanism and then injected into the {@link Actionable#getAllActions()} through a {@link TransientActionFactory}
+     * ignoring the cognitive dissonance triggered by adding non-transient actions through a transient action factory...
+     * think of it instead as a {@code TemporalActionFactory} that adds actions that can change over time)
+     *
+     * @param head the {@link SCMHead}
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
+     * @param listener the listener to report progress on.
+     * @return the list of {@link Action} instances to persist.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    public final List<Action> fetchActions(@NonNull SCMHead head,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Util.fixNull(retrieveActions(head, event, defaultListener(listener)));
+    }
+
+    /**
+     * Fetches any actions that should be persisted for objects related to the specified source. For example,
+     * if a {@link Item} is associated with a specific {@link SCMSource}, then this method would be called to refresh
+     * any {@link Action} instances of that {@link Item}. <strong>If this {@link SCMSource} belongs to a
+     * {@link SCMNavigator} then {@link SCMNavigator#fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)}
+     * must have been called at least once before calling this method.</strong>
+     * <p>
+     * Where a {@link SCMSource} is associated with a specific {@link Item}, it is the responsibility of the
+     * caller to ensure that these {@link Action} instances are exposed on the {@link Item} for example by providing a
+     * {@link TransientActionFactory} implementation that reports these persisted actions separately (for example
+     * {@link AbstractProject#getActions()} returns an immutable list, so there is no way to persist the actions from
+     * this method against those sub-classes, instead the actions need to be persisted by some side mechanism
+     * and then injected into the {@link Actionable#getAllActions()} through a {@link TransientActionFactory}
+     * ignoring the cognitive dissonance triggered by adding non-transient actions through a transient action factory...
+     * think of it instead as a {@code TemporalActionFactory} that adds actions that can change over time)
+     *
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
+     * @param listener the listener to report progress on.
+     * @return the list of {@link Action} instances to persist.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    public final List<Action> fetchActions(@CheckForNull SCMSourceEvent event,
+                                           @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Util.fixNull(retrieveActions(event, defaultListener(listener)));
+    }
+
+    /**
+     * SPI for {@link #fetchActions(SCMRevision, SCMHeadEvent, TaskListener)}. Fetches any actions that should be persisted for
+     * objects related to the specified revision.
+     *
+     * @param revision the {@link SCMRevision}
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
+     * @param listener the listener to report progress on.
+     * @return the list of {@link Action} instances to persist.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    protected List<Action> retrieveActions(@NonNull SCMRevision revision,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Collections.emptyList();
+    }
+
+    /**
+     * SPI for {@link #fetchActions(SCMHead, SCMHeadEvent, TaskListener)}. Fetches any actions that should be persisted for objects
+     * related to the specified head.
+     *
+     * @param head the {@link SCMHead}
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
+     * @param listener the listener to report progress on.
+     * @return the list of {@link Action} instances to persist.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    protected List<Action> retrieveActions(@NonNull SCMHead head,
+                                           @CheckForNull SCMHeadEvent event,
+                                           @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Collections.emptyList();
+    }
+
+    /**
+     * SPI for {@link #fetchActions(SCMSourceEvent,TaskListener)}. Fetches any actions that should be persisted for
+     * objects related to the specified source.
+     *
+     * @param event    the (optional) event to use when fetching the actions. Where the implementation is
+     *                 able to trust the event, it may use the event payload to reduce the number of
+     *                 network calls required to obtain the actions.
+     * @param listener the listener to report progress on.
+     * @return the list of {@link Action} instances to persist.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.0
+     */
+    @NonNull
+    protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event,
+                                           @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return Collections.emptyList();
     }
 
     /**
@@ -426,6 +818,133 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
+     * Tests if this {@link SCMSource} can instantiate a {@link SCMSourceCriteria.Probe}
+     * @return {@code true} if and only if {@link #createProbe(SCMHead, SCMRevision)} has been implemented.
+     * @since 2.0
+     */
+    public boolean canProbe() {
+        return MethodUtils.isOverridden(SCMSource.class, getClass(), "createProbe", SCMHead.class, SCMRevision.class);
+    }
+
+    /**
+     * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}.
+     *
+     * Public exposed API for {@link #createProbe(SCMHead, SCMRevision)}.
+     * @param head the {@link SCMHead}.
+     * @param revision the {@link SCMRevision}.
+     * @return the {@link SCMSourceCriteria.Probe}.
+     * @throws IllegalArgumentException if the {@link SCMRevision#getHead()} is not equal to the supplied {@link SCMHead}
+     * @throws IOException if the probe creation failed due to an IO exception.
+     * @see #canProbe()
+     * @since 2.0
+     */
+    @NonNull
+    public final SCMProbe newProbe(@NonNull SCMHead head, @CheckForNull SCMRevision revision) throws IOException {
+        if (revision != null && !revision.getHead().equals(head)) {
+            throw new IllegalArgumentException("Mismatched head and revision");
+        }
+        try {
+            return createProbe(head, revision);
+        } catch (AbstractMethodError e) {
+            throw new UnsupportedOperationException(e);
+        }
+    }
+
+    /**
+     * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}.
+     *
+     * @param head the {@link SCMHead}.
+     * @param revision the {@link SCMRevision}.
+     * @return the {@link SCMSourceCriteria.Probe}.
+     * @throws IOException if the probe creation failed due to an IO exception.
+     * @see #canProbe()
+     * @see #newProbe(SCMHead, SCMRevision)
+     * @see #fromSCMFileSystem(SCMHead, SCMRevision)
+     * @since 2.0
+     */
+    @NonNull
+    protected SCMProbe createProbe(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision)
+            throws IOException {
+        throw new AbstractMethodError();
+    }
+
+    /**
+     * Helper method for subclasses that have implemented a {@link SCMFileSystem.Builder} and want to use a simple
+     * non-caching {@link SCMProbe} based off of the {@link SCMFileSystem}.
+     *
+     * @param head the {@link SCMHead}.
+     * @param revision the {@link SCMRevision}.
+     * @return the {@link SCMSourceCriteria.Probe} or {@code null} if this source cannot be probed.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
+     * @since 2.0
+     */
+    @CheckForNull
+    protected final SCMProbe fromSCMFileSystem(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision)
+            throws IOException, InterruptedException {
+        final SCMFileSystem fileSystem = SCMFileSystem.of(this, head, revision);
+        if (fileSystem != null) {
+            // we can build a generic probe from the SCMFileSystem
+            //
+            return new SCMProbe() {
+                /**
+                 * {@inheritDoc}
+                 */
+                @NonNull
+                @Override
+                public SCMProbeStat stat(@NonNull String path) throws IOException {
+                    try {
+                        return SCMProbeStat.fromType(fileSystem.child(path).getType());
+                    } catch (InterruptedException e) {
+                        throw new IOException("Interrupted", e);
+                    }
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public void close() throws IOException {
+                    fileSystem.close();
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public String name() {
+                    return head.getName();
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public long lastModified() {
+                    try {
+                        return fileSystem.lastModified();
+                    } catch (IOException e) {
+                        return 0L;
+                    } catch (InterruptedException e) {
+                        return 0L;
+                    }
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public SCMFile getRoot() {
+                    return fileSystem.getRoot();
+                }
+            };
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -473,11 +992,73 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Get the term used in the UI to represent this kind of {@link SCMSource}. Must start with a capital letter.
      *
      * @return the term or {@code null} to fall back to the calling context's default.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     public String getPronoun() {
         return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getPronoun());
     }
+
+    /**
+     * Returns the set of {@link SCMHeadCategory} that this {@link SCMSource} supports. There will always be
+     * exactly one {@link SCMCategory#isUncategorized()} instance in the returned set.
+     *
+     * @return the set of {@link SCMHeadCategory} that this {@link SCMSource} supports.
+     * @since 2.0
+     */
+    @NonNull
+    public final Set<? extends SCMHeadCategory> getCategories() {
+        Set<? extends SCMHeadCategory> result = getDescriptor().getCategories();
+        if (result.size() > 1
+                && MethodUtils.isOverridden(SCMSource.class, getClass(), "isCategoryEnabled", SCMHeadCategory.class)) {
+            // if result has only one entry then it must be the default, so will never be filtered
+            // if we didn't override the category enabled check, then none will be disabled
+            result = new LinkedHashSet<SCMHeadCategory>(result);
+            for (Iterator<? extends SCMHeadCategory> iterator = result.iterator(); iterator.hasNext(); ) {
+                SCMHeadCategory category = iterator.next();
+                if (!category.isUncategorized() && !isCategoryEnabled(category)) {
+                    // only keep the enabled non-default categories
+                    iterator.remove();
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Sub-classes can override this method to filter the categories that are available from a specific source. For
+     * example a source type might be capable of having mainline branches, user branches, merge requests and
+     * release tags while a specific instance of the source may be configured to only have mainline branches and
+     * release tags.
+     *
+     * @param category the category.
+     * @return {@code true} if the supplied category is enabled for this {@link SCMSource} instance.
+     * @since 2.0
+     */
+    protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
+        return true;
+    }
+
+    /**
+     * Checks the {@link Thread#interrupted()} and throws an {@link InterruptedException} if it was set.
+     *
+     * @throws InterruptedException if interrupted.
+     * @since 2.0
+     */
+    protected final void checkInterrupt() throws InterruptedException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
+    }
+
+    /**
+     * Callback from the {@link SCMSourceOwner} after the {@link SCMSourceOwner} has been saved. Can be used to
+     * register the {@link SCMSourceOwner} for a call-back hook from the backing SCM that this source is for.
+     * Implementations are responsible for ensuring that they do not create duplicate registrations and that orphaned
+     * registrations are removed eventually.
+     *
+     * @since 2.0
+     */
+    public void afterSave() {}
 
 }

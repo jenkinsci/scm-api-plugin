@@ -28,42 +28,56 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
-import hudson.model.Actionable;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.TaskListener;
 import hudson.util.AlternativeUiTextProvider;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import jenkins.model.TransientActionFactory;
 import jenkins.scm.api.actions.ChangeRequestAction;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead;
+import jenkins.scm.api.mixin.SCMHeadMixin;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Represents a named SCM branch, tag or mainline.
+ * Represents a named SCM branch, change request, tag or mainline. This class is intended to be used as a typed key
+ * rather than passing a {@link String} around. Each {@link SCMSource} implementation may want to have their own
+ * subclasses in order assist to differentiating between different classes of head via the {@link SCMHeadMixin}
+ * interfaces.
+ * <p>
+ * <strong>Please note the equality contract for {@link SCMHeadMixin} implementations:</strong>
+ * Two {@link SCMHeadMixin} implementations are equal if and only if:
+ * <ul>
+ *     <li>They both are the same class</li>
+ *     <li>They both have the same {@link SCMHeadMixin#getName()}</li>
+ *     <li>For each implemented {@link SCMHeadMixin} sub-interface, they both return the same values from all Java
+ *     Bean property getters declared on the sub-interface. Thus, for example {@link ChangeRequestSCMHead}
+ *     implementations are only considered equal if {@link ChangeRequestSCMHead#getId()} and
+ *     {@link ChangeRequestSCMHead#getTarget()} are also equal</li>
+ * </ul>
+ * The contract for {@link Object#hashCode()} is:
+ * <ul>
+ *     <li>{@link Object#hashCode()} for a {@link SCMHeadMixin} implementation must be equal to the
+ *     {@link String#hashCode()} of {@link SCMHeadMixin#getName()}</li>
+ * </ul>
+ * The {@link SCMHead#equals(Object)} and {@link SCMHead#hashCode()} methods enforce the above requirements and
+ * are final.
  *
  * @author Stephen Connolly
  */
 @ExportedBean
-public class SCMHead implements Comparable<SCMHead>, Serializable {
+public class SCMHead implements SCMHeadMixin {
 
     /**
      * Replaceable pronoun of that points to a {@link SCMHead}. Defaults to {@code null} depending on the context.
      *
-     * @since FIXME
+     * @since 2.0
      */
     public static final AlternativeUiTextProvider.Message<SCMHead> PRONOUN
             = new AlternativeUiTextProvider.Message<SCMHead>();
-
-    /**
-     * Our logger.
-     */
-    private static final Logger LOGGER = Logger.getLogger(SCMHead.class.getName());
 
     /**
      * Ensure consistent serialization.
@@ -86,11 +100,7 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
         this.name = name;
     }
 
-    /**
-     * Returns the name.
-     *
-     * @return the name.
-     */
+    @Override
     @Exported
     @NonNull
     public String getName() {
@@ -101,7 +111,7 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
      * Get the term used in the UI to represent this kind of {@link SCMHead}. Must start with a capital letter.
      *
      * @return the term or {@code null} to fall back to the calling context's default.
-     * @since FIXME
+     * @since 2.0
      */
     @CheckForNull
     public String getPronoun() {
@@ -109,7 +119,48 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Indicates whether some other object is "equal to" this one.
+     * Two {@link SCMHeadMixin} implementations are equal if and only if:
+     * <ul>
+     *     <li>They both are the same class</li>
+     *     <li>They both have the same {@link SCMHeadMixin#getName()}</li>
+     *     <li>For each implemented {@link SCMHeadMixin} sub-interface, they both return the same values from all Java
+     *     Bean property getters declared on the sub-interface. Thus, for example {@link ChangeRequestSCMHead}
+     *     implementations are only considered equal if {@link ChangeRequestSCMHead#getId()} and
+     *     {@link ChangeRequestSCMHead#getTarget()} are also equal</li>
+     * </ul>
+     * <p>
+     *     By way of example, any implementation of {@link ChangeRequestSCMHead} will have their equals behave like so:
+     * <pre>
+     *     public static class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
+     *         //...
+     *         // this method is implemented for you, but if you had to write it this is what you would
+     *         // have to write
+     *         public boolean equals(Object o) {
+     *             if (!super.equals(o)) {
+     *                 return false;
+     *             }
+     *             // can only be equal if they are the same class
+     *             MyChangeRequestSCMHead that = (MyChangeRequestSCMHead)o;
+     *             // because we implement ChangeRequestSCMHead and ChangeRequestSCMHead has a getId() method
+     *             String id1 = this.getId();
+     *             String id2 = that.getId();
+     *             if (id1 == null ? id2 != null : !id1.equals(id2)) {
+     *                 return false;
+     *             }
+     *             // because we implement ChangeRequestSCMHead and ChangeRequestSCMHead has a getTarget() method
+     *             SCMHead t1 = this.getTarget();
+     *             SCMHead t2 = that.getTarget();
+     *             if (t1 == null ? t2 != null : !t1.equals(t2)) {
+     *                 return false;
+     *             }
+     *             // we do not implement any other interfaces extending SCMHeadMixin, so we must be equal
+     *             return true;
+     *         }
+     *     }
+     * </pre>
+     * @param o the object to compare with.
+     * @return true if and only if the two objects are equal.
      */
     @Override
     public final boolean equals(Object o) {
@@ -123,6 +174,9 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
         SCMHead scmHead = (SCMHead) o;
 
         if (!name.equals(scmHead.name)) {
+            return false;
+        }
+        if (!SCMHeadMixinEqualityGenerator.getOrCreate(getClass()).equals(this,scmHead)) {
             return false;
         }
 
@@ -155,47 +209,36 @@ public class SCMHead implements Comparable<SCMHead>, Serializable {
     }
 
     /**
-     * Gets all actions used to decorate the behavior of this branch.
-     * May be overridden to create a new list, perhaps with additions.
-     * @return a list of all actions associated with this branch (by default, an unmodifiable list searching {@link TransientActionFactory}s)
-     * @see Actionable#getAllActions
+     * Returns an empty list.
+     * @return an empty list
      * @since 1.1
+     * @deprecated this was added to the API in error. Retained for backwards binary compatibility only. Use
+     * {@link SCMSource#fetchActions(SCMHead, SCMHeadEvent, TaskListener)} to get the actions associated with a
+     * {@link SCMHead}
      */
+    @Restricted(DoNotUse.class)
+    @Deprecated // this is do not use because you should not use it
     @NonNull
-    @Exported(name="actions")
     public List<? extends Action> getAllActions() {
-        List<Action> actions = new ArrayList<Action>();
-        for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
-            if (taf.type().isInstance(this)) {
-                try {
-                    actions.addAll(createFor(taf));
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
-                }
-            }
-        }
-        return Collections.unmodifiableList(actions);
-    }
-    private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
-        return taf.createFor(taf.type().cast(this));
+        // TODO should be deleted but old versions of blue ocean api call this method
+        return Collections.emptyList();
     }
 
     /**
-     * Gets a specific action used to decorate the behavior of this branch.
-     * May be overridden but suffices to override {@link #getAllActions}.
+     * Returns {@code null}.
      * @param <T> a desired action type to query, such as {@link ChangeRequestAction}
      * @param type type token
-     * @return an instance of that action interface (by default, filters {@link #getAllActions})
-     * @see Actionable#getAction(Class)
+     * @return {@code null}
      * @since 1.1
+     * @deprecated this was added to the API in error. Retained for backwards binary compatibility only. Use
+     * {@link SCMSource#fetchActions(SCMHead, SCMHeadEvent, TaskListener)} to get the actions associated with a
+     * {@link SCMHead}
      */
+    @Restricted(DoNotUse.class)
+    @Deprecated // this is do not use because you should not use it
     @CheckForNull
     public <T extends Action> T getAction(@NonNull Class<T> type) {
-        for (Action action : getAllActions()) {
-            if (type.isInstance(action)) {
-                return type.cast(action);
-            }
-        }
+        // TODO should be deleted but old versions of blue ocean api call this method
         return null;
     }
 
