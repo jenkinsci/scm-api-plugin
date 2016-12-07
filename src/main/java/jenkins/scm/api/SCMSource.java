@@ -236,7 +236,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @param <O> Observer type.
      * @param criteria the criteria to use.
-     * @param observer an optional observer of interim results.
+     * @param observer an observer of interim results.
      * @param event the (optional) event from which the fetch should be scoped.
      * @param listener the task listener
      * @return the provided observer.
@@ -249,7 +249,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                                                      @NonNull O observer, @CheckForNull SCMHeadEvent<?> event,
                                                      @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        _retrieve(criteria, observer, event, defaultListener(listener));
+        _retrieve(criteria, event == null ? observer : event.filter(this, observer), event, defaultListener(listener));
         return observer;
     }
 
@@ -259,7 +259,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * intermediary caches.
      *
      * @param <O> Observer type.
-     * @param observer an optional observer of interim results.
+     * @param observer an observer of interim results.
      * @param event the (optional) event from which the fetch should be scoped.
      * @param listener the task listener
      * @return the provided observer.
@@ -271,7 +271,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     public final <O extends SCMHeadObserver> O fetch(@NonNull O observer, @CheckForNull SCMHeadEvent<?> event,
                                                      @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        _retrieve(getCriteria(), observer, event, defaultListener(listener));
+        _retrieve(getCriteria(), event == null ? observer : event.filter(this, observer), event, defaultListener(listener));
         return observer;
     }
 
@@ -392,7 +392,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *                 {@link SCMHead} instances against the
      *                 {@link SCMSourceCriteria#isHead(SCMSourceCriteria.Probe, TaskListener)}
      *                 before passing through to the {@link SCMHeadObserver}.
-     * @param observer an optional observer of interim results.
+     * @param observer an observer of interim results, if the event is non-{@code null} then the observer will already
+     *                 have been filtered with {@link SCMHeadEvent#filter(SCMSource, SCMHeadObserver)}.
      * @param event the (optional) event from which the operation should be scoped.
      * @param listener the task listener.
      * @throws IOException if an error occurs while performing the operation.

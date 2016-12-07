@@ -568,8 +568,12 @@ public class MySCMSource extends SCMSource {
     @Override
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria,
                             @NonNull SCMHeadObserver observer,
+                            @CheckForNull SCMHeadEvent<?> event,
                             @NonNull TaskListener listener)
         throws IOException, InterruptedException {
+        // When you implement event support, if you have events that can be trusted
+        // you may want to use the payloads of those events to avoid extra network
+        // calls for identifying the observed heads
         Iterable<...> candidates = null;
         Set<SCMHead> includes = observer.getIncludes();
         if (includes != null) {
@@ -1187,7 +1191,7 @@ Auto-registration of webhooks is performed in different methods depending on the
 
 * `SCMNavigator.afterSave(_owner_)`
 * `SCMSource.afterSave()`
-* `SCMTriggerItemSCM.afterSave(_job_,_scm_)`
+* `SCM2.afterSave(_job_)`
 
 [NOTE]
 ====
@@ -1195,7 +1199,7 @@ Existing implementations of the `hudson.scm.SCM` API have traditionally extended
 
 This leads to a proliferation of triggers for multiple source control systems and consequently confuses users and leads to a bad user experience.
 
-Switching those implementations to use `SCMTriggerItemSCM.afterSave(_job_,_scm_)` will result in a simpler user interface of just enabling _Poll SCM_ and managing the hooks through _Ignore post-commit hooks_.
+Switching those implementations to use `SCM2.afterSave(_job_,_scm_)` will result in a simpler user interface of just enabling _Poll SCM_ and managing the hooks through _Ignore post-commit hooks_.
 
 Additionally, unless a source control system can guarantee delivery of events, in order to ensure that events are not lost, users will need to configure _Poll SCM_ in any case (even if only with the schedule of `@yearly`!)
 ====
