@@ -487,7 +487,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @NonNull
     protected Set<SCMHead> retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull TaskListener listener) throws IOException, InterruptedException {
-        return fetch(criteria, SCMHeadObserver.collect(), listener).result().keySet();
+        SCMHeadObserver.Collector collector = SCMHeadObserver.collect();
+        _retrieve(criteria, collector, null,  listener);
+        return collector.result().keySet();
     }
 
     /**
@@ -517,7 +519,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @CheckForNull
     protected SCMRevision retrieve(@NonNull SCMHead head, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return fetch(null, SCMHeadObserver.select(head), listener).result();
+        SCMHeadObserver.Selector selector = SCMHeadObserver.select(head);
+        _retrieve(null, selector, null, listener);
+        return selector.result();
     }
 
     /**
@@ -551,7 +555,9 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @CheckForNull
     protected SCMRevision retrieve(@NonNull final String thingName, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        return fetch(null, SCMHeadObserver.named(thingName), listener).result();
+        SCMHeadObserver.Named baptist = SCMHeadObserver.named(thingName);
+        _retrieve(null, baptist, null, listener);
+        return baptist.result();
     }
 
     /**
