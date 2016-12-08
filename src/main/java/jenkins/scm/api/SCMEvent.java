@@ -30,9 +30,12 @@ import hudson.ExtensionList;
 import hudson.model.Cause;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.security.ACL;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
 import jenkins.util.Timer;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * Base class for all events from a SCM system.
@@ -296,6 +299,7 @@ public abstract class SCMEvent<P> {
                         event.getClass(), event.getTimestamp(), oldName)
                 );
                 for (final SCMEventListener l : ExtensionList.lookup(SCMEventListener.class)) {
+                    SecurityContext context = ACL.impersonate(ACL.SYSTEM);
                     try {
                         fire(l, event);
                     } catch (LinkageError e) {
@@ -304,6 +308,8 @@ public abstract class SCMEvent<P> {
                         throw e;
                     } catch (Throwable e) {
                         log(l, e);
+                    } finally {
+                        SecurityContextHolder.setContext(context);
                     }
                 }
             } finally {
