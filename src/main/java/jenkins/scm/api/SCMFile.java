@@ -150,7 +150,44 @@ public abstract class SCMFile {
      * @return The instance.
      */
     @NonNull
-    public abstract SCMFile child(String path);
+    public SCMFile child(String path) {
+        int index = path.indexOf('/');
+        if (index == -1) {
+            if (".".equals(path)) {
+                return this;
+            }
+            if ("..".equals(path)) {
+                SCMFile parent = parent();
+                return parent == null ? this : parent;
+            }
+            return newChild(path, false);
+        }
+        String name = path.substring(0, index);
+        SCMFile next;
+        if (".".equals(name)) {
+            next = this;
+        } else if ("..".equals(name)) {
+            SCMFile parent = parent();
+            next = parent == null ? this : parent;
+        } else {
+            next = newChild(name, true);
+        }
+        String restOfPath = path.substring(index + 1);
+        return StringUtils.isBlank(restOfPath) ? next : next.child(restOfPath);
+    }
+
+    /**
+     * Constructs an immediate child with the supplied type hint.
+     *
+     * @param name              the name of the immediate child, never {@code null}, never empty and never containing
+     *                          a {@code /}.
+     * @param assumeIsDirectory {@code true} if it this entry is being used as an intermediate in a multi-segment path
+     *                                      and should thus be assumed to be a directory.
+     * @return the instance.
+     * @since 2.0.1
+     */
+    @NonNull
+    protected abstract SCMFile newChild(@NonNull String name, boolean assumeIsDirectory);
 
     /**
      * If this object represents a directory, lists up all the immediate children.
