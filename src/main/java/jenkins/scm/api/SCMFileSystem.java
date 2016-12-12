@@ -422,7 +422,11 @@ public abstract class SCMFileSystem implements Closeable {
         @CheckForNull
         public SCMFileSystem build(@NonNull SCMSource source, @NonNull SCMHead head,
                                    @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
-            return build(source.getOwner(), source.build(head, rev), rev);
+            SCMSourceOwner owner = source.getOwner();
+            if (owner == null) {
+                throw new IOException("Cannot instantiate a SCMFileSystem from an SCM without an owner");
+            }
+            return build(owner, source.build(head, rev), rev);
         }
     }
 }
