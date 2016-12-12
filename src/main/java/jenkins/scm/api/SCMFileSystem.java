@@ -29,6 +29,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
@@ -138,7 +139,7 @@ public abstract class SCMFileSystem implements Closeable {
 
     /**
      * Writes the changes between the specified revision and {@link #getRevision()} in the format compatible
-     * with the {@link SCM} from this {@link SCMFileSystem#of(SCM)} to the supplied {@link OutputStream}.
+     * with the {@link SCM} from this {@link SCMFileSystem#of(Item, SCM)} to the supplied {@link OutputStream}.
      * This method allows for consumers or the SCM API to replicate the
      * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File, SCMRevisionState)} functionality
      * that captures the changelog without requiring a full checkout.
@@ -166,8 +167,8 @@ public abstract class SCMFileSystem implements Closeable {
      * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull SCM scm) throws IOException, InterruptedException {
-        return of(scm, null);
+    public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm) throws IOException, InterruptedException {
+        return of(owner, scm, null);
     }
 
     /**
@@ -182,7 +183,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull SCM scm, @CheckForNull SCMRevision rev)
+    public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
             throws IOException, InterruptedException {
         scm.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
@@ -190,7 +191,7 @@ public abstract class SCMFileSystem implements Closeable {
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(scm)) {
                 try {
-                    SCMFileSystem inspector = b.build(scm, rev);
+                    SCMFileSystem inspector = b.build(owner, scm, rev);
                     if (inspector != null) {
                         if (inspector.isFixedRevision()) {
                             return inspector;
@@ -235,15 +236,15 @@ public abstract class SCMFileSystem implements Closeable {
 
     /**
      * Given a {@link SCM} this method will check if there is at least one {@link SCMFileSystem} provider capable
-     * of being instantiated. Returning {@code true} does not mean that {@link #of(SCM, SCMRevision)}
+     * of being instantiated. Returning {@code true} does not mean that {@link #of(Item, SCM, SCMRevision)}
      * will be able to instantiate a {@link SCMFileSystem} for any specific {@link SCMRevision},
      * rather returning {@code false} indicates that there is absolutely no point in calling
-     * {@link #of(SCM, SCMRevision)} as it will always return {@code null}.
+     * {@link #of(Item, SCM, SCMRevision)} as it will always return {@code null}.
      *
      * @param scm the {@link SCMSource}.
-     * @return {@code true} if {@link SCMFileSystem#of(SCM)} / {@link #of(SCM, SCMRevision)} could return a
-     * {@link SCMFileSystem} implementation, {@code false} if {@link SCMFileSystem#of(SCM)} /
-     * {@link #of(SCM, SCMRevision)} will always return {@code null} for the supplied {@link SCM}.
+     * @return {@code true} if {@link SCMFileSystem#of(Item, SCM)} / {@link #of(Item, SCM, SCMRevision)} could return a
+     * {@link SCMFileSystem} implementation, {@code false} if {@link SCMFileSystem#of(Item, SCM)} /
+     * {@link #of(Item, SCM, SCMRevision)} will always return {@code null} for the supplied {@link SCM}.
      * @since 2.0
      */
     public static boolean supports(@NonNull SCM scm) {
@@ -371,7 +372,7 @@ public abstract class SCMFileSystem implements Closeable {
          *
          * @param source the {@link SCM}.
          * @return {@code true} if and only if the supplied {@link SCM} is supported by this {@link Builder},
-         * {@code false} if {@link #build(SCM, SCMRevision)} will <strong>always</strong> return {@code null}.
+         * {@code false} if {@link #build(Item, SCM, SCMRevision)} will <strong>always</strong> return {@code null}.
          */
         public abstract boolean supports(SCM source);
 
@@ -400,7 +401,7 @@ public abstract class SCMFileSystem implements Closeable {
          * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
          */
         @CheckForNull
-        public abstract SCMFileSystem build(@NonNull SCM scm, @CheckForNull SCMRevision rev)
+        public abstract SCMFileSystem build(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
                 throws IOException, InterruptedException;
 
         /**
@@ -421,7 +422,7 @@ public abstract class SCMFileSystem implements Closeable {
         @CheckForNull
         public SCMFileSystem build(@NonNull SCMSource source, @NonNull SCMHead head,
                                    @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
-            return build(source.build(head, rev), rev);
+            return build(source.getOwner(), source.build(head, rev), rev);
         }
     }
 }
