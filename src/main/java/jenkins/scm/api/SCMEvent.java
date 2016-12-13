@@ -33,9 +33,16 @@ import hudson.model.TaskListener;
 import hudson.security.ACL;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import jenkins.util.Timer;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Base class for all events from a SCM system.
@@ -282,10 +289,25 @@ public abstract class SCMEvent<P> {
     }
 
     protected abstract static class Dispatcher<E extends SCMEvent<?>> implements Runnable {
+        @Restricted(NoExternalUse.class)
+        /*package*/ static final AtomicLong lastId = new AtomicLong();
+        @Restricted(NoExternalUse.class)
+        /*package*/ static final Lock lock = new ReentrantLock();
+        @Restricted(NoExternalUse.class)
+        /*package*/ static final Condition started = lock.newCondition();
+        @Restricted(NoExternalUse.class)
+        /*package*/ static final Condition finished = lock.newCondition();
+        @Restricted(NoExternalUse.class)
+        /*package*/ static long startedId = 0L;
+        @Restricted(NoExternalUse.class)
+        /*package*/ static long finishedId = 0L;
+
+        private final long id;
         private final E event;
 
         public Dispatcher(E event) {
             this.event = event;
+            this.id = lastId.incrementAndGet();
         }
 
         protected abstract void log(SCMEventListener l, Throwable e);
@@ -293,6 +315,15 @@ public abstract class SCMEvent<P> {
 
         @Override
         public void run() {
+            lock.lock();
+            try {
+                if (startedId < id) {
+                    startedId = id;
+                    started.signalAll();
+                }
+            } finally {
+                lock.unlock();
+            }
             String oldName = Thread.currentThread().getName();
             try {
                 Thread.currentThread().setName(String.format("%s %tc / %s",
@@ -314,6 +345,17 @@ public abstract class SCMEvent<P> {
                 }
             } finally {
                 Thread.currentThread().setName(oldName);
+                lock.lock();
+                try {
+                    if (finishedId < id) {
+                        finishedId = id;
+                        finished.signalAll();
+                    }
+                } finally {
+                    lock.unlock();
+                }
             }
         }
-    }}
+    }
+
+}
