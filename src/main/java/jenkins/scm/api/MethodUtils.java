@@ -53,7 +53,7 @@ class MethodUtils {
      * Checks if the  method defined on the base type with the given arguments
      * are overridden in the given derived type.
      */
-    // TODO replace with core utility method once JENKINS-40250 is available in base version of Jenkins
+    // TODO replace with core utility method once JENKINS-30002 is available in base version of Jenkins
     static boolean isOverridden(@Nonnull Class base, @Nonnull Class derived, @Nonnull String methodName,
                                        @Nonnull Class... types) {
         Method baseMethod = getMethodImpl(base, methodName, types);
