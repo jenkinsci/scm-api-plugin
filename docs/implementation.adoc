@@ -954,7 +954,7 @@ public class MySCMNavigator extends SCMNavigator {
             checkInterrupt(); // important to call this periodically
             SCMSourceObserver.ProjectObserver po = observer.observe(name);
             // it is *critical* that we assign each observed SCMSource a reproducible id.
-            // the id will be used to correllate the SCMHead back with the SCMSource from which
+            // the id will be used to correlate the SCMHead back with the SCMSource from which
             // it came. If we do not use a reproducible ID then repeated observations of the
             // same navigator will return "different" sources and consequently the SCMHead
             // instances discovered previously will be picked up as orphans that have been
