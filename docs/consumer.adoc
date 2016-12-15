@@ -277,6 +277,8 @@ If a `Jenkinsfile` were present then the project woudl need to be created in ord
 
 * Persist the results of `SCMNavigator.fetchActions(_owner_, _listener_)` as part of each index and on receipt of any `SCMNavigatorEvent` events of type `UPDATED`.
 +
+If two `SCMNavigator` instances have the same `SCMNavigator.getId()` then the `SCMNavigatorOwner` can use a shared set of actions for these instances as they are both navigating the same thing (although with different selection criteria)
++
 [TIP]
 ====
 It may not always be either possible or preferred to attach the actions directly to the owner.

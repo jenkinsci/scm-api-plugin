@@ -93,6 +93,11 @@ public class MockSCMNavigator extends SCMNavigator {
     }
 
     @Override
+    protected String id() {
+        return controllerId;
+    }
+
+    @Override
     public void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException {
         for (String name : controller().listRepositories()) {
             if (!observer.isObserving()) {
@@ -100,7 +105,7 @@ public class MockSCMNavigator extends SCMNavigator {
             }
             checkInterrupt();
             SCMSourceObserver.ProjectObserver po = observer.observe(name);
-            po.addSource(new MockSCMSource(String.format("%s:%s", controllerId, name),
+            po.addSource(new MockSCMSource(getId() + "::" + name,
                     controller, name, includeBranches, includeTags, includeChangeRequests));
             po.complete();
         }
