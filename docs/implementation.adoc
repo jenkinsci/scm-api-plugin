@@ -552,12 +552,12 @@ public class MySCMSource extends SCMSource {
      */
 
     @DataBoundConstructor
-    public MockSCMSource(/*mandatory configuration*/) {
-        super(/* see note on ids*/);
+    public MockSCMSource(String id, /*mandatory configuration*/) {
+        super(id); /* see note on ids*/
     }
 
-    public MockSCMSource(MySCMNavigator config, String name) {
-        super(/* see note on ids*/);
+    public MockSCMSource(String id, MySCMNavigator config, String name) {
+        super(id); /* see note on ids*/
     }
 
     // Getters for all the configuration fields
@@ -719,7 +719,9 @@ The SCMSource's IDs are used to help track the SCMSource that a SCMHead instance
 
 If - *and only if* - you are certain that you can construct a definitive ID from the configuration details of your SCMSource then implementations are encouraged to use a computed ID.
 
-In all other cases, implementations should use the default generated ID mechanism.
+When instantiating an `SCMSource` from a `SCMNavigator` the navigator is responsible for assigning IDs such that two observations of the same source will always have the same ID.
+
+In all other cases, implementations should use the default generated ID mechanism when the ID supplied to the constructor is `null`.
 
 An example of how a generated ID could be definitively constructed would be:
 
@@ -951,7 +953,17 @@ public class MySCMNavigator extends SCMNavigator {
         for (String name : candidates) {
             checkInterrupt(); // important to call this periodically
             SCMSourceObserver.ProjectObserver po = observer.observe(name);
-            po.addSource(new MySCMSource(this, name));
+            // it is *critical* that we assign each observed SCMSource a reproducible id.
+            // the id will be used to correlate the SCMHead back with the SCMSource from which
+            // it came. If we do not use a reproducible ID then repeated observations of the
+            // same navigator will return "different" sources and consequently the SCMHead
+            // instances discovered previously will be picked up as orphans that have been
+            // taken over by a new source... which could end up triggering a new build.
+            //
+            // At a minimum you could use the name as the ID, but better is at least to include
+            // the URL of the server that the navigator is navigating
+            String id = "... some stuff based on configuration of navigator ..." + name;
+            po.addSource(new MySCMSource(id, this, name));
             po.complete();
         }
     }
