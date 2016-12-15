@@ -930,6 +930,20 @@ public class MySCMNavigator extends SCMNavigator {
         // ...
     }
 
+    @Override
+    @NonNull
+    protected String id() {
+        // Generate the ID of the thing being navigated.
+        // Typically this will, at a minimum consist of the URL of the remote server
+        // For GitHub it would probably also include the GitHub Organization being navigated
+        // For BitBucket it could include the owning team as well as the project (if navigation is scoped to
+        // a single project within a team) or just the owning team (if navigation is scoped to all repositories
+        // in a team)
+        //
+        // See the Javadoc for more details.
+        // ...
+    }
+
     // Getters for all the configuration fields
 
     // use @DataBoundSetter to inject the non-mandatory configuration elements

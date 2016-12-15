@@ -33,6 +33,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.Item;
+import hudson.model.Items;
 import hudson.model.TaskListener;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.LogTaskListener;
@@ -45,6 +46,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.TransientActionFactory;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * An API for discovering new and navigating already discovered {@link SCMSource}s within an organization.
@@ -64,10 +66,90 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
             = new AlternativeUiTextProvider.Message<SCMNavigator>();
 
     /**
+     * Cache of the ID of this {@link SCMNavigator}.
+     * @since FIXME
+     */
+    private transient String id;
+
+    /**
      * Constructor.
      */
     protected SCMNavigator() {
     }
+
+    /**
+     * Returns the ID of the thing being navigated.
+     * <p>
+     * The ID will typically be a composite of things like the server and the project/organization that the navigator
+     * is scoped to.
+     * <p>
+     * For example, a GitHub navigator that is navigating repositories in a GitHub organization could construct
+     * its ID as being the URL of the GitHub Server (to allow for GitHub Enterprise servers) and the name of the
+     * organization.
+     * <p>
+     * The key criteria is that if two navigators have the same ID <strong>and</strong> they are both in the same
+     * {@link SCMNavigatorOwner} then the results from
+     * {@link #fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)} should be not just equivalent but
+     * {@link List#equals(Object)}.
+     *
+     * @return the ID of the thing being navigated by this navigator.
+     * @since FIXME
+     * @see #id()
+     */
+    @NonNull
+    public final String getId() {
+        if (id == null) {
+            if (MethodUtils.isAbstract(getClass(), "id")) {
+                // we need to ensure that upgrading the plugin does not change the digest
+                // processing XML with a regex is usually a bad thing. In this case we have a sufficiently
+                // strict set of requirements to match (shortname)@(version) and the constraints on the
+                // shortname and version are such that we can have a high degree of certainty of a match
+                // and even if we glom some legitimate text, the chances of a duplicate that is otherwise
+                // the same but has a critical difference in a regular value that happens to contain
+                // plugin="xys@abc" is sufficiently low.
+                id = getClass().getName() + "::" + Util.getDigestOf(Items.XSTREAM.toXML(this)
+                        .replaceAll(" plugin=(('[^']+@[^']+')|(\"[^\"]+@[^\"]+\"))", ""));
+            } else {
+                id = getClass().getName() + "::" + id();
+            }
+        }
+        return id;
+    }
+
+    /**
+     * If implementations are using {@link DataBoundSetter} on fields that affect the {@link #id()} calculation then
+     * those fields must call {@link #resetId()} if they may have invalidated the cached {@link #getId()}.
+     *
+     * @since FIXME
+     */
+    protected final void resetId() {
+        id = null;
+    }
+
+    /**
+     * Generates the ID of the thing being navigated from the configuration of this {@link SCMNavigator}.
+     * <p>
+     * The ID will typically be a composite of things like the server and the project/organization that the navigator
+     * is scoped to.
+     * <p>
+     * For example, a GitHub navigator that is navigating repositories in a GitHub organization could construct
+     * its ID as being the URL of the GitHub Server (to allow for GitHub Enterprise servers) and the name of the
+     * organization.
+     * <p>
+     * The key criteria is that if two navigators have the same ID <strong>and</strong> they are both in the same
+     * {@link SCMNavigatorOwner} then the results from
+     * {@link #fetchActions(SCMNavigatorOwner, SCMNavigatorEvent, TaskListener)} should be not just equivalent but
+     * {@link List#equals(Object)}.
+     * <p>
+     * If the results could be non-equal for navigators with the same ID then more detail needs to be encoded in the ID.
+     *
+     * @return the ID of the thing being navigated by this navigator.
+     * @since FIXME
+     * @see #resetId()
+     * @see #getId()
+     */
+    @NonNull
+    protected abstract String id();
 
     /**
      * Looks for SCM sources in a configured place.

@@ -24,6 +24,9 @@
 
 package jenkins.scm.impl;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
+import hudson.model.Items;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
 import hudson.Extension;
@@ -56,6 +59,13 @@ public class SingleSCMNavigator extends SCMNavigator {
 
     public List<SCMSource> getSources() {
         return sources;
+    }
+
+    @NonNull
+    @Override
+    protected String id() {
+        return Util.getDigestOf(Items.XSTREAM.toXML(sources)
+                .replaceAll(" plugin=(('[^']+@[^']+')|(\"[^\"]+@[^\"]+\"))", "")) + "::" + name;
     }
 
     @Override
