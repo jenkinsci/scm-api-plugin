@@ -107,6 +107,13 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
                 // and even if we glom some legitimate text, the chances of a duplicate that is otherwise
                 // the same but has a critical difference in a regular value that happens to contain
                 // plugin="xys@abc" is sufficiently low.
+                //
+                // We can use a generated ID based on the initial serialization digest because any implementation
+                // that does not have an id() override will not have a fetchActions() override either
+                // so there will be no actions to retain anyway.
+                //
+                // Real implementations should not use this type of scheme for generating their id, rather
+                // they should construct their id explicitly.
                 id = getClass().getName() + "::" + Util.getDigestOf(Items.XSTREAM.toXML(this)
                         .replaceAll(" plugin=(('[^']+@[^']+')|(\"[^\"]+@[^\"]+\"))", ""));
             } else {
