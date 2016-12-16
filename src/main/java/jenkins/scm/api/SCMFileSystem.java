@@ -160,6 +160,7 @@ public abstract class SCMFileSystem implements Closeable {
     /**
      * Given a {@link SCM} this method will try to retrieve a corresponding {@link SCMFileSystem} instance.
      *
+     * @param owner the owner of the {@link SCM}
      * @param scm the {@link SCM}.
      * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
      * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
@@ -175,6 +176,7 @@ public abstract class SCMFileSystem implements Closeable {
      * Given a {@link SCM} this method will try to retrieve a corresponding {@link SCMFileSystem} instance that
      * reflects the content at the specified {@link SCMRevision}.
      *
+     * @param owner the owner of the {@link SCM}
      * @param scm the {@link SCM}.
      * @param rev the specified {@link SCMRevision}.
      * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
@@ -392,6 +394,7 @@ public abstract class SCMFileSystem implements Closeable {
          * for a fixed revision, best effort is acceptable as the most capable {@link SCMFileSystem} will be returned
          * to the caller.
          *
+         * @param owner the owner of the {@link SCM}
          * @param scm the {@link SCM}.
          * @param rev the specified {@link SCMRevision}.
          * @return the corresponding {@link SCMFileSystem} or {@code null} if this builder cannot create a {@link
