@@ -25,6 +25,7 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
@@ -32,6 +33,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -1067,5 +1069,40 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @since 2.0
      */
     public void afterSave() {}
+
+    /**
+     * Means of locating a head given an item.
+     *
+     * @since 2.0.1
+     */
+    public static abstract class SourceByItem implements ExtensionPoint {
+
+        /**
+         * Checks whether a given item corresponds to a particular {@link SCMSource}.
+         *
+         * @param item such as a {@linkplain ItemGroup#getItems child} of an {@link SCMSourceOwner}
+         * @return a corresponding {@link SCMSource}, or null if this information is unavailable
+         */
+        @CheckForNull
+        public abstract SCMSource getSource(Item item);
+
+        /**
+         * Runs all registered implementations.
+         *
+         * @param item an item, such as a branch project
+         * @return the corresponding head, if known
+         */
+        @CheckForNull
+        public static SCMSource findSource(Item item) {
+            for (SourceByItem ext : ExtensionList.lookup(SourceByItem.class)) {
+                SCMSource source = ext.getSource(item);
+                if (source != null) {
+                    return source;
+                }
+            }
+            return null;
+        }
+
+    }
 
 }
