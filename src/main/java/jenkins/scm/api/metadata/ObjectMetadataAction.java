@@ -25,6 +25,7 @@
 package jenkins.scm.api.metadata;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.Util;
 import hudson.model.InvisibleAction;
 import java.io.Serializable;
 import jenkins.scm.api.SCMHead;
@@ -77,7 +78,8 @@ public class ObjectMetadataAction extends InvisibleAction implements Serializabl
     }
 
     /**
-     * Returns the display name of the object or {@code null}.
+     * Returns the display name of the object or {@code null}. Consumers should assume the content is plain text that
+     * needs escaping with {@link Util#escape(String)} when being included in HTML output.
      *
      * @return the display name of the object or {@code null}
      */
@@ -89,9 +91,10 @@ public class ObjectMetadataAction extends InvisibleAction implements Serializabl
     }
 
     /**
-     * Returns the description of the object or {@code null}.
+     * Returns the description of the object or {@code null}. Consumers should assume the content is plain text that
+     * needs escaping with {@link Util#escape(String)} when being included in HTML output.
      *
-     * @return the description of the object or {@code null}
+     * @return the description of the object or {@code null}.
      */
     @Exported
     @CheckForNull
