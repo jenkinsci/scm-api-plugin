@@ -25,6 +25,7 @@
 
 package jenkins.scm.impl.mock;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.FilePath;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -55,6 +56,7 @@ public class MockSCMController implements Closeable {
     private String id = UUID.randomUUID().toString();
 
     private Map<String, Repository> repositories = new TreeMap<String, Repository>();
+    private List<MockFailure> faults = new ArrayList<MockFailure>();
     private String displayName;
     private String description;
     private String url;
@@ -134,6 +136,22 @@ public class MockSCMController implements Closeable {
 
     public void setUrl(String url) throws IOException {
         this.url = url;
+    }
+
+    public synchronized void addFault(MockFailure fault) {
+        this.faults.add(fault);
+    }
+
+    public synchronized void clearFaults() {
+        this.faults.clear();
+    }
+
+    public synchronized void checkFaults(@CheckForNull String repository, @CheckForNull String branch,
+                                         @CheckForNull String revision, boolean actions)
+            throws IOException {
+        for (MockFailure fault: faults) {
+            fault.check(repository, branch, revision, actions);
+        }
     }
 
     public synchronized void createRepository(String name) throws IOException {

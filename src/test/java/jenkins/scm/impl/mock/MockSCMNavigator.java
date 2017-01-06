@@ -99,11 +99,13 @@ public class MockSCMNavigator extends SCMNavigator {
 
     @Override
     public void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException {
+        controller.checkFaults(null, null, null, false);
         for (String name : controller().listRepositories()) {
             if (!observer.isObserving()) {
                 return;
             }
             checkInterrupt();
+            controller.checkFaults(name, null, null, false);
             SCMSourceObserver.ProjectObserver po = observer.observe(name);
             po.addSource(new MockSCMSource(getId() + "::" + name,
                     controller, name, includeBranches, includeTags, includeChangeRequests));
@@ -117,6 +119,7 @@ public class MockSCMNavigator extends SCMNavigator {
                                         @CheckForNull SCMNavigatorEvent event,
                                         @NonNull TaskListener listener)
             throws IOException, InterruptedException {
+        controller.checkFaults(null, null, null, true);
         List<Action> result = new ArrayList<Action>();
         result.add(new MockSCMLink("organization"));
         String description = controller().getDescription();
