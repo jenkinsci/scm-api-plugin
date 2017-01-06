@@ -118,19 +118,19 @@ public class MockSCMSource extends SCMSource {
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
                             @CheckForNull SCMHeadEvent<?> event, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        controller.checkFaults(repository, null, null, false);
+        controller().checkFaults(repository, null, null, false);
         Set<SCMHead> includes = observer.getIncludes();
         if (includeBranches) {
             for (final String branch : controller().listBranches(repository)) {
                 checkInterrupt();
                 String revision = controller().getRevision(repository, branch);
                 MockSCMHead head = new MockSCMHead(branch);
-                controller.checkFaults(repository, head.getName(), null, false);
+                controller().checkFaults(repository, head.getName(), null, false);
                 if (includes != null && !includes.contains(head)) {
                     continue;
                 }
                 if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
-                    controller.checkFaults(repository, head.getName(), revision, false);
+                    controller().checkFaults(repository, head.getName(), revision, false);
                     observer.observe(head, new MockSCMRevision(head, revision));
                 }
             }
@@ -140,12 +140,12 @@ public class MockSCMSource extends SCMSource {
                 checkInterrupt();
                 String revision = controller().getRevision(repository, tag);
                 MockSCMHead head = new MockTagSCMHead(tag, controller().getTagTimestamp(repository, tag));
-                controller.checkFaults(repository, head.getName(), null, false);
+                controller().checkFaults(repository, head.getName(), null, false);
                 if (includes != null && !includes.contains(head)) {
                     continue;
                 }
                 if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
-                    controller.checkFaults(repository, head.getName(), revision, false);
+                    controller().checkFaults(repository, head.getName(), revision, false);
                     observer.observe(head, new MockSCMRevision(head, revision));
                 }
             }
@@ -156,12 +156,12 @@ public class MockSCMSource extends SCMSource {
                 String revision = controller().getRevision(repository, "change-request/" + number);
                 String target = controller().getTarget(repository, number);
                 MockChangeRequestSCMHead head = new MockChangeRequestSCMHead(number, target);
-                controller.checkFaults(repository, head.getName(), null, false);
+                controller().checkFaults(repository, head.getName(), null, false);
                 if (includes != null && !includes.contains(head)) {
                     continue;
                 }
                 if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
-                    controller.checkFaults(repository, head.getName(), revision, false);
+                    controller().checkFaults(repository, head.getName(), revision, false);
                     observer.observe(head, new MockSCMRevision(head, revision));
                 }
             }
@@ -179,7 +179,7 @@ public class MockSCMSource extends SCMSource {
     @Override
     protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        controller.checkFaults(repository, null, null, true);
+        controller().checkFaults(repository, null, null, true);
         List<Action> result = new ArrayList<Action>();
         result.add(new MockSCMLink("source"));
         String description = controller().getDescription(repository);
@@ -201,7 +201,7 @@ public class MockSCMSource extends SCMSource {
                                            @CheckForNull SCMHeadEvent event,
                                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        controller.checkFaults(repository, revision.getHead().getName(), ((MockSCMRevision)revision).getHash(), true);
+        controller().checkFaults(repository, revision.getHead().getName(), ((MockSCMRevision)revision).getHash(), true);
         return Collections.<Action>singletonList(new MockSCMLink("revision"));
     }
 
@@ -211,7 +211,7 @@ public class MockSCMSource extends SCMSource {
                                            @CheckForNull SCMHeadEvent event,
                                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        controller.checkFaults(repository, head.getName(), null, true);
+        controller().checkFaults(repository, head.getName(), null, true);
         List<Action> result = new ArrayList<Action>();
         if (head instanceof MockChangeRequestSCMHead) {
             result.add(new ContributorMetadataAction(
