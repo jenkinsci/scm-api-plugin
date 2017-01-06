@@ -47,7 +47,7 @@ public class TagSCMHeadCategoryTest {
 
     @Theory
     public void given_tagHead_when_isMatch_then_confirmMatch(TagSCMHeadCategory instance) throws Exception {
-        assertThat(instance.isMatch(new MockTagSCMHead("1.0")), is(true));
+        assertThat(instance.isMatch(new MockTagSCMHead("1.0", 0L)), is(true));
     }
 
     @Theory

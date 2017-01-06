@@ -30,8 +30,15 @@ import jenkins.scm.api.mixin.TagSCMHead;
 
 public class MockTagSCMHead extends MockSCMHead implements TagSCMHead {
 
-    public MockTagSCMHead(@NonNull String name) {
+    private final long timestamp;
+
+    public MockTagSCMHead(@NonNull String name, long timestamp) {
         super(name);
+        this.timestamp = timestamp;
     }
 
+    @Override
+    public long getTimestamp() {
+        return timestamp;
+    }
 }

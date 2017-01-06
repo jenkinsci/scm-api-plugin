@@ -137,6 +137,11 @@ public class SCMCategoryTest {
             public TagSCMHeadImpl(@NonNull String name) {
                 super(name);
             }
+
+            @Override
+            public long getTimestamp() {
+                return 0;
+            }
         };
         SCMHead th = new TagSCMHeadImpl("basic");
         class ChangeRequestSCMHeadImpl extends SCMHead implements ChangeRequestSCMHead {

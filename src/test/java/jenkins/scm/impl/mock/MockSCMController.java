@@ -207,13 +207,23 @@ public class MockSCMController implements Closeable {
         resolve(repository).heads.remove(branch);
     }
 
-    public synchronized void createTag(String repository, String branch, String tag) throws IOException {
+    public synchronized long createTag(String repository, String branch, String tag) throws IOException {
+        Repository repo = resolve(repository);
+        long timestamp = System.currentTimeMillis();
+        repo.tags.put(tag, resolve(repository, branch).getHash());
+        repo.tagDates.put(tag, timestamp);
+        return timestamp;
+    }
+
+    public synchronized void createTag(String repository, String branch, String tag, long when) throws IOException {
         Repository repo = resolve(repository);
         repo.tags.put(tag, resolve(repository, branch).getHash());
+        repo.tagDates.put(tag, when);
     }
 
     public synchronized void deleteTag(String repository, String tag) throws IOException {
         resolve(repository).tags.remove(tag);
+        resolve(repository).tagDates.remove(tag);
     }
 
     public synchronized Integer openChangeRequest(String repository, String branch) throws IOException {
@@ -417,10 +427,23 @@ public class MockSCMController implements Closeable {
         }
     }
 
+    public synchronized long getTagTimestamp(String repository, String tag) throws IOException {
+        Repository repo = repositories.get(repository);
+        if (repo == null) {
+            throw new IOException("Unknown repository: " + repository);
+        }
+        Long date = repo.tagDates.get(tag);
+        if (tag == null) {
+            throw new IOException("Unknown tag: " + tag + " in repository " + repository);
+        }
+        return date;
+    }
+
     private static class Repository {
         private Map<String, State> revisions = new TreeMap<String, State>();
         private Map<String, String> heads = new TreeMap<String, String>();
         private Map<String, String> tags = new TreeMap<String, String>();
+        private Map<String, Long> tagDates = new TreeMap<String, Long>();
         private Map<Integer, String> changes = new TreeMap<Integer, String>();
         private Map<Integer, String> changeBaselines = new TreeMap<Integer, String>();
         private int lastChangeRequest;

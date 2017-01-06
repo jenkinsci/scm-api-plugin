@@ -139,7 +139,7 @@ public class MockSCMSource extends SCMSource {
             for (final String tag : controller().listTags(repository)) {
                 checkInterrupt();
                 String revision = controller().getRevision(repository, tag);
-                MockSCMHead head = new MockTagSCMHead(tag);
+                MockSCMHead head = new MockTagSCMHead(tag, controller().getTagTimestamp(repository, tag));
                 controller.checkFaults(repository, head.getName(), null, false);
                 if (includes != null && !includes.contains(head)) {
                     continue;

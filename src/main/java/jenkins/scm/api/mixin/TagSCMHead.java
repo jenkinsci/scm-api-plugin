@@ -26,6 +26,7 @@
 package jenkins.scm.api.mixin;
 
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMSource;
 
 /**
  * Mixin interface to identify {@link SCMHead} instances that correspond to a semi-immutable tag.
@@ -35,4 +36,22 @@ import jenkins.scm.api.SCMHead;
  * @since 2.0
  */
 public interface TagSCMHead {
+    /**
+     * Returns the timestamp of the tag. The timestamp is important because when iterating a newly
+     * configured {@link SCMSource} the consumer may not want to process old tags and instead may prefer to process
+     * tags created after some specific date.
+     * <p>
+     * For example, if a consumer creates a job for every {@link SCMHead} it may not be a good idea to trigger
+     * builds of old tags (especially if the build were to result in a deployment to production). However when newly
+     * created tags are discovered on subsequent searches (or when reported by the events subsystem), it may be
+     * the intent of the user to have that tag result in a build (eg allowing the creation of a tag to trigger
+     * a release)
+     * <p>
+     * <strong>NOTE:</strong> Implementers are <strong>strongly recommended</strong> to use the time that the tag
+     * was created as the timestamp. Where this is not possible, then implementers should use the maximum last modified
+     * timestamp of the contents of the tag.
+     *
+     * @return the timestamp, directly comparable to {@link System#currentTimeMillis()}.
+     */
+    long getTimestamp();
 }

@@ -36,7 +36,6 @@ import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.PollingResult;
 import hudson.scm.RepositoryBrowser;
-import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMRevisionState;
 import hudson.util.ListBoxModel;
@@ -83,9 +82,16 @@ public class MockSCM extends SCM2 {
                 // ignore
             }
             this.head = new MockChangeRequestSCMHead(number, target);
+        } else if (head.startsWith("TAG:")) {
+            long timestamp = 0;
+            try {
+                timestamp = controller().getTagTimestamp(repository, head.substring(4));
+            } catch (IOException e) {
+                // ignore
+            }
+            this.head = new MockTagSCMHead(head.substring(4), timestamp);
         } else {
-            this.head =
-                    (head.startsWith("TAG:") ? new MockTagSCMHead(head.substring(4)) : new MockSCMHead(head));
+            this.head = new MockSCMHead(head);
         }
         this.revision = revision == null ? null : new MockSCMRevision(this.head, revision);
     }
