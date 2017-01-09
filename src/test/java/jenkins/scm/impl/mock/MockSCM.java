@@ -42,6 +42,7 @@ import hudson.util.ListBoxModel;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,7 +56,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.xml.sax.SAXException;
 
-public class MockSCM extends SCM2 {
+public class MockSCM extends SCM2 implements Serializable {
     private final String controllerId;
     private final String repository;
     private final SCMHead head;
@@ -191,6 +192,13 @@ public class MockSCM extends SCM2 {
     }
 
     @Override
+    public SCMRevisionState calcRevisionsFromBuild(@Nonnull Run<?, ?> build, @Nullable FilePath workspace,
+                                                   @Nullable Launcher launcher, @Nonnull TaskListener listener)
+            throws IOException, InterruptedException {
+        return build.getAction(MockSCMRevisionState.class);
+    }
+
+    @Override
     public ChangeLogParser createChangeLogParser() {
         return new ChangeLogParser() {
             @Override
@@ -202,6 +210,16 @@ public class MockSCM extends SCM2 {
                 return new MockSCMChangeLogSet(build, browser, entries);
             }
         };
+    }
+
+    @Override
+    public String toString() {
+        return "MockSCM{" +
+                "controllerId='" + controllerId + '\'' +
+                ", repository='" + repository + '\'' +
+                ", head=" + head +
+                ", revision=" + revision +
+                '}';
     }
 
     public static class MockSCMRevisionState extends SCMRevisionState {
