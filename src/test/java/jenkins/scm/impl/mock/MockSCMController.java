@@ -48,12 +48,13 @@ import java.util.regex.Pattern;
 import jenkins.scm.api.SCMFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class MockSCMController implements Closeable {
 
     private static Map<String, MockSCMController> instances = new WeakHashMap<String, MockSCMController>();
 
-    private String id = UUID.randomUUID().toString();
+    private final String id;
 
     private Map<String, Repository> repositories = new TreeMap<String, Repository>();
     private List<MockFailure> faults = new ArrayList<MockFailure>();
@@ -64,6 +65,11 @@ public class MockSCMController implements Closeable {
     private String orgIconClassName;
 
     private MockSCMController() {
+        this(UUID.randomUUID().toString());
+    }
+
+    public MockSCMController(String id) {
+        this.id = id;
     }
 
     public static MockSCMController create() {
@@ -72,6 +78,30 @@ public class MockSCMController implements Closeable {
             instances.put(c.id, c);
         }
         return c;
+    }
+
+    /**
+     * (Re)creates a {@link MockSCMController} for use when you are running a data migration test.
+     * It will be the callers responsibility to restore the state of the {@link MockSCMController} accordingly.
+     * Only use this if you are using {@link LocalData} which contains references to specific {@link MockSCMController}
+     * ids and you need to re-wire up the link.
+     *
+     * @param id the ID of the controller used when seeding the original data.
+     * @return the {@link MockSCMController}.
+     * @deprecated (not actually deprecated) a warning that you should only be using this from a test annotated with
+     * {@link LocalData}
+     */
+    @Deprecated // only intended for use from data migration tests where you have a pre-provisioned home
+    public static MockSCMController recreate(String id) {
+        MockSCMController c = new MockSCMController(id);
+        synchronized (instances) {
+            if (instances.containsKey(id)) {
+                return instances.get(id);
+            }
+            instances.put(id, c);
+        }
+        return c;
+
     }
 
     public static List<MockSCMController> all() {
