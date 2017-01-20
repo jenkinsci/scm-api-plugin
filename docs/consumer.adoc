@@ -171,6 +171,8 @@ The owner is responsible for:
 
 While it is possible to use a detached `SCMSource` without an owner, when operated in such a fashion, it is exceedingly likely that any required credentials will be unresolved and thus the usage may fail.
 
+When loading `SCMHead` or `SCMRevision` instances from persistence on disk, a consumer is recommended to pass the objects through `SCMHeadMigration.readResolveSCMHead(SCMSource,SCMHead)` or `SCMHeadMigration.readResolveSCMRevision(SCMSource,SCMRevision)`.
+
 ==== `SCMSourceOwner` contract
 
 If you implement `jenkins.scm.api.SCMSourceOwner` your implementation *must*:
