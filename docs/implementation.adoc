@@ -754,6 +754,12 @@ The `jenkins.scm.api.SCMSource` implementation will also need a Stapler view for
 
 You will need to have implemented your own `SCMHead` and `SCMRevision` subclasses.
 
+[NOTE]
+.So you didn't implement your own `SCMHead` and `SCMRevision` subclasses and now you want to
+====
+You can register a `SCMHeadMigration` extension to perform any required fix-up.
+====
+
 * For regular branch like things, you will want to extend from `SCMHead` directly.
 +
 [source,java]
