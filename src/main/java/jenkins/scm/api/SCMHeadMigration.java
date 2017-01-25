@@ -124,8 +124,8 @@ public abstract class SCMHeadMigration<S extends SCMSource, H extends SCMHead, R
     @NonNull
     public static SCMHead readResolveSCMHead(@NonNull SCMSource source, @NonNull SCMHead head) {
         for (SCMHeadMigration m : ExtensionList.lookup(SCMHeadMigration.class)) {
-            if (m.sourceClass.isInstance(source)
-                    && m.headClass.isInstance(head)) {
+            if (m.sourceClass == source.getClass()
+                    && m.headClass == head.getClass()) {
                 SCMHead migrated = m.migrate(source, head);
                 if (migrated != null) {
                     return migrated;
@@ -149,9 +149,9 @@ public abstract class SCMHeadMigration<S extends SCMSource, H extends SCMHead, R
         }
         SCMHead head = revision.getHead();
         for (SCMHeadMigration m : ExtensionList.lookup(SCMHeadMigration.class)) {
-            if (m.sourceClass.isInstance(source)
-                    && m.headClass.isInstance(head)
-                    && m.revisionClass.isInstance(revision)) {
+            if (m.sourceClass == source.getClass()
+                    && m.headClass == head.getClass()
+                    && m.revisionClass == revision.getClass()) {
                 SCMRevision migrated = m.migrate(source, revision);
                 if (migrated != null) {
                     return migrated;
