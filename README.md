@@ -18,6 +18,10 @@ To build the plugin locally:
 
     mvn clean verify
 
+To build the plugin using Docker:
+
+    docker build .
+
 # Release
 
 To release the plugin:
