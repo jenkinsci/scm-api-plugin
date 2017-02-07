@@ -44,6 +44,7 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -133,7 +134,7 @@ public abstract class SCMEvent<P> {
      */
     @Deprecated
     public SCMEvent(@NonNull Type type, long timestamp, @NonNull P payload) {
-        this(type,timestamp,payload,null);
+        this(type, timestamp, payload, originOf(Stapler.getCurrentRequest()));
     }
 
     /**
