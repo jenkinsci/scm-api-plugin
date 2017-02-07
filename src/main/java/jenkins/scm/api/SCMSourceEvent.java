@@ -25,6 +25,7 @@
 
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.Item;
@@ -49,6 +50,7 @@ public abstract class SCMSourceEvent<P> extends SCMEvent<P> {
     /**
      * {@inheritDoc}
      */
+    @Deprecated
     public SCMSourceEvent(@NonNull Type type, long timestamp, @NonNull P payload) {
         super(type, timestamp, payload);
     }
@@ -56,8 +58,23 @@ public abstract class SCMSourceEvent<P> extends SCMEvent<P> {
     /**
      * {@inheritDoc}
      */
+    public SCMSourceEvent(@NonNull Type type, long timestamp, @NonNull P payload, @CheckForNull String origin) {
+        super(type, timestamp, payload, origin);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
     public SCMSourceEvent(@NonNull Type type, @NonNull P payload) {
         super(type, payload);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public SCMSourceEvent(@NonNull Type type, @NonNull P payload, @CheckForNull String origin) {
+        super(type, payload, origin);
     }
 
     /**

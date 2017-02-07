@@ -26,11 +26,13 @@
 package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -39,6 +41,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -127,6 +130,89 @@ public class SCMEventTest {
                         containsString("{\"name\":\"value\"}")
                 )
         );
+    }
+
+    @Test
+    public void originOfNull() throws Exception {
+        assertThat(SCMEvent.originOf(null), is(nullValue()));
+    }
+
+    @Test
+    public void originOfSimpleRequest() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(req.getScheme()).thenReturn("http");
+        Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
+        Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
+        Mockito.when(req.getRemotePort()).thenReturn(80);
+        Mockito.when(req.getRemoteHost()).thenReturn("scm.example.com");
+        Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
+        assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ http://jenkins.example.com/jenkins/notify"));
+    }
+
+    @Test
+    public void originOfSimpleTLSRequest() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(req.getScheme()).thenReturn("https");
+        Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
+        Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
+        Mockito.when(req.getRemotePort()).thenReturn(443);
+        Mockito.when(req.getRemoteHost()).thenReturn("scm.example.com");
+        Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
+        assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
+    }
+
+    @Test
+    public void originOfSimpleRequestNonStdPort() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(req.getScheme()).thenReturn("http");
+        Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
+        Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
+        Mockito.when(req.getRemotePort()).thenReturn(8080);
+        Mockito.when(req.getRemoteHost()).thenReturn("scm.example.com");
+        Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
+        assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ http://jenkins.example.com:8080/jenkins/notify"));
+    }
+
+    @Test
+    public void originOfSimpleTLSRequestNonStdPort() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(req.getScheme()).thenReturn("https");
+        Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
+        Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
+        Mockito.when(req.getRemotePort()).thenReturn(8443);
+        Mockito.when(req.getRemoteHost()).thenReturn("scm.example.com");
+        Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
+        assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ https://jenkins.example.com:8443/jenkins/notify"));
+    }
+
+    @Test
+    public void originOfForwardedRequestSingleHop() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(req.getScheme()).thenReturn("http");
+        Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
+        Mockito.when(req.getHeader("X-Forwarded-Proto")).thenReturn("https");
+        Mockito.when(req.getHeader("X-Forwarded-Port")).thenReturn("443");
+        Mockito.when(req.getHeader("X-Forwarded-For")).thenReturn("scm.example.com");
+        Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
+        Mockito.when(req.getRemotePort()).thenReturn(8080);
+        Mockito.when(req.getRemoteHost()).thenReturn("proxy.example.com");
+        Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
+        assertThat(SCMEvent.originOf(req), is("scm.example.com → proxy.example.com/203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
+    }
+
+    @Test
+    public void originOfForwardedRequestMultiHop() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(req.getScheme()).thenReturn("http");
+        Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
+        Mockito.when(req.getHeader("X-Forwarded-Proto")).thenReturn("https");
+        Mockito.when(req.getHeader("X-Forwarded-Port")).thenReturn("443");
+        Mockito.when(req.getHeader("X-Forwarded-For")).thenReturn("scm.example.com, gateway.example.com, proxy.example.com");
+        Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
+        Mockito.when(req.getRemotePort()).thenReturn(8080);
+        Mockito.when(req.getRemoteHost()).thenReturn(null);
+        Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
+        assertThat(SCMEvent.originOf(req), is("scm.example.com → gateway.example.com → proxy.example.com → 203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
     }
 
     public static class MySCMEvent extends SCMEvent<Object> {

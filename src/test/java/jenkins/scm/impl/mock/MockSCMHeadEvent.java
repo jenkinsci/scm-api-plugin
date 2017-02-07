@@ -25,6 +25,7 @@
 
 package jenkins.scm.impl.mock;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.scm.SCM;
 import java.util.Collections;
@@ -45,9 +46,19 @@ public class MockSCMHeadEvent extends SCMHeadEvent<String> {
 
     private final String revision;
 
+    @Deprecated
     public MockSCMHeadEvent(@NonNull Type type, MockSCMController controller,
                             String repository, String head, String revision) {
         super(type, head);
+        this.controller = controller;
+        this.repository = repository;
+        this.head = head;
+        this.revision = revision;
+    }
+
+    public MockSCMHeadEvent(@CheckForNull String origin, @NonNull Type type, MockSCMController controller,
+                            String repository, String head, String revision) {
+        super(type, head, origin);
         this.controller = controller;
         this.repository = repository;
         this.head = head;

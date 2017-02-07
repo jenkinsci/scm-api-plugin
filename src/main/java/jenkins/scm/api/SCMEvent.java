@@ -25,6 +25,7 @@
 
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.Cause;
@@ -33,16 +34,19 @@ import hudson.model.TaskListener;
 import hudson.security.ACL;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.servlet.http.HttpServletRequest;
 import jenkins.util.Timer;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Base class for all events from a SCM system.
@@ -93,6 +97,12 @@ public abstract class SCMEvent<P> {
      */
     private static final Cause[] EMPTY_CAUSES = new Cause[0];
     /**
+     * An unknown origin.
+     *
+     * @since 2.0.3
+     */
+    public static final String ORIGIN_UNKNOWN = "?";
+    /**
      * The event type.
      */
     @NonNull
@@ -110,16 +120,42 @@ public abstract class SCMEvent<P> {
     private final P payload;
 
     /**
+     * The optional (provider specific) origin of the event.
+     *
+     * @since 2.0.3
+     */
+    @CheckForNull
+    private final String origin;
+
+    /**
      * Constructor to use when the timestamp is available from the external SCM.
      *
      * @param type      the type of event.
      * @param timestamp the timestamp from the external SCM (see {@link System#currentTimeMillis()} for start and units)
      * @param payload   the original provider specific payload.
+     * @deprecated use {@link #SCMEvent(Type, long, Object, String)}
      */
+    @Deprecated
     public SCMEvent(@NonNull Type type, long timestamp, @NonNull P payload) {
+        this(type, timestamp, payload, originOf(Stapler.getCurrentRequest()));
+    }
+
+    /**
+     * Constructor to use when the timestamp is available from the external SCM.
+     *
+     * @param type      the type of event.
+     * @param timestamp the timestamp from the external SCM (see {@link System#currentTimeMillis()} for start and units)
+     * @param payload   the original provider specific payload.
+     * @param origin    the (optional) origin of the event, e.g. a hostname, etc. It is recommended to use
+     *                  {@link #originOf(HttpServletRequest)} where the event originates from a
+     *                  {@link HttpServletRequest} and the request is available when the event is being created.
+     * @since 2.0.3
+     */
+    public SCMEvent(@NonNull Type type, long timestamp, @NonNull P payload, @CheckForNull String origin) {
         this.type = type;
         this.timestamp = timestamp;
         this.payload = payload;
+        this.origin = ORIGIN_UNKNOWN.equals(origin) ? null : origin;
     }
 
     /**
@@ -128,9 +164,24 @@ public abstract class SCMEvent<P> {
      *
      * @param type    the type of event.
      * @param payload the original provider specific payload.
+     * @deprecated use {@link #SCMEvent(Type, Object, String)}
      */
+    @Deprecated
     public SCMEvent(@NonNull Type type, @NonNull P payload) {
         this(type, System.currentTimeMillis(), payload);
+    }
+
+    /**
+     * Constructor to use when the timestamp is not available from the external SCM. The timestamp will be set
+     * using {@link System#currentTimeMillis()}
+     *
+     * @param type    the type of event.
+     * @param payload the original provider specific payload.
+     * @param origin  the (optional) origin of the event, e.g. a hostname, etc
+     * @since 2.0.3
+     */
+    public SCMEvent(@NonNull Type type, @NonNull P payload, @CheckForNull String origin) {
+        this(type, System.currentTimeMillis(), payload, origin);
     }
 
     /**
@@ -139,7 +190,7 @@ public abstract class SCMEvent<P> {
      * @param copy the event to clone.
      */
     protected SCMEvent(SCMEvent<P> copy) {
-        this(copy.getType(), copy.getTimestamp(), copy.getPayload());
+        this(copy.getType(), copy.getTimestamp(), copy.getPayload(), copy.origin);
     }
 
     /**
@@ -191,6 +242,17 @@ public abstract class SCMEvent<P> {
     @NonNull
     public P getPayload() {
         return payload;
+    }
+
+    /**
+     * Gets the origin of the event, e.g. a hostname, etc.
+     *
+     * @return the origin of the event (or {@link #ORIGIN_UNKNOWN} if the origin is unknown)
+     * @since 2.0.3
+     */
+    @NonNull
+    public String getOrigin() {
+        return StringUtils.defaultIfBlank(origin, ORIGIN_UNKNOWN);
     }
 
     /**
@@ -247,11 +309,80 @@ public abstract class SCMEvent<P> {
     @Override
     public String toString() {
         return String.format(
-                "SCMEvent{type=%s, timestamp=%tc, payload=%s}",
+                "SCMEvent{type=%s, timestamp=%tc, payload=%s, origin=%s}",
                 type,
                 timestamp,
-                payload
+                payload,
+                StringUtils.defaultIfBlank(origin, ORIGIN_UNKNOWN)
         );
+    }
+
+    /**
+     * Helper method to get the origin of an event from a {@link HttpServletRequest}. The current format is the
+     * list of hostname / ip addresses from the request (parsing {@code X-Forwarded-For} headers) separated by
+     * {@code →} followed by a {@code ⇒} and finally the requested URL (omitting the query portion of the URL).
+     *
+     * @param req the {@link HttpServletRequest} or {@code null} (this is to allow passing
+     *            {@link Stapler#getCurrentRequest()} without having to check for {@code null})
+     * @return the origin of the event or {@code null} if the {@link HttpServletRequest} is null.
+     * @since 2.0.3
+     */
+    @CheckForNull
+    public static String originOf(@CheckForNull HttpServletRequest req) {
+        if (req == null) {
+            return null;
+        }
+        String last = null;
+        StringBuilder result = new StringBuilder();
+        // TODO RFC 7239 support once standard is approved
+        String header = req.getHeader("X-Forwarded-For");
+        if (StringUtils.isNotBlank(header)) {
+            for (String remote : header.split("(,\\s*)")) {
+                if (StringUtils.isBlank(remote)) {
+                    continue;
+                }
+                if (last != null) {
+                    result.append(" → ");
+                }
+                last = StringUtils.trim(remote);
+                result.append(last);
+            }
+        }
+        String remoteHost = req.getRemoteHost();
+        String remoteAddr = req.getRemoteAddr();
+        if (last == null || (!(StringUtils.equals(last, remoteHost) || StringUtils.equals(last, remoteAddr)))) {
+            if (last != null) {
+                result.append(" → ");
+            }
+            if (!StringUtils.isBlank(remoteHost) && !remoteHost.equals(remoteAddr)) {
+                result.append(remoteHost);
+                result.append('/');
+            }
+            result.append(remoteAddr);
+        }
+        result.append(" ⇒ ");
+        String scheme = StringUtils.defaultIfBlank(req.getHeader("X-Forwarded-Proto"), req.getScheme());
+        result.append(scheme);
+        result.append("://");
+        result.append(req.getServerName());
+        String portStr = req.getHeader("X-Forwarded-Port");
+        int port;
+        if (portStr != null) {
+            try {
+                port = Integer.parseInt(portStr);
+            } catch (NumberFormatException e) {
+                port = req.getRemotePort();
+            }
+        } else {
+            port = req.getRemotePort();
+        }
+        if (!("http".equals(scheme) && port == 80 || "https".equals(scheme) && port == 443)) {
+            result.append(':');
+            result.append(port);
+        }
+        result.append(req.getRequestURI());
+        // omit query as may contain "secrets"
+        return result.toString();
     }
 
     /**

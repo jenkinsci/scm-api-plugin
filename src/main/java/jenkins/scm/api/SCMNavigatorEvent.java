@@ -25,6 +25,7 @@
 
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +49,7 @@ public abstract class SCMNavigatorEvent<P> extends SCMEvent<P> {
     /**
      * {@inheritDoc}
      */
+    @Deprecated
     public SCMNavigatorEvent(@NonNull Type type, long timestamp, @NonNull P payload) {
         super(type, timestamp, payload);
     }
@@ -55,8 +57,23 @@ public abstract class SCMNavigatorEvent<P> extends SCMEvent<P> {
     /**
      * {@inheritDoc}
      */
+    public SCMNavigatorEvent(@NonNull Type type, long timestamp, @NonNull P payload, @CheckForNull String origin) {
+        super(type, timestamp, payload, origin);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
     public SCMNavigatorEvent(@NonNull Type type, @NonNull P payload) {
         super(type, payload);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public SCMNavigatorEvent(@NonNull Type type, @NonNull P payload, @CheckForNull String origin) {
+        super(type, payload, origin);
     }
 
     /**
