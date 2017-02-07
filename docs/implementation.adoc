@@ -1163,13 +1163,13 @@ public class MySCMWebHook implements UnprotectedRootAction {
         for (event : payload) {
             switch (eventType) {
                 case HEAD:
-                    SCMHeadEvent.fireNow(new MySCMHeadEvent(eventType, payload);
+                    SCMHeadEvent.fireNow(new MySCMHeadEvent(eventType, payload, SCMEvent.originOf(req));
                     break;
                 case SOURCE:
-                    SCMHeadEvent.fireNow(new MySCMSourceEvent(eventType, payload);
+                    SCMHeadEvent.fireNow(new MySCMSourceEvent(eventType, payload, SCMEvent.originOf(req));
                     break;
                 case NAVIGATOR:
-                    SCMHeadEvent.fireNow(new MySCMNavigatorEvent(eventType, payload);
+                    SCMHeadEvent.fireNow(new MySCMNavigatorEvent(eventType, payload, SCMEvent.originOf(req));
                     break;
             }
         }
@@ -1291,8 +1291,8 @@ Because each event from the source control system has a 1:1 correspondance with 
 ----
 public class MyBrachSCMHeadEvent extends SCMHeadEvent<JsonNode> {
 
-    public MyBrachSCMHeadEvent(@NonNull Type type, JsonNode payload) {
-        super(type, payload);
+    public MyBrachSCMHeadEvent(@NonNull Type type, JsonNode payload, String origin) {
+        super(type, payload, origin);
     }
 
     @Override

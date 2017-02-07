@@ -25,6 +25,7 @@
 
 package jenkins.scm.api;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.scm.SCM;
@@ -55,6 +56,7 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
     /**
      * {@inheritDoc}
      */
+    @Deprecated
     public SCMHeadEvent(@NonNull Type type, long timestamp, @NonNull P payload) {
         super(type, timestamp, payload);
     }
@@ -62,8 +64,23 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
     /**
      * {@inheritDoc}
      */
+    public SCMHeadEvent(@NonNull Type type, long timestamp, @NonNull P payload, @CheckForNull String origin) {
+        super(type, timestamp, payload, origin);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
     public SCMHeadEvent(@NonNull Type type, @NonNull P payload) {
         super(type, payload);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public SCMHeadEvent(@NonNull Type type, @NonNull P payload, @CheckForNull String origin) {
+        super(type, payload, origin);
     }
 
     /**

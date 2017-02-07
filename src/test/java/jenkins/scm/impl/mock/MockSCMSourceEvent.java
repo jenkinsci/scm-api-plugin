@@ -25,6 +25,7 @@
 
 package jenkins.scm.impl.mock;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
@@ -36,9 +37,17 @@ public class MockSCMSourceEvent extends SCMSourceEvent<String> {
 
     private final String repository;
 
+    @Deprecated
     public MockSCMSourceEvent(@NonNull Type type, MockSCMController controller,
                               String repository) {
         super(type, repository);
+        this.controller = controller;
+        this.repository = repository;
+    }
+
+    public MockSCMSourceEvent(@CheckForNull String origin, @NonNull Type type, MockSCMController controller,
+                              String repository) {
+        super(type, repository, origin);
         this.controller = controller;
         this.repository = repository;
     }
