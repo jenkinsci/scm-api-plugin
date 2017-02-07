@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.servlet.http.HttpServletRequest;
 import jenkins.util.Timer;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -97,8 +98,10 @@ public abstract class SCMEvent<P> {
     private static final Cause[] EMPTY_CAUSES = new Cause[0];
     /**
      * An unknown origin.
+     *
+     * @since 2.0.3
      */
-    private static final String ORIGIN_UNKNOWN = "?";
+    public static final String ORIGIN_UNKNOWN = "?";
     /**
      * The event type.
      */
@@ -143,7 +146,9 @@ public abstract class SCMEvent<P> {
      * @param type      the type of event.
      * @param timestamp the timestamp from the external SCM (see {@link System#currentTimeMillis()} for start and units)
      * @param payload   the original provider specific payload.
-     * @param origin    the (optional) origin of the event, e.g. a hostname, etc
+     * @param origin    the (optional) origin of the event, e.g. a hostname, etc. It is recommended to use
+     *                  {@link #originOf(HttpServletRequest)} where the event originates from a
+     *                  {@link HttpServletRequest} and the request is available when the event is being created.
      * @since 2.0.3
      */
     public SCMEvent(@NonNull Type type, long timestamp, @NonNull P payload, @CheckForNull String origin) {
@@ -242,7 +247,7 @@ public abstract class SCMEvent<P> {
     /**
      * Gets the origin of the event, e.g. a hostname, etc.
      *
-     * @return the origin of the event (or {@code "?"} if the origin is unknown)
+     * @return the origin of the event (or {@link #ORIGIN_UNKNOWN} if the origin is unknown)
      * @since 2.0.3
      */
     @NonNull
@@ -313,13 +318,17 @@ public abstract class SCMEvent<P> {
     }
 
     /**
-     * Helper method to get the origin of an event from a {@link StaplerRequest}.
+     * Helper method to get the origin of an event from a {@link HttpServletRequest}. The current format is the
+     * list of hostname / ip addresses from the request (parsing {@code X-Forwarded-For} headers) separated by
+     * {@code →} followed by a {@code ⇒} and finally the requested URL (omitting the query portion of the URL).
      *
-     * @param req the {@link StaplerRequest}.
-     * @return the origin of the event.
+     * @param req the {@link HttpServletRequest} or {@code null} (this is to allow passing
+     *            {@link Stapler#getCurrentRequest()} without having to check for {@code null})
+     * @return the origin of the event or {@code null} if the {@link HttpServletRequest} is null.
+     * @since 2.0.3
      */
     @CheckForNull
-    public static String originOf(@CheckForNull StaplerRequest req) {
+    public static String originOf(@CheckForNull HttpServletRequest req) {
         if (req == null) {
             return null;
         }
@@ -333,7 +342,7 @@ public abstract class SCMEvent<P> {
                     continue;
                 }
                 if (last != null) {
-                    result.append(" => ");
+                    result.append(" → ");
                 }
                 last = StringUtils.trim(remote);
                 result.append(last);
@@ -343,7 +352,7 @@ public abstract class SCMEvent<P> {
         String remoteAddr = req.getRemoteAddr();
         if (last == null || (!(StringUtils.equals(last, remoteHost) || StringUtils.equals(last, remoteAddr)))) {
             if (last != null) {
-                result.append(" => ");
+                result.append(" → ");
             }
             if (!StringUtils.isBlank(remoteHost) && !remoteHost.equals(remoteAddr)) {
                 result.append(remoteHost);
@@ -351,7 +360,7 @@ public abstract class SCMEvent<P> {
             }
             result.append(remoteAddr);
         }
-        result.append(" => ");
+        result.append(" ⇒ ");
         String scheme = StringUtils.defaultIfBlank(req.getHeader("X-Forwarded-Proto"), req.getScheme());
         result.append(scheme);
         result.append("://");

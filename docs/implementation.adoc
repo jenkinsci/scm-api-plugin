@@ -1279,9 +1279,9 @@ The webhook receiver would start by parsing the payload and then create the appr
 JsonNode json = new ObjectMapper().readTree(payload);
 String event = json.path("event").asString();
 if ("branch-create".equals(event)) {
-    SCMHeadEvent.fireNow(new MyBrachSCMHeadEvent(Type.CREATED, json);
+    SCMHeadEvent.fireNow(new MyBranchSCMHeadEvent(Type.CREATED, json);
 } else if ("branch-update".equals(event)) {
-    SCMHeadEvent.fireNow(new MyBrachSCMHeadEvent(Type.UPDATED, json);
+    SCMHeadEvent.fireNow(new MyBranchSCMHeadEvent(Type.UPDATED, json);
 } // else etc
 ----
 
@@ -1289,9 +1289,9 @@ Because each event from the source control system has a 1:1 correspondance with 
 
 [source,java]
 ----
-public class MyBrachSCMHeadEvent extends SCMHeadEvent<JsonNode> {
+public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
 
-    public MyBrachSCMHeadEvent(@NonNull Type type, JsonNode payload, String origin) {
+    public MyBranchSCMHeadEvent(@NonNull Type type, JsonNode payload, String origin) {
         super(type, payload, origin);
     }
 
