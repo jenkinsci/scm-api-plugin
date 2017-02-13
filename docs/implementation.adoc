@@ -598,6 +598,10 @@ public class MySCMSource extends SCMSource {
                 }
                 observer.observe(head, revision);
             }
+            // null criteria means that all branches match.
+            else {
+                observer.observe(head, revision);
+            }
         }
     }
 
