@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Item;
 import hudson.model.TaskListener;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -151,9 +152,10 @@ public abstract class SCMSourceObserver {
          * To be called when finished defining one project.
          *
          * @throws IllegalStateException may be thrown if called twice
+         * @throws IOException if processing of the final project could not be completed due to an {@link IOException}.
          * @throws InterruptedException  if processing of the final project was interrupted
          */
-        public abstract void complete() throws IllegalStateException, InterruptedException;
+        public abstract void complete() throws IllegalStateException, IOException, InterruptedException;
 
     }
 
