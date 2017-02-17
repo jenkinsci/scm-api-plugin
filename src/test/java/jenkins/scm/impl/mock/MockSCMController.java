@@ -59,7 +59,8 @@ public class MockSCMController implements Closeable {
 
     private Map<String, Repository> repositories = new TreeMap<String, Repository>();
     private List<MockFailure> faults = new ArrayList<MockFailure>();
-    private MockLatency latency = null;
+    @NonNull
+    private MockLatency latency = MockLatency.none();
     private String displayName;
     private String description;
     private String url;
@@ -84,11 +85,6 @@ public class MockSCMController implements Closeable {
 
     public MockSCMController withLatency(@NonNull MockLatency latency) {
         this.latency = latency;
-        return this;
-    }
-
-    public MockSCMController withoutLatency() {
-        this.latency = null;
         return this;
     }
 
@@ -191,9 +187,7 @@ public class MockSCMController implements Closeable {
     public synchronized void checkFaults(@CheckForNull String repository, @CheckForNull String branch,
                                          @CheckForNull String revision, boolean actions)
             throws IOException, InterruptedException {
-        if (latency != null) {
-            latency.apply();
-        }
+        latency.apply();
         for (MockFailure fault: faults) {
             fault.check(repository, branch, revision, actions);
         }

@@ -34,6 +34,19 @@ import java.util.concurrent.TimeUnit;
  * @since 2.0.5
  */
 public abstract class MockLatency {
+
+    private static final MockLatency NONE = new MockLatency() {
+        @Override
+        public void apply() throws InterruptedException {
+        }
+    };
+    private static final MockLatency YIELD = new MockLatency() {
+        @Override
+        public void apply() throws InterruptedException {
+            Thread.yield();
+        }
+    };
+
     public abstract void apply() throws InterruptedException;
 
     /**
@@ -47,6 +60,25 @@ public abstract class MockLatency {
             @Override
             public void apply() throws InterruptedException {
                 units.sleep(time);
+            }
+        };
+    }
+
+    /**
+     * A fixed latency for all threads except the current thread.
+     * 
+     * @param time the latency.
+     * @param units the units.
+     * @return a fixed latency.
+     */
+    public static MockLatency fixedForOtherThreads(final long time, final TimeUnit units) {
+        final Thread safe = Thread.currentThread();
+        return new MockLatency() {
+            @Override
+            public void apply() throws InterruptedException {
+                if (Thread.currentThread() != safe) {
+                    units.sleep(time);
+                }
             }
         };
     }
@@ -75,11 +107,14 @@ public abstract class MockLatency {
      * @return a minimal latency that causes background threads to run.
      */
     public static MockLatency yield() {
-        return new MockLatency() {
-            @Override
-            public void apply() throws InterruptedException {
-                Thread.yield();
-            }
-        };
+        return YIELD;
+    }
+    /**
+     * A latency that just forces the thread scheduler to yield.
+     *
+     * @return a minimal latency that causes background threads to run.
+     */
+    public static MockLatency none() {
+        return NONE;
     }
 }
