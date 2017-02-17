@@ -597,9 +597,8 @@ public class MySCMSource extends SCMSource {
                     }
                 }
                 observer.observe(head, revision);
-            }
-            // null criteria means that all branches match.
-            else {
+            } else {
+                // null criteria means that all branches match.
                 observer.observe(head, revision);
             }
         }
