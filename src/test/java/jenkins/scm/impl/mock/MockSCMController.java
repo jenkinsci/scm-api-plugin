@@ -26,6 +26,7 @@
 package jenkins.scm.impl.mock;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -58,6 +59,7 @@ public class MockSCMController implements Closeable {
 
     private Map<String, Repository> repositories = new TreeMap<String, Repository>();
     private List<MockFailure> faults = new ArrayList<MockFailure>();
+    private MockLatency latency = null;
     private String displayName;
     private String description;
     private String url;
@@ -78,6 +80,16 @@ public class MockSCMController implements Closeable {
             instances.put(c.id, c);
         }
         return c;
+    }
+
+    public MockSCMController withLatency(@NonNull MockLatency latency) {
+        this.latency = latency;
+        return this;
+    }
+
+    public MockSCMController withoutLatency() {
+        this.latency = null;
+        return this;
     }
 
     /**
@@ -178,7 +190,10 @@ public class MockSCMController implements Closeable {
 
     public synchronized void checkFaults(@CheckForNull String repository, @CheckForNull String branch,
                                          @CheckForNull String revision, boolean actions)
-            throws IOException {
+            throws IOException, InterruptedException {
+        if (latency != null) {
+            latency.apply();
+        }
         for (MockFailure fault: faults) {
             fault.check(repository, branch, revision, actions);
         }
