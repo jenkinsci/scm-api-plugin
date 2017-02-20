@@ -432,6 +432,8 @@ public abstract class SCMEvent<P> {
         /*package*/ static long startedId = 0L;
         @Restricted(NoExternalUse.class)
         /*package*/ static long finishedId = 0L;
+        @Restricted(NoExternalUse.class)
+        /*package*/ static int inFlight = 0;
 
         private final long id;
         private final E event;
@@ -452,6 +454,7 @@ public abstract class SCMEvent<P> {
                     startedId = id;
                     started.signalAll();
                 }
+                inFlight++;
             } finally {
                 lock.unlock();
             }
@@ -480,6 +483,10 @@ public abstract class SCMEvent<P> {
                 try {
                     if (finishedId < id) {
                         finishedId = id;
+                    }
+                    inFlight--;
+                    if (inFlight <= 0) {
+                        inFlight = 0;
                         finished.signalAll();
                     }
                 } finally {
