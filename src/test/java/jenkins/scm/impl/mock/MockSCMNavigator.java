@@ -34,7 +34,9 @@ import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nonnull;
+import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
 import jenkins.scm.api.SCMNavigatorEvent;
@@ -99,12 +101,18 @@ public class MockSCMNavigator extends SCMNavigator {
 
     @Override
     public void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException {
+        controller().applyLatency();
         controller().checkFaults(null, null, null, false);
+        Set<String> includes = observer.getIncludes();
         for (String name : controller().listRepositories()) {
             if (!observer.isObserving()) {
                 return;
             }
             checkInterrupt();
+            if (includes != null && !includes.contains(name)) {
+                continue;
+            }
+            controller().applyLatency();
             controller().checkFaults(name, null, null, false);
             SCMSourceObserver.ProjectObserver po = observer.observe(name);
             po.addSource(new MockSCMSource(getId() + "::" + name,
@@ -119,6 +127,7 @@ public class MockSCMNavigator extends SCMNavigator {
                                         @CheckForNull SCMNavigatorEvent event,
                                         @NonNull TaskListener listener)
             throws IOException, InterruptedException {
+        controller().applyLatency();
         controller().checkFaults(null, null, null, true);
         List<Action> result = new ArrayList<Action>();
         result.add(new MockSCMLink("organization"));

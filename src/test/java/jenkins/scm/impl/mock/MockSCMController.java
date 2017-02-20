@@ -184,10 +184,21 @@ public class MockSCMController implements Closeable {
         this.faults.clear();
     }
 
-    public synchronized void checkFaults(@CheckForNull String repository, @CheckForNull String branch,
+    public void applyLatency() throws InterruptedException {
+        MockLatency latency;
+        synchronized (this) {
+            latency = this.latency;
+        }
+        latency.apply();
+    }
+
+    public void checkFaults(@CheckForNull String repository, @CheckForNull String branch,
                                          @CheckForNull String revision, boolean actions)
             throws IOException, InterruptedException {
-        latency.apply();
+        List<MockFailure> faults;
+        synchronized (this) {
+            faults = new ArrayList<MockFailure>(this.faults);
+        }
         for (MockFailure fault: faults) {
             fault.check(repository, branch, revision, actions);
         }
