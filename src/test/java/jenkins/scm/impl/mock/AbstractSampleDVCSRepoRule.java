@@ -36,6 +36,7 @@ import static jenkins.scm.impl.mock.AbstractSampleRepoRule.run;
 
 /**
  * Rule tailored to a DVCS which may be initialized and cloned from a local directory.
+ * @since FIXME
  */
 public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule {
 
@@ -44,7 +45,8 @@ public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule 
      */
     protected File sampleRepo;
 
-    @Override protected void before() throws Throwable {
+    @Override
+    protected void before() throws Throwable {
         super.before();
         sampleRepo = tmp.newFolder();
     }
@@ -61,7 +63,8 @@ public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule 
     /**
      * @return path of {@link #sampleRepo}
      */
-    @Override public final String toString() {
+    @Override
+    public final String toString() {
         return sampleRepo.getAbsolutePath();
     }
 

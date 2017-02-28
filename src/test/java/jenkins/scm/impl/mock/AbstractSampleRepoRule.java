@@ -41,6 +41,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Basis for {@link Rule} classes which run a concrete SCM tool on a sample repository, for integration testing.
+ * @since FIXME
  */
 public abstract class AbstractSampleRepoRule extends ExternalResource {
 
@@ -75,11 +76,13 @@ public abstract class AbstractSampleRepoRule extends ExternalResource {
         this.tmp = new TemporaryFolder();
     }
 
-    @Override protected void before() throws Throwable {
+    @Override
+    protected void before() throws Throwable {
         tmp.create();
     }
 
-    @Override protected void after() {
+    @Override
+    protected void after() {
         tmp.delete();
     }
 
