@@ -371,10 +371,10 @@ public abstract class SCMEvent<P> {
             try {
                 port = Integer.parseInt(portStr);
             } catch (NumberFormatException e) {
-                port = req.getRemotePort();
+                port = req.getLocalPort();
             }
         } else {
-            port = req.getRemotePort();
+            port = req.getLocalPort();
         }
         if (!("http".equals(scheme) && port == 80 || "https".equals(scheme) && port == 443)) {
             result.append(':');
