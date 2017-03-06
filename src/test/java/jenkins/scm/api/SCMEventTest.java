@@ -143,7 +143,7 @@ public class SCMEventTest {
         Mockito.when(req.getScheme()).thenReturn("http");
         Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
         Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
-        Mockito.when(req.getRemotePort()).thenReturn(80);
+        Mockito.when(req.getLocalPort()).thenReturn(80);
         Mockito.when(req.getRemoteHost()).thenReturn("scm.example.com");
         Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
         assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ http://jenkins.example.com/jenkins/notify"));
@@ -155,7 +155,7 @@ public class SCMEventTest {
         Mockito.when(req.getScheme()).thenReturn("https");
         Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
         Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
-        Mockito.when(req.getRemotePort()).thenReturn(443);
+        Mockito.when(req.getLocalPort()).thenReturn(443);
         Mockito.when(req.getRemoteHost()).thenReturn("scm.example.com");
         Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
         assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
@@ -167,7 +167,7 @@ public class SCMEventTest {
         Mockito.when(req.getScheme()).thenReturn("http");
         Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
         Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
-        Mockito.when(req.getRemotePort()).thenReturn(8080);
+        Mockito.when(req.getLocalPort()).thenReturn(8080);
         Mockito.when(req.getRemoteHost()).thenReturn("scm.example.com");
         Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
         assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ http://jenkins.example.com:8080/jenkins/notify"));
@@ -179,7 +179,7 @@ public class SCMEventTest {
         Mockito.when(req.getScheme()).thenReturn("https");
         Mockito.when(req.getServerName()).thenReturn("jenkins.example.com");
         Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
-        Mockito.when(req.getRemotePort()).thenReturn(8443);
+        Mockito.when(req.getLocalPort()).thenReturn(8443);
         Mockito.when(req.getRemoteHost()).thenReturn("scm.example.com");
         Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
         assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ https://jenkins.example.com:8443/jenkins/notify"));
@@ -194,7 +194,7 @@ public class SCMEventTest {
         Mockito.when(req.getHeader("X-Forwarded-Port")).thenReturn("443");
         Mockito.when(req.getHeader("X-Forwarded-For")).thenReturn("scm.example.com");
         Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
-        Mockito.when(req.getRemotePort()).thenReturn(8080);
+        Mockito.when(req.getLocalPort()).thenReturn(8080);
         Mockito.when(req.getRemoteHost()).thenReturn("proxy.example.com");
         Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
         assertThat(SCMEvent.originOf(req), is("scm.example.com → proxy.example.com/203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
@@ -209,7 +209,7 @@ public class SCMEventTest {
         Mockito.when(req.getHeader("X-Forwarded-Port")).thenReturn("443");
         Mockito.when(req.getHeader("X-Forwarded-For")).thenReturn("scm.example.com, gateway.example.com, proxy.example.com");
         Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
-        Mockito.when(req.getRemotePort()).thenReturn(8080);
+        Mockito.when(req.getLocalPort()).thenReturn(8080);
         Mockito.when(req.getRemoteHost()).thenReturn(null);
         Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
         assertThat(SCMEvent.originOf(req), is("scm.example.com → gateway.example.com → proxy.example.com → 203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
