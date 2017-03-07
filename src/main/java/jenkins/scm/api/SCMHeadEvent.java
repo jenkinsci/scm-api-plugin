@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.scm.SCM;
 import hudson.triggers.SCMTrigger;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -250,7 +251,8 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
          * {@inheritDoc}
          */
         @Override
-        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
+        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision)
+                throws IOException, InterruptedException {
             if (untrusted.containsKey(head)) {
                 trusted.put(head, revision);
                 untrusted.remove(head);

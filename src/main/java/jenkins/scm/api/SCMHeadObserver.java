@@ -25,6 +25,7 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -45,8 +46,11 @@ public abstract class SCMHeadObserver {
      *
      * @param head     the head.
      * @param revision the revision.
+     * @throws IOException if processing of the observation could not be completed due to an {@link IOException}.
+     * @throws InterruptedException  if processing of the observation was interrupted
      */
-    public abstract void observe(@NonNull SCMHead head, @NonNull SCMRevision revision);
+    public abstract void observe(@NonNull SCMHead head, @NonNull SCMRevision revision)
+            throws IOException, InterruptedException;
 
     /**
      * Returns information about whether the observer wants more results.
@@ -197,7 +201,8 @@ public abstract class SCMHeadObserver {
          * {@inheritDoc}
          */
         @Override
-        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
+        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision)
+                throws IOException, InterruptedException {
             for (SCMHeadObserver observer : observers) {
                 if (observer.isObserving()) {
                     observer.observe(head, revision);
@@ -290,7 +295,8 @@ public abstract class SCMHeadObserver {
          * {@inheritDoc}
          */
         @Override
-        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
+        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision)
+                throws IOException, InterruptedException {
             for (SCMHeadObserver observer : observers) {
                 if (observer.isObserving()) {
                     observer.observe(head, revision);
@@ -582,7 +588,8 @@ public abstract class SCMHeadObserver {
          * {@inheritDoc}
          */
         @Override
-        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
+        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision)
+                throws IOException, InterruptedException {
             delegate.observe(head, revision);
         }
 
@@ -632,7 +639,8 @@ public abstract class SCMHeadObserver {
          * {@inheritDoc}
          */
         @Override
-        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
+        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision)
+                throws IOException, InterruptedException {
             if (remaining.contains(head)) {
                 remaining.remove(head);
                 super.observe(head, revision);
