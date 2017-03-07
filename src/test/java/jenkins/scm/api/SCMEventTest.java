@@ -209,7 +209,7 @@ public class SCMEventTest {
         Mockito.when(req.getHeader("X-Forwarded-Port")).thenReturn("443");
         Mockito.when(req.getHeader("X-Forwarded-For")).thenReturn("scm.example.com, gateway.example.com, proxy.example.com");
         Mockito.when(req.getRequestURI()).thenReturn("/jenkins/notify");
-        Mockito.when(req.getLocalPort()).thenReturn(8080);
+        Mockito.when(req.getRemotePort()).thenReturn(8080);
         Mockito.when(req.getRemoteHost()).thenReturn(null);
         Mockito.when(req.getRemoteAddr()).thenReturn("203.0.113.1");
         assertThat(SCMEvent.originOf(req), is("scm.example.com → gateway.example.com → proxy.example.com → 203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
