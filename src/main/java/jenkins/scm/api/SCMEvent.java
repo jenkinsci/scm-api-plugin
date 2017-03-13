@@ -43,6 +43,7 @@ import jenkins.util.Timer;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
@@ -253,6 +254,17 @@ public abstract class SCMEvent<P> {
     @NonNull
     public String getOrigin() {
         return StringUtils.defaultIfBlank(origin, ORIGIN_UNKNOWN);
+    }
+
+    /**
+     * Return a description of the event.
+     *
+     * @return the description or {@code null} if no description can be provided.
+     * @since TODO
+     */
+    @CheckForNull
+    public String description() {
+        return null;
     }
 
     /**
