@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.jvnet.localizer.Localizable;
 
 /**
  * Base class for events relating to {@link SCMSource} instances.
@@ -93,13 +94,37 @@ public abstract class SCMSourceEvent<P> extends SCMEvent<P> {
     public abstract boolean isMatch(@NonNull SCMNavigator navigator);
 
     /**
+     * Return a description of the event in the context of the supplied {@link SCMNavigator}.
+     *
+     * @param navigator the {@link SCMNavigator}, the navigator must be {@link #isMatch(SCMNavigator)}.
+     * @return the description or {@code null} if no description can be provided.
+     * @since TODO
+     */
+    @CheckForNull
+    public String descriptionFor(SCMNavigator navigator) {
+        return description();
+    }
+
+    /**
      * Tests if this event applies to the supplied {@link SCMSource}. (Calling this method for a {@link Type#CREATED}
      * logically could return {@code true} if there has been out of order or delayed delivery of events)
      *
-     * @param source the {@link SCMSource}.
+     * @param source the {@link SCMSource}, the source must be {@link #isMatch(SCMSource)}.
      * @return {@code true} if and only if this event concerns the supplied {@link SCMSource}.
      */
     public abstract boolean isMatch(@NonNull SCMSource source);
+
+    /**
+     * Return a description of the event in the context of the supplied {@link SCMSource}.
+     *
+     * @param source the {@link SCMSource}.
+     * @return the description or {@code null} if no description can be provided.
+     * @since TODO
+     */
+    @CheckForNull
+    public String descriptionFor(SCMSource source) {
+        return description();
+    }
 
     /**
      * Returns the name of the {@link SCMSource}, such as a repository name within an organization; may be used as an

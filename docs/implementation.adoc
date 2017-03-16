@@ -1318,16 +1318,16 @@ public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
             return Collections.emptyMap();
         }
         MySCMSource src = (MySCMSource) source;
-        if (!(src.getServer().equals(payload.path("server").asString()))) {
+        if (!(src.getServer().equals(getPayload().path("server").asString()))) {
             return Collections.emptyMap();
         }
-        if (!(src.getTeam().equals(payload.path("team").asString()))) {
+        if (!(src.getTeam().equals(getPayload().path("team").asString()))) {
             return Collections.emptyMap();
         }
-        if (!(src.getRepository().equals(payload.path("repository").asString()))) {
+        if (!(src.getRepository().equals(getPayload().path("repository").asString()))) {
             return Collections.emptyMap();
         }
-        MySCMHead head = new MySCMHead(payload.path("branch").asString(), false);
+        MySCMHead head = new MySCMHead(getPayload().path("branch").asString(), false);
         return Collections.<SCMHead, SCMRevision>singletonMap(
                 head, new MySCMRevision(head, revision)
         );
@@ -1337,12 +1337,50 @@ public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
     public boolean isMatch(@NonNull SCM scm) {
         if (scm instanceof MySCM) {
             MySCM mySCM = (MockSCM) scm;
-            return mySCM.getServer().equals(payload.path("server").asString())
-                && mySCM.getTeam().equals(payload.path("team").asString())
-                    && mySCM.getRepository().equals(payload.path("repository").asString())
-                && mySCM.getBranch().equals(payload.path("branch").asString());
+            return mySCM.getServer().equals(getPayload().path("server").asString())
+                && mySCM.getTeam().equals(getPayload().path("team").asString())
+                    && mySCM.getRepository().equals(getPayload().path("repository").asString())
+                && mySCM.getBranch().equals(getPayload().path("branch").asString());
         }
         return false;
+    }
+
+    @Override
+    public String description() {
+        // we have no context, so have to give a full description
+        // without a context we may give a name that is less relevant to the user, this is especially
+        // the case when dealing with events for branches that are also change requests
+        return String.format("MySCM update notification for branch %s of team %s repository %s on server %s",
+            getPayload().path("branch").asString(),
+            getPayload().path("team").asString(),
+            getPayload().path("repository").asString(),
+            getPayload().path("server").asString()
+        );
+    }
+
+    @Override
+    public String descriptionFor(@NonNul SCMNavigator navigator) {
+        // we have context, so we can give an abbreviated description here
+        // also pay attention as in the context the reported name of the branch may be different
+        // for example if the branch is also part of a change request we may have to name if differently
+        // depending on how the source has been configured to name branches that are part of a change requets
+        return String.format("MySCM update notification for branch %s of repository %s",
+            getPayload().path("branch").asString(),
+            // we know the navigator is a match so team and server can be assumed in the context of the navigator
+            getPayload().path("repository").asString()
+        );
+    }
+
+    @Override
+    public String descriptionFor(@NonNul SCMSource source) {
+        // we have context, so we can give an abbreviated description here
+        // also pay attention as in the context the reported name of the branch may be different
+        // for example if the branch is also part of a change request we may have to name if differently
+        // depending on how the source has been configured to name branches that are part of a change requets
+        return String.format("MySCM update notification for branch %s",
+            getPayload().path("branch").asString()
+            // we know the source is a match so server, team and repository can be assumed in the context of the source
+        );
     }
 }
 ----

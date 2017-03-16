@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.jvnet.localizer.Localizable;
 
 /**
  * Base class for events relating to {@link SCMNavigator} instances.
@@ -90,6 +91,18 @@ public abstract class SCMNavigatorEvent<P> extends SCMEvent<P> {
      * @return {@code true} if and only if this event concerns the supplied {@link SCMNavigator}.
      */
     public abstract boolean isMatch(SCMNavigator navigator);
+
+    /**
+     * Return a description of the event in the context of the supplied {@link SCMNavigator}.
+     *
+     * @param navigator the {@link SCMNavigator}, the navigator must be {@link #isMatch(SCMNavigator)}.
+     * @return the description or {@code null} if no description can be provided.
+     * @since TODO
+     */
+    @CheckForNull
+    public String descriptionFor(SCMNavigator navigator) {
+        return description();
+    }
 
     /**
      * Fires the {@link SCMNavigatorEvent} to all registered {@link SCMEventListener} instances.

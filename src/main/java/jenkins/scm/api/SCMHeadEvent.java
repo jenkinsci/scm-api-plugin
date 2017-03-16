@@ -40,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import jenkins.scm.impl.SCMTriggerListener;
+import org.jvnet.localizer.Localizable;
 
 /**
  * Base class for events relating to {@link SCMHead} instances.
@@ -100,6 +101,18 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
     public abstract boolean isMatch(@NonNull SCMNavigator navigator);
 
     /**
+     * Return a description of the event in the context of the supplied {@link SCMNavigator}.
+     *
+     * @param navigator the {@link SCMNavigator}, the navigator must be {@link #isMatch(SCMNavigator)}.
+     * @return the description or {@code null} if no description can be provided.
+     * @since TODO
+     */
+    @CheckForNull
+    public String descriptionFor(@NonNull SCMNavigator navigator) {
+        return description();
+    }
+
+    /**
      * Returns the name of the {@link SCMSource}, such as a repository name within an organization; may be used as an
      * {@link Item#getName}. Must be the same as the name that would be passed to
      * {@link SCMSourceObserver#observe(String)} by any {@link SCMNavigator} that {@link #isMatch(SCMNavigator)}.
@@ -123,6 +136,18 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      */
     public boolean isMatch(@NonNull SCMSource source) {
         return !heads(source).isEmpty();
+    }
+
+    /**
+     * Return a description of the event in the context of the supplied {@link SCMSource}.
+     *
+     * @param source the {@link SCMSource}, the source must be {@link #isMatch(SCMSource)}.
+     * @return the description or {@code null} if no description can be provided.
+     * @since TODO
+     */
+    @CheckForNull
+    public String descriptionFor(SCMSource source) {
+        return description();
     }
 
     /**
@@ -156,6 +181,18 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      * @see SCMTrigger#isIgnorePostCommitHooks()
      */
     public abstract boolean isMatch(@NonNull SCM scm);
+
+    /**
+     * Return a description of the event in the context of the supplied {@link SCM}.
+     *
+     * @param scm the {@link SCM}, the scm must be {@link #isMatch(SCM)}.
+     * @return the description or {@code null} if no description can be provided.
+     * @since TODO
+     */
+    @CheckForNull
+    public String descriptionFor(SCM scm) {
+        return description();
+    }
 
     /**
      * Wraps a {@link SCMHeadObserver} such that the wrapped observer will only observe {@link SCMHead} instances
