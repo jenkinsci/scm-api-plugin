@@ -46,7 +46,7 @@ public abstract class ChangeRequestSCMRevision<H extends SCMHead & ChangeRequest
      * @param head   the {@link SCMHead} that the {@link SCMRevision} belongs to.
      * @param target the {@link SCMRevision} of the {@link ChangeRequestSCMHead#getTarget()}.
      */
-    protected ChangeRequestSCMRevision(@NonNull H head, @NonNull SCMRevision target, boolean merge) {
+    protected ChangeRequestSCMRevision(@NonNull H head, @NonNull SCMRevision target) {
         super(head);
         if (!(target.getHead().equals(head.getTarget()))) {
             throw new IllegalArgumentException("The target revision's head must correspond to the heads target");
