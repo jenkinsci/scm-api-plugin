@@ -71,11 +71,12 @@ public abstract class ChangeRequestSCMRevision<H extends SCMHead & ChangeRequest
      *
      * @return {@code true} if the effective revision is the result of merging onto the {@link #getTarget()}
      * revision {@code false} if the effective revision ignores the {@link #getTarget()}.
-     * @see MergeableChangeRequestSCMHead
+     * @see ChangeRequestSCMHead2
      */
     public final boolean isMerge() {
         SCMHead head = getHead();
-        return !(head instanceof MergeableChangeRequestSCMHead) || ((MergeableChangeRequestSCMHead) head).isMerge();
+        return !(head instanceof ChangeRequestSCMHead2)
+                || ((ChangeRequestSCMHead2) head).getCheckoutStrategy() != ChangeRequestCheckoutStrategy.HEAD;
     }
 
     /**

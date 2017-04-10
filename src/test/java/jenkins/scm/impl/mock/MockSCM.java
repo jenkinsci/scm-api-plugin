@@ -44,6 +44,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
@@ -51,8 +53,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import jenkins.scm.api.SCM2;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.xml.sax.SAXException;
@@ -74,18 +79,38 @@ public class MockSCM extends SCM2 implements Serializable {
         // though it would be simpler to not have a unified namespace for tags and branches in MockSCMController
         // and to have MockSCMController use a separate set of API methods in checking out change requests
         // instead of merging them into the MockSCMController namespace under change-request/#
-        Matcher m = Pattern.compile("CR-(\\d+)((?:-merge)|(?:-head))?").matcher(head);
+        Matcher m = Pattern.compile("CR-(\\d+)(-[a-zA-Z]+)?").matcher(head);
         if (m.matches()) {
             int number = Integer.parseInt(m.group(1));
             String target = null;
             String targetRevision = null;
+            Set<MockChangeRequestFlags> flags = null;
             try {
                 target = controller().getTarget(repository, number);
                 targetRevision = controller().getRevision(repository, target);
+                flags = controller().getFlags(repository, number);
             } catch (IOException e) {
                 // ignore
             }
-            MockChangeRequestSCMHead h = new MockChangeRequestSCMHead(number, target);
+            ChangeRequestCheckoutStrategy strategy = ChangeRequestCheckoutStrategy.HEAD;
+            String strategyStr = m.group(2);
+            if (StringUtils.isNotBlank(strategyStr)) {
+                for (ChangeRequestCheckoutStrategy s : ChangeRequestCheckoutStrategy.values()) {
+                    if (strategyStr.equals("-"+(s.name().toLowerCase(Locale.ENGLISH)))) {
+                        strategy = s;
+                        break;
+                    }
+                }
+            }
+            MockChangeRequestSCMHead h = new MockChangeRequestSCMHead(
+                    flags == null || !flags.contains(MockChangeRequestFlags.FORK)
+                            ? SCMHeadOrigin.DEFAULT
+                            : new SCMHeadOrigin.Fork("fork"),
+                    number,
+                    target,
+                    strategy,
+                    StringUtils.isNotBlank(strategyStr)
+            );
             this.head = h;
             this.revision = new MockChangeRequestSCMRevision(h,
                     new MockSCMRevision(h.getTarget(), targetRevision), revision);

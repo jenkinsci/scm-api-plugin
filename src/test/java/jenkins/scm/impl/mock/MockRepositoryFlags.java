@@ -25,15 +25,12 @@
 
 package jenkins.scm.impl.mock;
 
+import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
+
 /**
  * Feature flags for different types of repository.
  */
 public enum MockRepositoryFlags {
-    /**
-     * Enables the concept of mergable change requests. We do not actually implement such a checkout scheme, only report
-     * change requests as being mergable.
-     */
-    MERGEABLE,
     /**
      * Enables marking change requests as {@link MockChangeRequestFlags#FORK}.
      */

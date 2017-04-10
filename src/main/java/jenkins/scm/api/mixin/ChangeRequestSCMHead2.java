@@ -20,25 +20,28 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
  */
 
-package jenkins.scm.impl.mock;
+package jenkins.scm.api.mixin;
 
-import jenkins.scm.api.mixin.DistributedChangeRequestSCMHead;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMSource;
 
-class MockDistributedChangeRequestSCMHead extends MockChangeRequestSCMHead implements
-        DistributedChangeRequestSCMHead {
+/**
+ * Additionl attributes of a {@link ChangeRequestSCMHead} that should have been in the original mixin but we are not
+ * targeting Java 8 so we cannot add the default methods to the interface and must have an ugly {@code 2} class instead.
+ * @since 2.2.0
+ */
+// TODO once Java 8 is baseline move method to ChangeRequestSCMHead with default return value,
+// TODO deprecate this interface and add @Restricted(NoExternalUse.class) (retain empty interface for binary compat)
+public interface ChangeRequestSCMHead2 extends ChangeRequestSCMHead {
+    /**
+     * Returns the {@link ChangeRequestCheckoutStrategy} of this {@link ChangeRequestSCMHead}.
+     *
+     * @return the {@link ChangeRequestCheckoutStrategy}.
+     */
+    @NonNull
+    ChangeRequestCheckoutStrategy getCheckoutStrategy();
 
-    private final boolean fromOrigin;
-
-    public MockDistributedChangeRequestSCMHead(Integer number, String target, boolean fromOrigin) {
-        super(number,target);
-        this.fromOrigin = fromOrigin;
-    }
-
-    @Override
-    public boolean isFromOrigin() {
-        return fromOrigin;
-    }
 }

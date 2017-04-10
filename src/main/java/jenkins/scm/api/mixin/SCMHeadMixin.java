@@ -28,6 +28,7 @@ package jenkins.scm.api.mixin;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Serializable;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadOrigin;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
@@ -39,15 +40,15 @@ import org.kohsuke.stapler.export.Exported;
  * <p>
  * Two {@link SCMHeadMixin} implementations are equal if and only if:
  * <ul>
- *     <li>They both are the same class</li>
- *     <li>They both have the same {@link SCMHeadMixin#getName()}</li>
- *     <li>For each implemented {@link SCMHeadMixin} sub-interface, they both return the same values from all Java
- *     Bean property getters declared on the sub-interface. Thus, for example {@link ChangeRequestSCMHead}
- *     implementations are only considered equal if {@link ChangeRequestSCMHead#getId()} and
- *     {@link ChangeRequestSCMHead#getTarget()} are also equal</li>
+ * <li>They both are the same class</li>
+ * <li>They both have the same {@link SCMHeadMixin#getName()}</li>
+ * <li>For each implemented {@link SCMHeadMixin} sub-interface, they both return the same values from all Java
+ * Bean property getters declared on the sub-interface. Thus, for example {@link ChangeRequestSCMHead}
+ * implementations are only considered equal if {@link ChangeRequestSCMHead#getId()} and
+ * {@link ChangeRequestSCMHead#getTarget()} are also equal</li>
  * </ul>
  * The {@link Object#hashCode()} for a {@link SCMHeadMixin} implementation must be equal to the
- *     {@link String#hashCode()} of {@link SCMHeadMixin#getName()}
+ * {@link String#hashCode()} of {@link SCMHeadMixin#getName()}
  *
  * @since 2.0
  */
@@ -60,6 +61,29 @@ public interface SCMHeadMixin extends Comparable<SCMHead>, Serializable {
     @Exported
     @NonNull
     String getName();
+
+    /**
+     * Returns the origin of the head.
+     * <ul>
+     * <li>
+     * For centralized version control systems such as Subversion, CVS, etc the return value will always be
+     * {@link SCMHeadOrigin#DEFAULT}.
+     * </li>
+     * <li>
+     * For distributed version control systems such as Git, Mercurial etc the return value may have other values.
+     * </li>
+     * <li>
+     * For centralized distributed version control systems such as GitHub, Bitbucket, etc the return values may
+     * be restricted to {@link SCMHeadOrigin#DEFAULT} or instances of {@link SCMHeadOrigin.Fork}.
+     * </li>
+     * </ul>
+     *
+     * @return the origin of the head or {@link SCMHeadOrigin#DEFAULT} if there can only ever be one origin.
+     * @since 2.2.0
+     */
+    @Exported
+    @NonNull
+    SCMHeadOrigin getOrigin();
 
     @Restricted(NoExternalUse.class)
     interface Equality {
