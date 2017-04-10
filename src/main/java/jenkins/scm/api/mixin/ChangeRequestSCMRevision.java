@@ -74,7 +74,7 @@ public abstract class ChangeRequestSCMRevision<H extends SCMHead & ChangeRequest
      * @see MergeableChangeRequestSCMHead
      */
     public final boolean isMerge() {
-        SCMHead head = target.getHead();
+        SCMHead head = getHead();
         return !(head instanceof MergeableChangeRequestSCMHead) || ((MergeableChangeRequestSCMHead) head).isMerge();
     }
 
@@ -110,7 +110,7 @@ public abstract class ChangeRequestSCMRevision<H extends SCMHead & ChangeRequest
         if (!equivalent(that)) {
             return false;
         }
-        return isMerge() || target.equals(that.target);
+        return !isMerge() || target.equals(that.target);
     }
 
     /**

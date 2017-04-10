@@ -841,6 +841,8 @@ public class MySCMRevision extends SCMRevision {
 +
 You should consider whether it makes sense for change request like things to extend the same base class you used for branch and tag like thing or whether you should extend from `SCMHead` directly.
 In either case you should implement the `ChangeRequestSCMHead` mix-in interface.
+There are two other mix-in interfaces to consider for a change request: `MergeableChangeRequestSCMHead` and `DistributedChangeRequestSCMHead`.
+Whether these two mix-ins make sense depends on the nature of the source control system.
 +
 Another important concern with change request like things is where the change request can originate from untrusted users.
 Implementers should always make it configurable whether change request like things will be excluded from the `SCMSource` and also where possible to differentiate between trusted and untrusted users.
@@ -868,25 +870,16 @@ public class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMH
     }
 
 }
-public class MyChangeRequestSCMRevision extends SCMRevision {
+public class MyChangeRequestSCMRevision extends ChangeRequestSCMRevision<MySCMHead> {
     private static final long serialVersionUID = 1L;
 
-    private final String base;
     private final String change;
 
     public MyChangeRequestSCMRevision(@NonNull MyChangeRequestSCMHead head,
-                                      @NonNull String base,
+                                      @NonNull MySCMRevision target,
                                       @NonNull String change) {
-        super(head);
-        this.base = base;
+        super(head, target);
         this.change = change;
-    }
-
-    /**
-     * The commit hash of the base branch we are tracking.
-     */
-    public String getBase() {
-        return base;
     }
 
     /**
@@ -897,24 +890,23 @@ public class MyChangeRequestSCMRevision extends SCMRevision {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equivalent(ChangeRequestSCMRevision<?> o) {
         if (!(o instanceof MyChangeRequestSCMRevision)) {
             return false;
         }
         MyChangeRequestSCMRevision other = (MyChangeRequestSCMRevision) o;
         return getHead().equals(other.getHead())
-            && base.equals(other.base)
             && change.equals(other.change);
     }
 
     @Override
-    public int hashCode() {
+    protected int _hashCode() {
         return change.hashCode();
     }
 
     @Override
     public String toString() {
-        return base + "+" + change;
+        return getTarget().getHash() + "+" + change;
     }
 }
 ----

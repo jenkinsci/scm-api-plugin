@@ -34,7 +34,6 @@ package jenkins.scm.api.mixin;
  * a change request can originate from either the origin repository or a fork of the origin repository.
  * </li>
  * </ul>
- * <ul>
  *
  * @since 2.2.0
  */

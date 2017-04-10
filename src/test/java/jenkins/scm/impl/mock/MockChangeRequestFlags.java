@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,40 +25,18 @@
 
 package jenkins.scm.impl.mock;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead;
-import jenkins.scm.api.SCMHead;
+import java.util.Set;
 
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
-    private final String target;
-    private final Integer number;
+/**
+ * Feature flags for different types of change request.
+ */
+public enum MockChangeRequestFlags {
+    FORK {
+        @Override
+        public boolean isApplicable(Set<MockRepositoryFlags> flags) {
+            return flags.contains(MockRepositoryFlags.FORKABLE);
+        }
+    };
 
-    protected MockChangeRequestSCMHead(String name, Integer number, String target) {
-        super(name);
-        this.number = number;
-        this.target = target;
-    }
-
-    public MockChangeRequestSCMHead(Integer number, String target) {
-        super("CR-" + number);
-        this.number = number;
-        this.target = target;
-    }
-
-    @NonNull
-    @Override
-    public String getId() {
-        return number.toString();
-    }
-
-    @NonNull
-    @Override
-    public SCMHead getTarget() {
-        return new MockSCMHead(target);
-    }
-
-    public Integer getNumber() {
-        return number;
-    }
-
+    public abstract boolean isApplicable(Set<MockRepositoryFlags> flags);
 }

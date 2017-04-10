@@ -158,18 +158,39 @@ public class MockSCMSource extends SCMSource {
         if (includeChangeRequests) {
             for (final Integer number : controller().listChangeRequests(repository)) {
                 checkInterrupt();
+                Set<MockRepositoryFlags> repoFlags = controller().getFlags(repository);
                 String revision = controller().getRevision(repository, "change-request/" + number);
                 String target = controller().getTarget(repository, number);
-                MockChangeRequestSCMHead head = new MockChangeRequestSCMHead(number, target);
-                if (includes != null && !includes.contains(head)) {
-                    continue;
-                }
-                controller().applyLatency();
-                controller().checkFaults(repository, head.getName(), null, false);
-                if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
+                String targetRevision = controller().getRevision(repository, target);
+                Set<MockChangeRequestFlags> crFlags = controller.getFlags(repository, number);
+                for (boolean merge : new boolean[]{true, false}) {
+                    MockChangeRequestSCMHead head;
+                    if (repoFlags.contains(MockRepositoryFlags.MERGEABLE)
+                            && repoFlags.contains(MockRepositoryFlags.FORKABLE)) {
+                        head = new MockDistributedMergeableChangeRequestSCMHead(number, target, merge,
+                                crFlags.contains(MockChangeRequestFlags.FORK));
+                    } else if (repoFlags.contains(MockRepositoryFlags.MERGEABLE)) {
+                        head = new MockMergeableChangeRequestSCMHead(number, target, merge);
+                    } else if (crFlags.contains(MockChangeRequestFlags.FORK) && merge) {
+                        head = new MockDistributedChangeRequestSCMHead(number, target,
+                                crFlags.contains(MockChangeRequestFlags.FORK));
+                    } else if (merge) {
+                        head = new MockChangeRequestSCMHead(number, target);
+                    } else {
+                        // we don't want two CRs
+                        continue;
+                    }
+                    if (includes != null && !includes.contains(head)) {
+                        continue;
+                    }
                     controller().applyLatency();
-                    controller().checkFaults(repository, head.getName(), revision, false);
-                    observer.observe(head, new MockSCMRevision(head, revision));
+                    controller().checkFaults(repository, head.getName(), null, false);
+                    if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
+                        controller().applyLatency();
+                        controller().checkFaults(repository, head.getName(), revision, false);
+                        observer.observe(head, new MockChangeRequestSCMRevision(head,
+                                new MockSCMRevision(head.getTarget(), targetRevision), revision));
+                    }
                 }
             }
         }
@@ -178,7 +199,10 @@ public class MockSCMSource extends SCMSource {
     @NonNull
     @Override
     public SCM build(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {
-        return new MockSCM(this, head, revision instanceof MockSCMRevision ? (MockSCMRevision) revision : null);
+        if (revision instanceof MockSCMRevision || revision instanceof MockChangeRequestSCMRevision) {
+            return new MockSCM(this, head, revision);
+        }
+        return new MockSCM(this, head, null);
     }
 
 
@@ -210,7 +234,15 @@ public class MockSCMSource extends SCMSource {
                                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         controller().applyLatency();
-        controller().checkFaults(repository, revision.getHead().getName(), ((MockSCMRevision)revision).getHash(), true);
+        String hash ;
+        if (revision instanceof MockSCMRevision) {
+            hash = ((MockSCMRevision) revision).getHash();
+        } else if (revision instanceof MockChangeRequestSCMRevision) {
+            hash = ((MockChangeRequestSCMRevision) revision).getHash();
+        } else {
+            throw new IOException("Unexpected revision");
+        }
+        controller().checkFaults(repository, revision.getHead().getName(), hash, true);
         return Collections.<Action>singletonList(new MockSCMLink("revision"));
     }
 

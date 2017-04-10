@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,40 +25,17 @@
 
 package jenkins.scm.impl.mock;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead;
-import jenkins.scm.api.SCMHead;
-
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
-    private final String target;
-    private final Integer number;
-
-    protected MockChangeRequestSCMHead(String name, Integer number, String target) {
-        super(name);
-        this.number = number;
-        this.target = target;
-    }
-
-    public MockChangeRequestSCMHead(Integer number, String target) {
-        super("CR-" + number);
-        this.number = number;
-        this.target = target;
-    }
-
-    @NonNull
-    @Override
-    public String getId() {
-        return number.toString();
-    }
-
-    @NonNull
-    @Override
-    public SCMHead getTarget() {
-        return new MockSCMHead(target);
-    }
-
-    public Integer getNumber() {
-        return number;
-    }
-
+/**
+ * Feature flags for different types of repository.
+ */
+public enum MockRepositoryFlags {
+    /**
+     * Enables the concept of mergable change requests. We do not actually implement such a checkout scheme, only report
+     * change requests as being mergable.
+     */
+    MERGEABLE,
+    /**
+     * Enables marking change requests as {@link MockChangeRequestFlags#FORK}.
+     */
+    FORKABLE;
 }

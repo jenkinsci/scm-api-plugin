@@ -37,7 +37,9 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -204,8 +206,8 @@ public class MockSCMController implements Closeable {
         }
     }
 
-    public synchronized void createRepository(String name) throws IOException {
-        repositories.put(name, new Repository());
+    public synchronized void createRepository(String name, MockRepositoryFlags... flags) throws IOException {
+        repositories.put(name, new Repository(flags));
         createBranch(name, "master");
     }
 
@@ -219,6 +221,10 @@ public class MockSCMController implements Closeable {
 
     public String getDescription(String repository) throws IOException {
         return resolve(repository).description;
+    }
+
+    public Set<MockRepositoryFlags> getFlags(String repository) throws IOException {
+        return Collections.unmodifiableSet(resolve(repository).flags);
     }
 
     public void setDescription(String repository, String description) throws IOException {
@@ -276,22 +282,36 @@ public class MockSCMController implements Closeable {
         resolve(repository).tagDates.remove(tag);
     }
 
-    public synchronized Integer openChangeRequest(String repository, String branch) throws IOException {
+    public synchronized Integer openChangeRequest(String repository, String branch, MockChangeRequestFlags... flags) throws IOException {
         Repository repo = resolve(repository);
         String hash = resolve(repository, branch).getHash();
         Integer crNum = ++repo.lastChangeRequest;
         repo.changes.put(crNum, hash);
         repo.changeBaselines.put(crNum, branch);
+        Set<MockChangeRequestFlags> flagsSet = EnumSet.noneOf(MockChangeRequestFlags.class);
+        for (MockChangeRequestFlags flag: flags) {
+            if (flag.isApplicable(repo.flags)) {
+                flagsSet.add(flag);
+            }
+        }
+        repo.changeFlags.put(crNum, flagsSet);
         return crNum;
+
     }
 
     public synchronized void closeChangeRequest(String repository, Integer crNum) throws IOException {
-        resolve(repository).changes.remove(crNum);
-        resolve(repository).changeBaselines.remove(crNum);
+        Repository r = resolve(repository);
+        r.changes.remove(crNum);
+        r.changeBaselines.remove(crNum);
+        r.changeFlags.remove(crNum);
     }
 
     public synchronized String getTarget(String repository, Integer crNum) throws IOException {
         return resolve(repository).changeBaselines.get(crNum);
+    }
+
+    public synchronized Set<MockChangeRequestFlags> getFlags(String repository, Integer crNum) throws IOException {
+        return Collections.unmodifiableSet(resolve(repository).changeFlags.get(crNum));
     }
 
     public synchronized List<String> listBranches(String repository) throws IOException {
@@ -495,11 +515,19 @@ public class MockSCMController implements Closeable {
         private Map<String, String> tags = new TreeMap<String, String>();
         private Map<String, Long> tagDates = new TreeMap<String, Long>();
         private Map<Integer, String> changes = new TreeMap<Integer, String>();
+        private Map<Integer, Set<MockChangeRequestFlags>> changeFlags = new TreeMap<Integer, Set<MockChangeRequestFlags>>();
         private Map<Integer, String> changeBaselines = new TreeMap<Integer, String>();
         private int lastChangeRequest;
         private String description;
         private String displayName;
         private String url;
+        private Set<MockRepositoryFlags> flags;
+
+        private Repository(MockRepositoryFlags... flags) {
+            this.flags = flags.length == 0
+                    ? Collections.<MockRepositoryFlags>emptySet()
+                    : EnumSet.copyOf(Arrays.asList(flags));
+        }
     }
 
     private static class State {
@@ -586,4 +614,5 @@ public class MockSCMController implements Closeable {
             return String.format("Commit %s%nDate: %tc%n%s%n", hash, timestamp, message);
         }
     }
+
 }

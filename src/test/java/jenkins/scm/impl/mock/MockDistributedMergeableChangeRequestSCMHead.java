@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,40 +25,29 @@
 
 package jenkins.scm.impl.mock;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead;
-import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.mixin.DistributedChangeRequestSCMHead;
+import jenkins.scm.api.mixin.MergeableChangeRequestSCMHead;
 
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
-    private final String target;
-    private final Integer number;
+class MockDistributedMergeableChangeRequestSCMHead extends MockChangeRequestSCMHead
+        implements MergeableChangeRequestSCMHead, DistributedChangeRequestSCMHead {
 
-    protected MockChangeRequestSCMHead(String name, Integer number, String target) {
-        super(name);
-        this.number = number;
-        this.target = target;
+    private final boolean merge;
+    private final boolean fromOrigin;
+
+    public MockDistributedMergeableChangeRequestSCMHead(Integer number, String target, boolean merge,
+                                                        boolean fromOrigin) {
+        super("CR-" + number + (merge ? "-merge" : "-head"), number, target);
+        this.merge = merge;
+        this.fromOrigin = fromOrigin;
     }
 
-    public MockChangeRequestSCMHead(Integer number, String target) {
-        super("CR-" + number);
-        this.number = number;
-        this.target = target;
-    }
-
-    @NonNull
     @Override
-    public String getId() {
-        return number.toString();
+    public boolean isMerge() {
+        return merge;
     }
 
-    @NonNull
     @Override
-    public SCMHead getTarget() {
-        return new MockSCMHead(target);
+    public boolean isFromOrigin() {
+        return fromOrigin;
     }
-
-    public Integer getNumber() {
-        return number;
-    }
-
 }
