@@ -55,5 +55,6 @@ public interface ChangeRequestSCMHead2 extends ChangeRequestSCMHead {
      * against the {@link #getOrigin()} directly and the change request were be discoverable as a regular
      * {@link SCMHead} or {@link #getName()} if such a concept is not possible in the backing source control system.
      */
+    @NonNull
     String getOriginName();
 }
