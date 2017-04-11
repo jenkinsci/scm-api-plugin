@@ -889,6 +889,14 @@ public class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMH
         return ChangeRequestCheckoutStrategy.MERGE;
     }
 
+    @NonNull
+    public String getOriginName() {
+        // My SCM does not create change requests from branches, rather you request a new change request
+        // and commit your changes to that. Hence, unlike GitHub, Bitbucket, etc there is no concept
+        // of a different name when considered as a branch, so we just pass through getName()
+        return getName();
+    }
+
     @Override // overriding to illustrate, by default returns SCMHeadOrigin.DEFAULT
     @NonNull
     public SCMHeadOrigin getOrigin() {

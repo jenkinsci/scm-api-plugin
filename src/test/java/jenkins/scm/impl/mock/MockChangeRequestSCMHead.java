@@ -79,4 +79,11 @@ public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSC
     public ChangeRequestCheckoutStrategy getCheckoutStrategy() {
         return strategy;
     }
+
+    @Override
+    public String getOriginName() {
+        // MockSCMController maintains a separate list of change-requests independent from the branches
+        // so unlike GitHub or Bitbucket, the name of a change request in the origin is the name.
+        return getName();
+    }
 }
