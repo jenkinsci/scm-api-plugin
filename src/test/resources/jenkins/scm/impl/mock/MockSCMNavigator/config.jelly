@@ -29,13 +29,8 @@
   <f:entry title="${%Controller ID}" field="controllerId">
     <f:select/>
   </f:entry>
-  <f:entry title="${%Include Branches}" field="includeBranches">
-    <f:checkbox/>
-  </f:entry>
-  <f:entry title="${%Include Tags}" field="includeTags">
-    <f:checkbox/>
-  </f:entry>
-  <f:entry title="${%Include Change Requests}" field="includeChangeRequests">
-    <f:checkbox/>
+  <f:entry title="${%Behaviours}">
+    <f:hetero-list name="traits" descriptors="${descriptor.getTraitDescriptors()}"
+                   items="${instance!=null?instance.traits:descriptor.defaultTraits}"/>
   </f:entry>
 </j:jelly>

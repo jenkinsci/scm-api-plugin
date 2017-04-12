@@ -2,7 +2,7 @@
 <!--
   ~ The MIT License
   ~
-  ~ Copyright (c) 2016 CloudBees, Inc.
+  ~ Copyright (c) 2017 CloudBees, Inc.
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
   ~ of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,7 @@
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%Controller ID}" field="controllerId">
-    <f:select/>
-  </f:entry>
-  <f:entry title="${%Repository}" field="repository">
-    <f:select/>
-  </f:entry>
-  <f:entry title="${%Behaviours}">
-    <f:hetero-list name="traits" descriptors="${descriptor.traitDescriptors}"
-                   items="${instance!=null?instance.traits:descriptor.defaultTraits}"/>
+  <f:entry title="${%Checkout Strategies}" field="strategiesStr">
+    <f:textbox/>
   </f:entry>
 </j:jelly>

@@ -28,47 +28,53 @@ package jenkins.scm.impl.mock;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.Action;
+import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import jenkins.scm.api.SCMHead;
+import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
 import jenkins.scm.api.SCMNavigatorEvent;
 import jenkins.scm.api.SCMNavigatorOwner;
 import jenkins.scm.api.SCMSourceObserver;
 import jenkins.scm.api.metadata.ObjectMetadataAction;
+import jenkins.scm.api.trait.SCMSourceTrait;
+import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class MockSCMNavigator extends SCMNavigator {
 
     private final String controllerId;
-    private final boolean includeBranches;
-    private final boolean includeTags;
-    private final boolean includeChangeRequests;
+    private final List<SCMSourceTrait> traits;
     private transient MockSCMController controller;
 
     @DataBoundConstructor
-    public MockSCMNavigator(String controllerId, boolean includeBranches, boolean includeTags,
-                            boolean includeChangeRequests) {
+    public MockSCMNavigator(String controllerId, List<SCMSourceTrait> traits) {
         this.controllerId = controllerId;
-        this.includeBranches = includeBranches;
-        this.includeTags = includeTags;
-        this.includeChangeRequests = includeChangeRequests;
+        this.traits = new ArrayList<SCMSourceTrait>(traits);
     }
 
-    public MockSCMNavigator(MockSCMController controller, boolean includeBranches, boolean includeTags,
-                            boolean includeChangeRequests) {
+    public MockSCMNavigator(String controllerId, SCMSourceTrait... traits) {
+        this(controllerId, Arrays.asList(traits));
+    }
+
+    public MockSCMNavigator(MockSCMController controller, List<SCMSourceTrait> traits) {
         this.controllerId = controller.getId();
         this.controller = controller;
-        this.includeBranches = includeBranches;
-        this.includeTags = includeTags;
-        this.includeChangeRequests = includeChangeRequests;
+        this.traits = new ArrayList<SCMSourceTrait>(traits);
+    }
+
+    public MockSCMNavigator(MockSCMController controller, SCMSourceTrait... traits) {
+        this(controller, Arrays.asList(traits));
     }
 
     public String getControllerId() {
@@ -82,16 +88,8 @@ public class MockSCMNavigator extends SCMNavigator {
         return controller;
     }
 
-    public boolean isIncludeBranches() {
-        return includeBranches;
-    }
-
-    public boolean isIncludeTags() {
-        return includeTags;
-    }
-
-    public boolean isIncludeChangeRequests() {
-        return includeChangeRequests;
+    public List<SCMSourceTrait> getTraits() {
+        return Collections.unmodifiableList(traits);
     }
 
     @Override
@@ -115,8 +113,7 @@ public class MockSCMNavigator extends SCMNavigator {
             controller().applyLatency();
             controller().checkFaults(name, null, null, false);
             SCMSourceObserver.ProjectObserver po = observer.observe(name);
-            po.addSource(new MockSCMSource(getId() + "::" + name,
-                    controller, name, includeBranches, includeTags, includeChangeRequests));
+            po.addSource(new MockSCMSource(getId() + "::" + name, controller, name, traits));
             po.complete();
         }
     }
@@ -164,6 +161,30 @@ public class MockSCMNavigator extends SCMNavigator {
                 result.add(c.getId());
             }
             return result;
+        }
+
+        public List<SCMSourceTraitDescriptor> getTraitDescriptors() {
+            MockSCM.DescriptorImpl scmDescriptor =
+                    ExtensionList.lookup(Descriptor.class).get(MockSCM.DescriptorImpl.class);
+            List<SCMSourceTraitDescriptor> result = new ArrayList<SCMSourceTraitDescriptor>();
+            for (Descriptor<SCMSourceTrait> d : Jenkins.getActiveInstance().getDescriptorList(SCMSourceTrait.class)) {
+                if (d instanceof SCMSourceTraitDescriptor) {
+                    SCMSourceTraitDescriptor descriptor = (SCMSourceTraitDescriptor) d;
+                    if (!descriptor.isApplicableTo(
+                            scmDescriptor)) {
+                        continue;
+                    }
+                    if (!descriptor.isApplicableTo(MockSCMSourceRequestBuilder.class)) {
+                        continue;
+                    }
+                    result.add(descriptor);
+                }
+            }
+            return result;
+        }
+
+        public List<SCMSourceTrait> getDefaultTraits() {
+            return Collections.<SCMSourceTrait>singletonList(new MockSCMDiscoverBranches());
         }
     }
 }
