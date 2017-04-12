@@ -74,7 +74,7 @@ public class MockSCMDiscoverChangeRequests extends SCMSourceTrait {
 
         @Override
         public String getDisplayName() {
-            return "";
+            return "Discover change requests";
         }
 
         @Override

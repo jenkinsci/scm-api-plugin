@@ -33,7 +33,7 @@ public class MockSCMDiscoverBranches extends SCMSourceTrait {
 
         @Override
         public String getDisplayName() {
-            return "";
+            return "Discover branches";
         }
 
         @Override

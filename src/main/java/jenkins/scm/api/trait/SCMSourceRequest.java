@@ -36,6 +36,7 @@ import java.util.Set;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
+import jenkins.scm.api.SCMProbe;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
@@ -61,7 +62,7 @@ public abstract class SCMSourceRequest implements Closeable {
 
     private final Set<SCMHead> observerIncludes;
 
-    protected SCMSourceRequest(SCMSourceRequestBuilder<?,?> builder) {
+    protected SCMSourceRequest(SCMSourceRequestBuilder<?, ?> builder) {
         this.filters = builder.filters();
         this.criteria = builder.criteria().isEmpty()
                 ? Collections.<SCMSourceCriteria>emptyList()
@@ -91,21 +92,84 @@ public abstract class SCMSourceRequest implements Closeable {
         return criteria;
     }
 
-    public boolean hasNoCriteria() {
-        return criteria.isEmpty();
+    /**
+     * Processes a head in the context of the current request.
+     *
+     * @param head            the {@link SCMHead} to process.
+     * @param revisionFactory factory method that creates the {@link SCMRevision} (assuming creation is cheap).
+     * @param probeFactory    factory method that creates the {@link SCMProbe}.
+     * @param <H>             the type of {@link SCMHead}.
+     * @param <R>             the type of {@link SCMRevision}.
+     * @return {@code true} if the {@link SCMHeadObserver} for this request has completed observing, {@code false} to
+     * continue processing.
+     * @throws IOException          if there was an I/O error.
+     * @throws InterruptedException if the processing was interrupted.
+     */
+    public <H extends SCMHead, R extends SCMRevision> boolean process(final H head,
+                                                                      final RevisionFactory<H, R> revisionFactory,
+                                                                      ProbeFactory<H, R> probeFactory)
+            throws IOException, InterruptedException {
+        return process(head, new IntermediateFactory<R>() {
+            @Override
+            public R create() throws IOException, InterruptedException {
+                return revisionFactory.create(head);
+            }
+        }, probeFactory, new LazyRevisionFactory<H, SCMRevision, R>() {
+            @Override
+            public SCMRevision create(H head, R intermediate) throws IOException, InterruptedException {
+                return intermediate;
+            }
+        });
     }
 
-    public boolean meetsCriteria(SCMSourceCriteria.Probe probe) throws IOException {
-        for (SCMSourceCriteria c : criteria) {
-            if (!c.isHead(probe, listener)) {
-                return false;
+    /**
+     * Processes a head in the context of the current request where an intermediary operation is required before
+     * the {@link SCMRevision} can be instantiated.
+     *
+     * @param head                the {@link SCMHead} to process.
+     * @param intermediateFactory factory method that provides the seed information for both the {@link ProbeFactory}
+     *                           and the {@link LazyRevisionFactory}.
+     * @param probeFactory        factory method that creates the {@link SCMProbe}.
+     * @param revisionFactory     factory method that creates the {@link SCMRevision}.
+     * @param <H>                 the type of {@link SCMHead}.
+     * @param <I>                 the type of the intermediary operation result.
+     * @param <R>                 the type of {@link SCMRevision}.
+     * @return {@code true} if the {@link SCMHeadObserver} for this request has completed observing, {@code false} to
+     * continue processing.
+     * @throws IOException          if there was an I/O error.
+     * @throws InterruptedException if the processing was interrupted.
+     */
+    public <H extends SCMHead, I, R extends SCMRevision> boolean process(H head,
+                                                                         IntermediateFactory<I> intermediateFactory,
+                                                                         ProbeFactory<H, I> probeFactory,
+                                                                         LazyRevisionFactory<H, R, I> revisionFactory)
+            throws IOException, InterruptedException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
+        if (isExcluded(head)) {
+            // not included
+            return !observer.isObserving();
+        }
+        I intermediate = intermediateFactory.create();
+        if (!criteria.isEmpty()) {
+            SCMSourceCriteria.Probe probe = probeFactory.create(head, intermediate);
+            try {
+                for (SCMSourceCriteria c : criteria) {
+                    if (!c.isHead(probe, listener)) {
+                        // not a match against criteria
+                        return !observer.isObserving();
+                    }
+                }
+            } finally {
+                if (probe instanceof Closeable) {
+                    ((Closeable) probe).close();
+                }
             }
         }
-        return true;
-    }
-
-    public void criteriaMet(SCMHead head, SCMRevision revision) throws IOException, InterruptedException {
-        observer.observe(head, revision);
+        // observe
+        observer.observe(head, revisionFactory.create(head, intermediate));
+        return !observer.isObserving();
     }
 
     public boolean isComplete() {
@@ -122,5 +186,21 @@ public abstract class SCMSourceRequest implements Closeable {
     @Override
     public void close() throws IOException {
         // default to no-op but allow subclasses to store persistent connections in the request and clean up after
+    }
+
+    public interface RevisionFactory<H extends SCMHead, R extends SCMRevision> {
+        R create(H head) throws IOException, InterruptedException;
+    }
+
+    public interface ProbeFactory<H extends SCMHead, I> {
+        SCMSourceCriteria.Probe create(H head, I revision) throws IOException, InterruptedException;
+    }
+
+    public interface LazyRevisionFactory<H extends SCMHead, R extends SCMRevision, I> {
+        R create(H head, I intermediate) throws IOException, InterruptedException;
+    }
+
+    public interface IntermediateFactory<I> {
+        I create() throws IOException, InterruptedException;
     }
 }

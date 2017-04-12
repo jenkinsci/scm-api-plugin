@@ -58,6 +58,7 @@ import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.api.metadata.ContributorMetadataAction;
 import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
+import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
@@ -129,40 +130,46 @@ public class MockSCMSource extends SCMSource {
             controller().checkFaults(repository, null, null, false);
             if (request.isFetchBranches()) {
                 for (final String branch : controller().listBranches(repository)) {
-                    checkInterrupt();
-                    String revision = controller().getRevision(repository, branch);
-                    MockSCMHead head = new MockSCMHead(branch);
-                    if (request.isExcluded(head)) {
-                        continue;
-                    }
-                    controller().applyLatency();
-                    controller().checkFaults(repository, head.getName(), null, false);
-                    if (request.hasNoCriteria() || request.meetsCriteria(new MockSCMProbe(head, revision))) {
-                        controller().applyLatency();
-                        controller().checkFaults(repository, head.getName(), revision, false);
-                        request.criteriaMet(head, new MockSCMRevision(head, revision));
-                    }
-                    if (request.isComplete()) {
+                    if (request.process(new MockSCMHead(branch),
+                            new SCMSourceRequest.RevisionFactory<MockSCMHead, MockSCMRevision>() {
+                                @Override
+                                public MockSCMRevision create(MockSCMHead head) throws IOException, InterruptedException {
+                                    controller().applyLatency();
+                                    controller().checkFaults(repository, head.getName(), null, false);
+                                    return new MockSCMRevision(head, controller().getRevision(repository, branch));
+                                }
+                            }, new SCMSourceRequest.ProbeFactory<MockSCMHead, MockSCMRevision>() {
+                                @Override
+                                public SCMSourceCriteria.Probe create(MockSCMHead head, MockSCMRevision revision) throws IOException, InterruptedException {
+                                    controller().applyLatency();
+                                    controller().checkFaults(repository, head.getName(), revision.getHash(), false);
+                                    return new MockSCMProbe(head, revision.getHash());
+                                }
+                            })) {
                         return;
                     }
                 }
             }
             if (request.isFetchTags()) {
                 for (final String tag : controller().listTags(repository)) {
-                    checkInterrupt();
-                    String revision = controller().getRevision(repository, tag);
-                    MockSCMHead head = new MockTagSCMHead(tag, controller().getTagTimestamp(repository, tag));
-                    if (request.isExcluded(head)) {
-                        continue;
-                    }
-                    controller().applyLatency();
-                    controller().checkFaults(repository, head.getName(), null, false);
-                    if (request.hasNoCriteria() || request.meetsCriteria(new MockSCMProbe(head, revision))) {
-                        controller().applyLatency();
-                        controller().checkFaults(repository, head.getName(), revision, false);
-                        request.criteriaMet(head, new MockSCMRevision(head, revision));
-                    }
-                    if (request.isComplete()) {
+                    if (request.process(new MockTagSCMHead(tag, controller().getTagTimestamp(repository, tag)),
+                            new SCMSourceRequest.RevisionFactory<MockTagSCMHead, MockSCMRevision>() {
+                                @Override
+                                public MockSCMRevision create(MockTagSCMHead head)
+                                        throws IOException, InterruptedException {
+                                    controller().applyLatency();
+                                    controller().checkFaults(repository, head.getName(), null, false);
+                                    return new MockSCMRevision(head, controller().getRevision(repository, tag));
+                                }
+                            }, new SCMSourceRequest.ProbeFactory<MockTagSCMHead, MockSCMRevision>() {
+                                @Override
+                                public SCMSourceCriteria.Probe create(MockTagSCMHead head, MockSCMRevision revision)
+                                        throws IOException, InterruptedException {
+                                    controller().applyLatency();
+                                    controller().checkFaults(repository, head.getName(), revision.getHash(), false);
+                                    return new MockSCMProbe(head, revision.getHash());
+                                }
+                            })) {
                         return;
                     }
                 }
@@ -170,30 +177,40 @@ public class MockSCMSource extends SCMSource {
             if (request.isFetchChangeRequests()) {
                 for (final Integer number : controller().listChangeRequests(repository)) {
                     checkInterrupt();
-                    String revision = controller().getRevision(repository, "change-request/" + number);
                     String target = controller().getTarget(repository, number);
-                    String targetRevision = controller().getRevision(repository, target);
                     Set<MockChangeRequestFlags> crFlags = controller.getFlags(repository, number);
                     Set<ChangeRequestCheckoutStrategy> strategies = request.getCheckoutStrategies();
                     boolean singleStrategy = strategies.size() == 1;
                     for (ChangeRequestCheckoutStrategy strategy : strategies) {
-                        MockChangeRequestSCMHead head = new MockChangeRequestSCMHead(
-                                crFlags.contains(MockChangeRequestFlags.FORK)
-                                        ? new SCMHeadOrigin.Fork("fork")
-                                        : null,
-                                number, target, strategy, singleStrategy);
-                        if (request.isExcluded(head)) {
-                            continue;
-                        }
-                        controller().applyLatency();
-                        controller().checkFaults(repository, head.getName(), null, false);
-                        if (request.hasNoCriteria() || request.meetsCriteria(new MockSCMProbe(head, revision))) {
-                            controller().applyLatency();
-                            controller().checkFaults(repository, head.getName(), revision, false);
-                            request.criteriaMet(head, new MockChangeRequestSCMRevision(head,
-                                    new MockSCMRevision(head.getTarget(), targetRevision), revision));
-                        }
-                        if (request.isComplete()) {
+                        if (request.process(new MockChangeRequestSCMHead(
+                                        crFlags.contains(MockChangeRequestFlags.FORK)
+                                                ? new SCMHeadOrigin.Fork("fork")
+                                                : null,
+                                        number, target, strategy, singleStrategy),
+                                new SCMSourceRequest.RevisionFactory<MockChangeRequestSCMHead, MockChangeRequestSCMRevision>() {
+                                    @Override
+                                    public MockChangeRequestSCMRevision create(MockChangeRequestSCMHead head)
+                                            throws IOException, InterruptedException {
+                                        controller().applyLatency();
+                                        controller().checkFaults(repository, head.getName(), null, false);
+                                        String revision =
+                                                controller().getRevision(repository, "change-request/" + number);
+                                        String targetRevision =
+                                                controller().getRevision(repository, head.getTarget().getName());
+                                        return new MockChangeRequestSCMRevision(head,
+                                                new MockSCMRevision(head.getTarget(), targetRevision), revision);
+                                    }
+                                },
+                                new SCMSourceRequest.ProbeFactory<MockChangeRequestSCMHead, MockChangeRequestSCMRevision>() {
+                                    @Override
+                                    public SCMSourceCriteria.Probe create(MockChangeRequestSCMHead head,
+                                                                          MockChangeRequestSCMRevision revision)
+                                            throws IOException, InterruptedException {
+                                        controller().applyLatency();
+                                        controller().checkFaults(repository, head.getName(), revision.getHash(), false);
+                                        return new MockSCMProbe(head, revision.getHash());
+                                    }
+                                })) {
                             return;
                         }
                     }
