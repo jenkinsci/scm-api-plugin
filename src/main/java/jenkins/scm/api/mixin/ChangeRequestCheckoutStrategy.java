@@ -37,19 +37,6 @@ public enum ChangeRequestCheckoutStrategy {
      */
     HEAD,
     /**
-     * The revision to be checked out will be the result of applying all the changes in the change request since the
-     * common ancestor on top of the revision of the {@link ChangeRequestSCMHead#getTarget()}
-     * (perhaps with de-duplication).
-     * <p>
-     * In the event that the rebase operation cannot be completed then the checkout operation will fail.
-     * </p>
-     * <p>
-     * It is assumed that the algorithm for rebasing is deterministic given the revision of the change request and
-     * the revision of the {@link ChangeRequestSCMHead#getTarget()}
-     * </p>
-     */
-    REBASE,
-    /**
      * The revision to be checked out will be the result of applying a merge algorithm between the the revision
      * of the change request and the revision of the {@link ChangeRequestSCMHead#getTarget()}.
      * <p>
