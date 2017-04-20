@@ -124,7 +124,28 @@ public abstract class SCMHeadOrigin implements Serializable {
     }
 
     /**
-     * A named fork. The name should be simple not an URL.
+     * A named fork. The name should be simple not an URL. Some examples of simple names:
+     * <ul>
+     *     <li>{@code bobsmith} which could be a user's fork where the user is Bob Smith</li>
+     *     <li>{@code bobsmith/foo} which could be a user's fork where the user is Bob Smith and perhaps he forked
+     *     into a repository with the name "foo"</li>
+     *     <li>{@code manchu/bobsmith} which could be a user in Team Manchu called Bob Smith who forked the repository</li>
+     * </ul>
+     * <p>
+     * Please do not use things like {@code https://github.com/stephenc/scm-api-plugin} as the fork name no matter
+     * how tempting.
+     * </p>
+     * <p>For one, this includes details that are originating from the backing source control system.
+     * If we migrated from GitHub to GitHub Enterprise, the fork would be migrated also. A good name will remain
+     * the same after such a migration... so presumably during such a migration the fork's actual location would change
+     * from {@code https://github.com/stephenc/scm-api-plugin} to
+     * {@code https://github.example.com:8443/stephenc/scm-api-plugin} so a good name would be either
+     * {@code stephenc/scm-api-plugin} or {@code stephenc}.
+     * </p>
+     * <p>As GitHub encourages that forks have the same repository name the {@code /scm-api-plugin} is redundant,
+     * so we would choose {@code stephenc} as the fork name when the repository name matches upstream and
+     * use {@code stephenc/fork-of-scm-api-plugin} if the fork name differs from the upstream name.
+     * </p>
      */
     public static class Fork extends SCMHeadOrigin {
         /**
@@ -133,7 +154,7 @@ public abstract class SCMHeadOrigin implements Serializable {
         private static final long serialVersionUID = 1L;
 
         /**
-         * The name of the fork. This should
+         * The name of the fork. This should be a simple name not something complex like an URL.
          */
         @NonNull
         private final String name;
