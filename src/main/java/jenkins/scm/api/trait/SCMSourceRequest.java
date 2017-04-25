@@ -25,7 +25,9 @@
 
 package jenkins.scm.api.trait;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.TaskListener;
 import java.io.Closeable;
 import java.io.IOException;
@@ -52,7 +54,14 @@ public abstract class SCMSourceRequest implements Closeable {
 
     private static final Set<Class<? extends SCMHeadMixin>> STANDARD_MIXINS =
             Collections.<Class<? extends SCMHeadMixin>>singleton(SCMHeadMixin.class);
+
+    private final SCMSource source;
+
     private final List<SCMHeadFilter> filters;
+
+    private final List<SCMHeadPrefilter> prefilters;
+
+    private final List<SCMHeadAuthority> authorities;
 
     private final List<SCMSourceCriteria> criteria;
 
@@ -62,25 +71,52 @@ public abstract class SCMSourceRequest implements Closeable {
 
     private final Set<SCMHead> observerIncludes;
 
-    protected SCMSourceRequest(SCMSourceRequestBuilder<?, ?> builder) {
-        this.filters = builder.filters();
+    protected SCMSourceRequest(SCMSourceRequestBuilder<?, ?> builder, TaskListener listener) {
+        this.source = builder.source();
+        this.filters = Collections.unmodifiableList(new ArrayList<SCMHeadFilter>(builder.filters()));
+        this.prefilters = Collections.unmodifiableList(new ArrayList<SCMHeadPrefilter>(builder.prefilters()));
+        this.authorities = Collections.unmodifiableList(new ArrayList<SCMHeadAuthority>(builder.authorities()));
         this.criteria = builder.criteria().isEmpty()
                 ? Collections.<SCMSourceCriteria>emptyList()
                 : Collections.unmodifiableList(new ArrayList<SCMSourceCriteria>(builder.criteria()));
         this.observer = builder.observer();
         this.observerIncludes = observer.getIncludes();
-        this.listener = builder.listener();
+        this.listener = listener;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <H extends SCMHead, R extends SCMRevision> void record(H head, R revision, boolean isMatch,
+                                                                          Witness... witnesses) {
+        for (Witness witness : witnesses) {
+            witness.record(head, revision, isMatch);
+        }
     }
 
     public boolean isExcluded(SCMHead head) {
         if (observerIncludes != null && !observerIncludes.contains(head)) {
             return true;
         }
+        if (!prefilters.isEmpty()) {
+            for (SCMHeadPrefilter prefilter : prefilters) {
+                if (prefilter.isExcluded(source, head)) {
+                    return true;
+                }
+            }
+        }
         if (filters.isEmpty()) {
             return false;
         }
         for (SCMHeadFilter filter : filters) {
             if (filter.isExcluded(this, head)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isTrusted(SCMHead head) {
+        for (SCMHeadAuthority authority : authorities) {
+            if (authority.isTrusted(this, head)) {
                 return true;
             }
         }
@@ -98,6 +134,7 @@ public abstract class SCMSourceRequest implements Closeable {
      * @param head            the {@link SCMHead} to process.
      * @param revisionFactory factory method that creates the {@link SCMRevision} (assuming creation is cheap).
      * @param probeFactory    factory method that creates the {@link SCMProbe}.
+     * @param witnesses       any {@link Witness} instances to be informed of the observation result.
      * @param <H>             the type of {@link SCMHead}.
      * @param <R>             the type of {@link SCMRevision}.
      * @return {@code true} if the {@link SCMHeadObserver} for this request has completed observing, {@code false} to
@@ -107,7 +144,8 @@ public abstract class SCMSourceRequest implements Closeable {
      */
     public <H extends SCMHead, R extends SCMRevision> boolean process(final H head,
                                                                       final RevisionFactory<H, R> revisionFactory,
-                                                                      ProbeFactory<H, R> probeFactory)
+                                                                      ProbeFactory<H, R> probeFactory,
+                                                                      Witness... witnesses)
             throws IOException, InterruptedException {
         return process(head, new IntermediateFactory<R>() {
             @Override
@@ -119,7 +157,7 @@ public abstract class SCMSourceRequest implements Closeable {
             public SCMRevision create(H head, R intermediate) throws IOException, InterruptedException {
                 return intermediate;
             }
-        });
+        }, witnesses);
     }
 
     /**
@@ -128,9 +166,10 @@ public abstract class SCMSourceRequest implements Closeable {
      *
      * @param head                the {@link SCMHead} to process.
      * @param intermediateFactory factory method that provides the seed information for both the {@link ProbeFactory}
-     *                           and the {@link LazyRevisionFactory}.
+     *                            and the {@link LazyRevisionFactory}.
      * @param probeFactory        factory method that creates the {@link SCMProbe}.
      * @param revisionFactory     factory method that creates the {@link SCMRevision}.
+     * @param witnesses           any {@link Witness} instances to be informed of the observation result.
      * @param <H>                 the type of {@link SCMHead}.
      * @param <I>                 the type of the intermediary operation result.
      * @param <R>                 the type of {@link SCMRevision}.
@@ -140,9 +179,12 @@ public abstract class SCMSourceRequest implements Closeable {
      * @throws InterruptedException if the processing was interrupted.
      */
     public <H extends SCMHead, I, R extends SCMRevision> boolean process(H head,
-                                                                         IntermediateFactory<I> intermediateFactory,
+                                                                         @CheckForNull
+                                                                                 IntermediateFactory<I>
+                                                                                 intermediateFactory,
                                                                          ProbeFactory<H, I> probeFactory,
-                                                                         LazyRevisionFactory<H, R, I> revisionFactory)
+                                                                         LazyRevisionFactory<H, R, I> revisionFactory,
+                                                                         Witness... witnesses)
             throws IOException, InterruptedException {
         if (Thread.interrupted()) {
             throw new InterruptedException();
@@ -151,12 +193,13 @@ public abstract class SCMSourceRequest implements Closeable {
             // not included
             return !observer.isObserving();
         }
-        I intermediate = intermediateFactory.create();
+        I intermediate = intermediateFactory == null ? null : intermediateFactory.create();
         if (!criteria.isEmpty()) {
             SCMSourceCriteria.Probe probe = probeFactory.create(head, intermediate);
             try {
                 for (SCMSourceCriteria c : criteria) {
                     if (!c.isHead(probe, listener)) {
+                        record((H) head, null, false, witnesses);
                         // not a match against criteria
                         return !observer.isObserving();
                     }
@@ -168,7 +211,9 @@ public abstract class SCMSourceRequest implements Closeable {
             }
         }
         // observe
-        observer.observe(head, revisionFactory.create(head, intermediate));
+        R revision = revisionFactory.create(head, intermediate);
+        record(head, revision, true, witnesses);
+        observer.observe(head, revision);
         return !observer.isObserving();
     }
 
@@ -188,19 +233,31 @@ public abstract class SCMSourceRequest implements Closeable {
         // default to no-op but allow subclasses to store persistent connections in the request and clean up after
     }
 
+    public SCMSource source() {
+        return source;
+    }
+
     public interface RevisionFactory<H extends SCMHead, R extends SCMRevision> {
-        R create(H head) throws IOException, InterruptedException;
+        @NonNull
+        R create(@NonNull H head) throws IOException, InterruptedException;
     }
 
     public interface ProbeFactory<H extends SCMHead, I> {
-        SCMSourceCriteria.Probe create(H head, I revision) throws IOException, InterruptedException;
+        @NonNull
+        SCMSourceCriteria.Probe create(@NonNull H head, @Nullable I revision) throws IOException, InterruptedException;
     }
 
     public interface LazyRevisionFactory<H extends SCMHead, R extends SCMRevision, I> {
-        R create(H head, I intermediate) throws IOException, InterruptedException;
+        @NonNull
+        R create(@NonNull H head, @Nullable I intermediate) throws IOException, InterruptedException;
     }
 
     public interface IntermediateFactory<I> {
+        @Nullable
         I create() throws IOException, InterruptedException;
+    }
+
+    public interface Witness<H extends SCMHead, R extends SCMRevision> {
+        void record(@NonNull H head, @CheckForNull R revision, boolean isMatch);
     }
 }

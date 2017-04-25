@@ -25,9 +25,10 @@ package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMSource;
 
-public abstract class SCMHeadFilter {
+public abstract class SCMHeadPrefilter {
 
-    public abstract boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head);
+    public abstract boolean isExcluded(@NonNull SCMSource source, @NonNull SCMHead head);
 
 }

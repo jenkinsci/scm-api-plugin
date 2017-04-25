@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2016-2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,9 +122,9 @@ public class MockSCMSource extends SCMSource {
                             @CheckForNull SCMHeadEvent<?> event, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
 
-        MockSCMSourceRequest request = new MockSCMSourceRequestBuilder(criteria, observer, listener)
+        MockSCMSourceRequest request = new MockSCMSourceRequestBuilder(this, criteria, observer)
                 .withTraits(traits)
-                .build();
+                .build(listener);
         try {
             controller().applyLatency();
             controller().checkFaults(repository, null, null, false);

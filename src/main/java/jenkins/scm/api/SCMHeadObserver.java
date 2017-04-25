@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011-2013, CloudBees, Inc., Stephen Connolly.
+ * Copyright (c) 2011-2017, CloudBees, Inc., Stephen Connolly.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -156,6 +156,17 @@ public abstract class SCMHeadObserver {
     @NonNull
     public static Any any() {
         return new Any();
+    }
+
+    /**
+     * Creates an observer that selects the first revision it finds. Also useful for quick checks of non-empty.
+     *
+     * @return an observer that selects the first revision of a any head.
+     * @since 2.2.0
+     */
+    @NonNull
+    public static None none() {
+        return None.INSTANCE;
     }
 
     /**
@@ -543,6 +554,39 @@ public abstract class SCMHeadObserver {
             return revision == null;
         }
 
+    }
+
+    /**
+     * An observer that is already finished.
+     *
+     * @since 2.2.0
+     */
+    public static final class None extends SCMHeadObserver {
+        /**
+         * Singleton.
+         */
+        public static final None INSTANCE = new None();
+
+        /**
+         * Constructor.
+         */
+        private None() {
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void observe(@NonNull SCMHead head, @NonNull SCMRevision revision) {
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isObserving() {
+            return false;
+        }
     }
 
     /**

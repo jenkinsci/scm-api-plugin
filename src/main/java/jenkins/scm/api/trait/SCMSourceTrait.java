@@ -40,7 +40,7 @@ import jenkins.scm.api.SCMHeadObserver;
 
 public class SCMSourceTrait extends AbstractDescribableImpl<SCMSourceTrait> {
 
-    public final <B extends SCMSourceRequestBuilder<B,R>, R extends SCMSourceRequest> void applyToRequest(B builder) {
+    public final <B extends SCMSourceRequestBuilder<B, R>, R extends SCMSourceRequest> void applyToRequest(B builder) {
         if (getDescriptor().isApplicableTo(builder.getClass())) {
             // guard against non-applicable
             decorateRequest(builder);
@@ -60,7 +60,7 @@ public class SCMSourceTrait extends AbstractDescribableImpl<SCMSourceTrait> {
         return observer;
     }
 
-    public final <B extends SCMBuilder<B,S>, S extends SCM> void applyToSCM(B builder) {
+    public final <B extends SCMBuilder<B, S>, S extends SCM> void applyToSCM(B builder) {
         if (!getDescriptor().isApplicableTo(builder.getSCMDescriptor())) {
             // guard against non-applicable
         }

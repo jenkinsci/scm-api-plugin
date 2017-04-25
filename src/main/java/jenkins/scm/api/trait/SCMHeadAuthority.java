@@ -24,10 +24,30 @@
 package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.AbstractDescribableImpl;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.mixin.SCMHeadMixin;
 
-public abstract class SCMHeadFilter {
+public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCMHeadMixin>
+        extends AbstractDescribableImpl<SCMHeadAuthority<?, ?>> {
 
-    public abstract boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head);
+    public final boolean isApplicableTo(@NonNull SCMHead head) {
+        return getDescriptor().isApplicableToHead(head);
+    }
 
+    public final boolean isApplicableTo(@NonNull SCMSourceRequest request) {
+        return getDescriptor().isApplicableToRequest(request);
+    }
+
+    @SuppressWarnings("unchecked")
+    public final boolean isTrusted(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
+        return isApplicableTo(request) && isApplicableTo(head) && checkTrusted((S) request, (H) head);
+    }
+
+    protected abstract boolean checkTrusted(@NonNull S request, @NonNull H head);
+
+    @Override
+    public SCMHeadAuthorityDescriptor getDescriptor() {
+        return (SCMHeadAuthorityDescriptor) super.getDescriptor();
+    }
 }

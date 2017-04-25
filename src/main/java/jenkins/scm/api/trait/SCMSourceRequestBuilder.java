@@ -37,19 +37,23 @@ import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 
-public abstract class SCMSourceRequestBuilder<B extends SCMSourceRequestBuilder<B,R>,R extends SCMSourceRequest> {
+public abstract class SCMSourceRequestBuilder<B extends SCMSourceRequestBuilder<B, R>, R extends SCMSourceRequest> {
+    private final SCMSource source;
     @NonNull
     private final List<SCMSourceCriteria> criteria = new ArrayList<SCMSourceCriteria>();
     @NonNull
+    private final List<SCMHeadPrefilter> prefilters = new ArrayList<SCMHeadPrefilter>();
+    @NonNull
     private final List<SCMHeadFilter> filters = new ArrayList<SCMHeadFilter>();
     @NonNull
-    private final TaskListener listener;
+    private final List<SCMHeadAuthority<?, ?>> authorities = new ArrayList<SCMHeadAuthority<?, ?>>();
     @NonNull
     private SCMHeadObserver observer;
 
-    public SCMSourceRequestBuilder(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer, @NonNull TaskListener listener) {
+    public SCMSourceRequestBuilder(@NonNull SCMSource source, @CheckForNull SCMSourceCriteria criteria,
+                                   @NonNull SCMHeadObserver observer) {
+        this.source = source;
         withCriteria(criteria);
-        this.listener = listener;
         this.observer = observer;
     }
 
@@ -58,7 +62,15 @@ public abstract class SCMSourceRequestBuilder<B extends SCMSourceRequestBuilder<
         if (criteria != null) {
             this.criteria.add(criteria);
         }
-        return (B)this;
+        return (B) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public B withAuthority(@CheckForNull SCMHeadAuthority authority) {
+        if (authority != null) {
+            this.authorities.add(authority);
+        }
+        return (B) this;
     }
 
     @SuppressWarnings("unchecked")
@@ -66,14 +78,30 @@ public abstract class SCMSourceRequestBuilder<B extends SCMSourceRequestBuilder<
         if (filter != null) {
             this.filters.add(filter);
         }
-        return (B)this;
+        return (B) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public B withPrefilter(@CheckForNull SCMHeadPrefilter prefilter) {
+        if (prefilter != null) {
+            this.prefilters.add(prefilter);
+        }
+        return (B) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public B withPrefilters(@CheckForNull Collection<SCMHeadPrefilter> prefilters) {
+        if (prefilters != null) {
+            this.prefilters.addAll(prefilters);
+        }
+        return (B) this;
     }
 
     @SuppressWarnings("unchecked")
     public B withTrait(@NonNull SCMSourceTrait trait) {
         observer = trait.applyToObserver(observer);
         trait.applyToRequest((B) this);
-        return (B)this;
+        return (B) this;
     }
 
     public B withTraits(@NonNull SCMSourceTrait... traits) {
@@ -82,15 +110,10 @@ public abstract class SCMSourceRequestBuilder<B extends SCMSourceRequestBuilder<
 
     @SuppressWarnings("unchecked")
     public B withTraits(@NonNull Collection<SCMSourceTrait> traits) {
-        for (SCMSourceTrait trait: traits) {
+        for (SCMSourceTrait trait : traits) {
             withTrait(trait);
         }
         return (B) this;
-    }
-
-    @NonNull
-    public TaskListener listener() {
-        return listener;
     }
 
     @NonNull
@@ -104,9 +127,23 @@ public abstract class SCMSourceRequestBuilder<B extends SCMSourceRequestBuilder<
     }
 
     @NonNull
+    public List<SCMHeadPrefilter> prefilters() {
+        return Collections.unmodifiableList(prefilters);
+    }
+
+    @NonNull
     public SCMHeadObserver observer() {
         return observer;
     }
 
-    public abstract R build();
+    @NonNull
+    public List<SCMHeadAuthority<?, ?>> authorities() {
+        return Collections.unmodifiableList(authorities);
+    }
+
+    public SCMSource source() {
+        return source;
+    }
+
+    public abstract R build(@NonNull TaskListener listener);
 }

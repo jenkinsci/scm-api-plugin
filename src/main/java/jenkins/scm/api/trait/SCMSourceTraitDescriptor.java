@@ -39,10 +39,10 @@ public abstract class SCMSourceTraitDescriptor extends Descriptor<SCMSourceTrait
     /**
      * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMSourceRequestBuilder}.
      *
-     * @param requestBuilderClass the type of {@link SCMSourceRequestBuilder}.
+     * @param builderClass the type of {@link SCMSourceRequestBuilder}.
      * @return {@code true} if applicable to the specified type of {@link SCMSourceRequestBuilder}.
      */
-    public boolean isApplicableTo(Class<? extends SCMSourceRequestBuilder> requestBuilderClass) {
+    public boolean isApplicableTo(Class<? extends SCMSourceRequestBuilder> builderClass) {
         return true;
     }
 
