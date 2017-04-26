@@ -54,28 +54,71 @@ import jenkins.scm.api.mixin.SCMHeadMixin;
  */
 public abstract class SCMSourceRequest implements Closeable {
 
-    private static final Set<Class<? extends SCMHeadMixin>> STANDARD_MIXINS =
-            Collections.<Class<? extends SCMHeadMixin>>singleton(SCMHeadMixin.class);
-
+    /**
+     * The {@link SCMSource} making the request.
+     */
+    @NonNull
     private final SCMSource source;
 
+    /**
+     * The filters requiring context of the {@link SCMSourceRequest}, typically because the decision to filter may
+     * require making remote requests.
+     */
+    @NonNull
     private final List<SCMHeadFilter> filters;
 
+    /**
+     * The filters that do not require context of the {@link SCMSourceRequest} and only require the {@link SCMSource}
+     * and {@link SCMHead} to decide exclusion - typically filtering based on the name or some other attribute of
+     * a {@link SCMHeadMixin}.
+     */
+    @NonNull
     private final List<SCMHeadPrefilter> prefilters;
 
+    /**
+     * The authorities that can determine the trustability of a {@link SCMHead}.
+     */
+    @NonNull
     private final List<SCMHeadAuthority> authorities;
 
+    /**
+     * The criteria used to determine if a {@link SCMHead} is discovered by the {@link SCMSource}.
+     */
+    @NonNull
     private final List<SCMSourceCriteria> criteria;
 
+    /**
+     * The {@link TaskListener} active for the scope of the request.
+     */
+    @NonNull
     private final TaskListener listener;
 
+    /**
+     * The {@link SCMHeadObserver} for this request.
+     */
+    @NonNull
     private final SCMHeadObserver observer;
 
+    /**
+     * The {@link SCMHeadObserver#getIncludes()} of {@link #observer}.
+     */
+    @CheckForNull
     private final Set<SCMHead> observerIncludes;
 
+    /**
+     * Any {@link Closeable} objects that should be closed with the request.
+     */
+    // TODO widen type to AutoClosable once Java 7+
+    @NonNull
     private final List<Closeable> managedClosables = new ArrayList<Closeable>();
 
-    protected SCMSourceRequest(SCMSourceRequestBuilder<?, ?> builder, TaskListener listener) {
+    /**
+     * Constructor.
+     *
+     * @param builder  the builder.
+     * @param listener the {@link TaskListener}.
+     */
+    protected SCMSourceRequest(@NonNull SCMSourceRequestBuilder<?, ?> builder, @NonNull TaskListener listener) {
         this.source = builder.source();
         this.filters = Collections.unmodifiableList(new ArrayList<SCMHeadFilter>(builder.filters()));
         this.prefilters = Collections.unmodifiableList(new ArrayList<SCMHeadPrefilter>(builder.prefilters()));
@@ -88,15 +131,31 @@ public abstract class SCMSourceRequest implements Closeable {
         this.listener = listener;
     }
 
+    /**
+     * Records a processing result to the {@linkplain Witness}es.
+     *
+     * @param head      the {@link SCMHead}.
+     * @param revision  the {@link SCMRevision}.
+     * @param isMatch   {@code true} if the head:revision pair was sent to the {@link #observer}.
+     * @param witnesses the {@link Witness} instances to notify.
+     */
     @SuppressWarnings("unchecked")
-    private static <H extends SCMHead, R extends SCMRevision> void record(H head, R revision, boolean isMatch,
-                                                                          Witness... witnesses) {
+    private static void record(@NonNull SCMHead head, SCMRevision revision, boolean isMatch,
+                               @NonNull Witness... witnesses) {
         for (Witness witness : witnesses) {
             witness.record(head, revision, isMatch);
         }
     }
 
-    public boolean isExcluded(SCMHead head) {
+    /**
+     * Tests if the {@link SCMHead} is excluded from the request.
+     *
+     * @param head the {@link SCMHead}.
+     * @return {@code true} if the {@link SCMHead} is excluded.
+     * @throws IOException          if there is an I/O error.
+     * @throws InterruptedException if the operation was interrupted.
+     */
+    public boolean isExcluded(@NonNull SCMHead head) throws IOException, InterruptedException {
         if (observerIncludes != null && !observerIncludes.contains(head)) {
             return true;
         }
@@ -118,7 +177,15 @@ public abstract class SCMSourceRequest implements Closeable {
         return false;
     }
 
-    public boolean isTrusted(SCMHead head) {
+    /**
+     * Tests if the {@link SCMHead} is trusted.
+     *
+     * @param head the {@link SCMHead}.
+     * @return {@code true} if the {@link SCMHead} is trusted.
+     * @throws IOException          if there is an I/O error.
+     * @throws InterruptedException if the operation was interrupted.
+     */
+    public boolean isTrusted(@NonNull SCMHead head) throws IOException, InterruptedException {
         for (SCMHeadAuthority authority : authorities) {
             if (authority.isTrusted(this, head)) {
                 return true;
@@ -127,9 +194,46 @@ public abstract class SCMSourceRequest implements Closeable {
         return false;
     }
 
+    /**
+     * Returns the {@link SCMSourceCriteria} being used for this request.
+     *
+     * @return the {@link SCMSourceCriteria} being used for this request.
+     */
     @NonNull
     public List<SCMSourceCriteria> getCriteria() {
         return criteria;
+    }
+
+    /**
+     * Processes a head in the context of the current request.
+     *
+     * @param head         the {@link SCMHead} to process.
+     * @param revision     the {@link SCMRevision} (assuming revision creation is very cheap).
+     * @param probeFactory factory method that creates the {@link SCMProbe}.
+     * @param witnesses    any {@link Witness} instances to be informed of the observation result.
+     * @param <H>          the type of {@link SCMHead}.
+     * @param <R>          the type of {@link SCMRevision}.
+     * @return {@code true} if the {@link SCMHeadObserver} for this request has completed observing, {@code false} to
+     * continue processing.
+     * @throws IOException          if there was an I/O error.
+     * @throws InterruptedException if the processing was interrupted.
+     */
+    public final <H extends SCMHead, R extends SCMRevision> boolean process(final @NonNull H head,
+                                                                            final R revision,
+                                                                            @NonNull ProbeFactory<H, R> probeFactory,
+                                                                            @NonNull Witness... witnesses)
+            throws IOException, InterruptedException {
+        return process(head, new IntermediateFactory<R>() {
+            @Override
+            public R create() throws IOException, InterruptedException {
+                return revision;
+            }
+        }, probeFactory, new LazyRevisionFactory<H, SCMRevision, R>() {
+            @Override
+            public SCMRevision create(H head, R intermediate) throws IOException, InterruptedException {
+                return intermediate;
+            }
+        }, witnesses);
     }
 
     /**
@@ -146,10 +250,12 @@ public abstract class SCMSourceRequest implements Closeable {
      * @throws IOException          if there was an I/O error.
      * @throws InterruptedException if the processing was interrupted.
      */
-    public <H extends SCMHead, R extends SCMRevision> boolean process(final H head,
-                                                                      final RevisionFactory<H, R> revisionFactory,
-                                                                      ProbeFactory<H, R> probeFactory,
-                                                                      Witness... witnesses)
+    public final <H extends SCMHead, R extends SCMRevision> boolean process(final @NonNull H head,
+                                                                            final @NonNull
+                                                                                    RevisionFactory<H, R>
+                                                                                    revisionFactory,
+                                                                            @NonNull ProbeFactory<H, R> probeFactory,
+                                                                            @NonNull Witness... witnesses)
             throws IOException, InterruptedException {
         return process(head, new IntermediateFactory<R>() {
             @Override
@@ -182,13 +288,14 @@ public abstract class SCMSourceRequest implements Closeable {
      * @throws IOException          if there was an I/O error.
      * @throws InterruptedException if the processing was interrupted.
      */
-    public <H extends SCMHead, I, R extends SCMRevision> boolean process(H head,
-                                                                         @CheckForNull
-                                                                                 IntermediateFactory<I>
-                                                                                 intermediateFactory,
-                                                                         ProbeFactory<H, I> probeFactory,
-                                                                         LazyRevisionFactory<H, R, I> revisionFactory,
-                                                                         Witness... witnesses)
+    public final <H extends SCMHead, I, R extends SCMRevision> boolean process(@NonNull H head,
+                                                                               @CheckForNull IntermediateFactory<I>
+                                                                                       intermediateFactory,
+                                                                               @NonNull ProbeFactory<H, I> probeFactory,
+                                                                               @NonNull
+                                                                                       LazyRevisionFactory<H, R, I>
+                                                                                       revisionFactory,
+                                                                               @NonNull Witness... witnesses)
             throws IOException, InterruptedException {
         if (Thread.interrupted()) {
             throw new InterruptedException();
@@ -221,10 +328,22 @@ public abstract class SCMSourceRequest implements Closeable {
         return !observer.isObserving();
     }
 
+    /**
+     * Checks if this request has been completed, that is if its {@link SCMHeadObserver} has stopped
+     * {@link SCMHeadObserver#isObserving()}.
+     *
+     * @return {@code true} if and only if the request is completed.
+     */
     public boolean isComplete() {
         return !observer.isObserving();
     }
 
+    /**
+     * Returns the {@link TaskListener} to use for this request.
+     *
+     * @return the {@link TaskListener} to use for this request.
+     */
+    @NonNull
     public TaskListener listener() {
         return listener;
     }
@@ -272,6 +391,12 @@ public abstract class SCMSourceRequest implements Closeable {
         }
     }
 
+    /**
+     * Returns the {@link SCMSource} making this request.
+     *
+     * @return the {@link SCMSource} making this request.
+     */
+    @NonNull
     public SCMSource source() {
         return source;
     }

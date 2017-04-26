@@ -25,6 +25,7 @@ package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractDescribableImpl;
+import java.io.IOException;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.mixin.SCMHeadMixin;
 
@@ -40,11 +41,12 @@ public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCM
     }
 
     @SuppressWarnings("unchecked")
-    public final boolean isTrusted(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
+    public final boolean isTrusted(@NonNull SCMSourceRequest request, @NonNull SCMHead head)
+            throws IOException, InterruptedException {
         return isApplicableTo(request) && isApplicableTo(head) && checkTrusted((S) request, (H) head);
     }
 
-    protected abstract boolean checkTrusted(@NonNull S request, @NonNull H head);
+    protected abstract boolean checkTrusted(@NonNull S request, @NonNull H head) throws IOException, InterruptedException;
 
     @Override
     public SCMHeadAuthorityDescriptor getDescriptor() {
