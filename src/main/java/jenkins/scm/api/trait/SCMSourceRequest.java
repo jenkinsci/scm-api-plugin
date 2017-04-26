@@ -31,6 +31,8 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.TaskListener;
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,6 +72,8 @@ public abstract class SCMSourceRequest implements Closeable {
     private final SCMHeadObserver observer;
 
     private final Set<SCMHead> observerIncludes;
+
+    private final List<Closeable> managedClosables = new ArrayList<Closeable>();
 
     protected SCMSourceRequest(SCMSourceRequestBuilder<?, ?> builder, TaskListener listener) {
         this.source = builder.source();
@@ -226,11 +230,46 @@ public abstract class SCMSourceRequest implements Closeable {
     }
 
     /**
+     * Adds managing a {@link Closeable} into the scope of the {@link SCMSourceRequest}
+     *
+     * @param closeable the {@link Closeable} to manage.
+     */
+    public void manage(@CheckForNull Closeable closeable) {
+        if (closeable != null) {
+            managedClosables.add(closeable);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public void close() throws IOException {
-        // default to no-op but allow subclasses to store persistent connections in the request and clean up after
+        IOException ioe = null;
+        for (Closeable c : managedClosables) {
+            try {
+                c.close();
+            } catch (IOException e) {
+                if (ioe == null) {
+                    ioe = e;
+                } else {
+                    // TODO replace with direct call to addSuppressed once baseline Java is 1.7
+                    try {
+                        Method addSuppressed = Throwable.class.getMethod("addSuppressed", Throwable.class);
+                        addSuppressed.invoke(ioe, e);
+                    } catch (NoSuchMethodException e1) {
+                        // ignore, best effort
+                    } catch (IllegalAccessException e1) {
+                        // ignore, best effort
+                    } catch (InvocationTargetException e1) {
+                        // ignore, best effort
+                    }
+                }
+            }
+        }
+        if (ioe != null) {
+            throw ioe;
+        }
     }
 
     public SCMSource source() {
