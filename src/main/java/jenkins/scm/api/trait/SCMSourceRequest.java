@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.TaskListener;
+import hudson.util.LogTaskListener;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -37,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
@@ -55,7 +58,7 @@ import jenkins.scm.api.mixin.SCMHeadMixin;
 public abstract class SCMSourceRequest implements Closeable {
 
     /**
-     * The {@link SCMSource} making the request.
+     * The {@link SCMSource} to use when applying the {@link #prefilters}.
      */
     @NonNull
     private final SCMSource source;
@@ -115,20 +118,42 @@ public abstract class SCMSourceRequest implements Closeable {
     /**
      * Constructor.
      *
-     * @param builder  the builder.
-     * @param listener the {@link TaskListener}.
+     * @param source  the source.
+     * @param context  the context.
+     * @param listener the (optional) {@link TaskListener}.
      */
-    protected SCMSourceRequest(@NonNull SCMSourceRequestBuilder<?, ?> builder, @NonNull TaskListener listener) {
-        this.source = builder.source();
-        this.filters = Collections.unmodifiableList(new ArrayList<SCMHeadFilter>(builder.filters()));
-        this.prefilters = Collections.unmodifiableList(new ArrayList<SCMHeadPrefilter>(builder.prefilters()));
-        this.authorities = Collections.unmodifiableList(new ArrayList<SCMHeadAuthority>(builder.authorities()));
-        this.criteria = builder.criteria().isEmpty()
+    protected SCMSourceRequest(@NonNull SCMSource source, @NonNull SCMSourceContext<?, ?> context,
+                               @CheckForNull TaskListener listener) {
+        this.source = source;
+        this.filters = Collections.unmodifiableList(new ArrayList<SCMHeadFilter>(context.filters()));
+        this.prefilters = Collections.unmodifiableList(new ArrayList<SCMHeadPrefilter>(context.prefilters()));
+        this.authorities = Collections.unmodifiableList(new ArrayList<SCMHeadAuthority>(context.authorities()));
+        this.criteria = context.criteria().isEmpty()
                 ? Collections.<SCMSourceCriteria>emptyList()
-                : Collections.unmodifiableList(new ArrayList<SCMSourceCriteria>(builder.criteria()));
-        this.observer = builder.observer();
+                : Collections.unmodifiableList(new ArrayList<SCMSourceCriteria>(context.criteria()));
+        this.observer = context.observer();
         this.observerIncludes = observer.getIncludes();
-        this.listener = listener;
+        this.listener = defaultListener(listener);
+    }
+
+    /**
+     * Turns a possibly {@code null} {@link TaskListener} reference into a guaranteed non-null reference.
+     *
+     * @param listener a possibly {@code null} {@link TaskListener} reference.
+     * @return guaranteed non-null {@link TaskListener}.
+     */
+    @NonNull
+    private TaskListener defaultListener(@CheckForNull TaskListener listener) {
+        if (listener == null) {
+            Level level;
+            try {
+                level = Level.parse(System.getProperty(getClass().getName() + ".defaultListenerLevel", "FINE"));
+            } catch (IllegalArgumentException e) {
+                level = Level.FINE;
+            }
+            return new LogTaskListener(Logger.getLogger(getClass().getName()), level);
+        }
+        return listener;
     }
 
     /**
@@ -389,16 +414,6 @@ public abstract class SCMSourceRequest implements Closeable {
         if (ioe != null) {
             throw ioe;
         }
-    }
-
-    /**
-     * Returns the {@link SCMSource} making this request.
-     *
-     * @return the {@link SCMSource} making this request.
-     */
-    @NonNull
-    public SCMSource source() {
-        return source;
     }
 
     public interface RevisionFactory<H extends SCMHead, R extends SCMRevision> {

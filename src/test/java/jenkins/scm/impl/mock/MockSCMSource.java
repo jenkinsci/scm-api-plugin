@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -122,9 +121,9 @@ public class MockSCMSource extends SCMSource {
                             @CheckForNull SCMHeadEvent<?> event, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
 
-        MockSCMSourceRequest request = new MockSCMSourceRequestBuilder(this, criteria, observer)
+        MockSCMSourceRequest request = new MockSCMSourceContext(this, criteria, observer)
                 .withTraits(traits)
-                .build(listener);
+                .newRequest(this, listener);
         try {
             controller().applyLatency();
             controller().checkFaults(repository, null, null, false);
@@ -353,7 +352,7 @@ public class MockSCMSource extends SCMSource {
                             scmDescriptor)) {
                         continue;
                     }
-                    if (!descriptor.isApplicableTo(MockSCMSourceRequestBuilder.class)) {
+                    if (!descriptor.isApplicableTo(MockSCMSourceContext.class)) {
                         continue;
                     }
                     result.add(descriptor);

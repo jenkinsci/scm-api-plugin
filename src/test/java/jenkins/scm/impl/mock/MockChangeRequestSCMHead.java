@@ -45,7 +45,7 @@ public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSC
         this.number = number;
         this.target = target;
         this.origin = origin;
-        this.strategy = ChangeRequestCheckoutStrategy.HEAD;
+        this.strategy = strategy;
     }
 
     public MockChangeRequestSCMHead(Integer number, String target) {

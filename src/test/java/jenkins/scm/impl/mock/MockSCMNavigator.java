@@ -174,7 +174,7 @@ public class MockSCMNavigator extends SCMNavigator {
                             scmDescriptor)) {
                         continue;
                     }
-                    if (!descriptor.isApplicableTo(MockSCMSourceRequestBuilder.class)) {
+                    if (!descriptor.isApplicableTo(MockSCMSourceContext.class)) {
                         continue;
                     }
                     result.add(descriptor);

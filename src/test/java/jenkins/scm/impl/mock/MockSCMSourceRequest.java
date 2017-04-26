@@ -28,6 +28,7 @@ import hudson.model.TaskListener;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.SCMSourceRequest;
 
@@ -37,8 +38,8 @@ public class MockSCMSourceRequest extends SCMSourceRequest {
     private final boolean fetchChangeRequests;
     private final Set<ChangeRequestCheckoutStrategy> checkoutStrategies;
 
-    MockSCMSourceRequest(MockSCMSourceRequestBuilder builder, TaskListener listener) {
-        super(builder, listener);
+    MockSCMSourceRequest(SCMSource source, MockSCMSourceContext builder, TaskListener listener) {
+        super(source, builder, listener);
         this.fetchBranches = builder.needsBranches();
         this.fetchTags = builder.needsTags();
         this.fetchChangeRequests = builder.needsChangeRequests();

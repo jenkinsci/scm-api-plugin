@@ -30,7 +30,7 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMHeadPrefilter;
 import jenkins.scm.api.trait.SCMSourceRequest;
-import jenkins.scm.api.trait.SCMSourceRequestBuilder;
+import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -56,8 +56,8 @@ public class WildcardNameFilterTrait extends SCMSourceTrait {
     }
 
     @Override
-    protected <B extends SCMSourceRequestBuilder<B, R>, R extends SCMSourceRequest> void decorateRequest(B builder) {
-        builder.withPrefilter(new SCMHeadPrefilter() {
+    protected <B extends SCMSourceContext<B, R>, R extends SCMSourceRequest> void decorateContext(B context) {
+        context.withPrefilter(new SCMHeadPrefilter() {
             @Override
             public boolean isExcluded(@NonNull SCMSource request, @NonNull SCMHead head) {
                 return !Pattern.matches(getPattern(getIncludes()), head.getName())

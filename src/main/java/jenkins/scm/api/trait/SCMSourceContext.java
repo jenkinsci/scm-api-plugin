@@ -33,12 +33,22 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 
-public abstract class SCMSourceRequestBuilder<B extends SCMSourceRequestBuilder<B, R>, R extends SCMSourceRequest> {
-    private final SCMSource source;
+/**
+ * Represents the context within which a {@link SCMSource} is processing requests. In general this is used as a builder
+ * for {@link SCMSourceRequest} instances through {@link SCMSourceContext#newRequest(SCMSource, TaskListener)} but there
+ * are some cases (such as {@link SCMHeadEvent} processing) where only the context is required and as such this
+ * type will be instantiated to obtain the context but no {@link SCMSourceRequest} will be created.
+ *
+ * @param <C> the type of {@link SCMSourceContext}
+ * @param <R> the type of {@link SCMSourceRequest} produced by this context.
+ * @since 2.2.0
+ */
+public abstract class SCMSourceContext<C extends SCMSourceContext<C, R>, R extends SCMSourceRequest> {
     @NonNull
     private final List<SCMSourceCriteria> criteria = new ArrayList<SCMSourceCriteria>();
     @NonNull
@@ -50,70 +60,68 @@ public abstract class SCMSourceRequestBuilder<B extends SCMSourceRequestBuilder<
     @NonNull
     private SCMHeadObserver observer;
 
-    public SCMSourceRequestBuilder(@NonNull SCMSource source, @CheckForNull SCMSourceCriteria criteria,
-                                   @NonNull SCMHeadObserver observer) {
-        this.source = source;
+    public SCMSourceContext(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer) {
         withCriteria(criteria);
         this.observer = observer;
     }
 
     @SuppressWarnings("unchecked")
-    public B withCriteria(@CheckForNull SCMSourceCriteria criteria) {
+    public C withCriteria(@CheckForNull SCMSourceCriteria criteria) {
         if (criteria != null) {
             this.criteria.add(criteria);
         }
-        return (B) this;
+        return (C) this;
     }
 
     @SuppressWarnings("unchecked")
-    public B withAuthority(@CheckForNull SCMHeadAuthority authority) {
+    public C withAuthority(@CheckForNull SCMHeadAuthority authority) {
         if (authority != null) {
             this.authorities.add(authority);
         }
-        return (B) this;
+        return (C) this;
     }
 
     @SuppressWarnings("unchecked")
-    public B withFilter(@CheckForNull SCMHeadFilter filter) {
+    public C withFilter(@CheckForNull SCMHeadFilter filter) {
         if (filter != null) {
             this.filters.add(filter);
         }
-        return (B) this;
+        return (C) this;
     }
 
     @SuppressWarnings("unchecked")
-    public B withPrefilter(@CheckForNull SCMHeadPrefilter prefilter) {
+    public C withPrefilter(@CheckForNull SCMHeadPrefilter prefilter) {
         if (prefilter != null) {
             this.prefilters.add(prefilter);
         }
-        return (B) this;
+        return (C) this;
     }
 
     @SuppressWarnings("unchecked")
-    public B withPrefilters(@CheckForNull Collection<SCMHeadPrefilter> prefilters) {
+    public C withPrefilters(@CheckForNull Collection<SCMHeadPrefilter> prefilters) {
         if (prefilters != null) {
             this.prefilters.addAll(prefilters);
         }
-        return (B) this;
+        return (C) this;
     }
 
     @SuppressWarnings("unchecked")
-    public B withTrait(@NonNull SCMSourceTrait trait) {
+    public C withTrait(@NonNull SCMSourceTrait trait) {
         observer = trait.applyToObserver(observer);
-        trait.applyToRequest((B) this);
-        return (B) this;
+        trait.applyToContext(this);
+        return (C) this;
     }
 
-    public B withTraits(@NonNull SCMSourceTrait... traits) {
+    public C withTraits(@NonNull SCMSourceTrait... traits) {
         return withTraits(Arrays.asList(traits));
     }
 
     @SuppressWarnings("unchecked")
-    public B withTraits(@NonNull Collection<SCMSourceTrait> traits) {
+    public C withTraits(@NonNull Collection<SCMSourceTrait> traits) {
         for (SCMSourceTrait trait : traits) {
             withTrait(trait);
         }
-        return (B) this;
+        return (C) this;
     }
 
     @NonNull
@@ -141,9 +149,5 @@ public abstract class SCMSourceRequestBuilder<B extends SCMSourceRequestBuilder<
         return Collections.unmodifiableList(authorities);
     }
 
-    public SCMSource source() {
-        return source;
-    }
-
-    public abstract R build(@NonNull TaskListener listener);
+    public abstract R newRequest(@NonNull SCMSource source, @CheckForNull TaskListener listener);
 }

@@ -2,7 +2,6 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import java.util.Arrays;
@@ -34,7 +33,7 @@ public abstract class SCMBuilder<B extends SCMBuilder<B,S>,S extends SCM> {
 
     @SuppressWarnings("unchecked")
     public B withTrait(@NonNull SCMSourceTrait trait) {
-        trait.applyToSCM((B)this);
+        trait.applyToBuilder((B)this);
         return (B) this;
     }
 

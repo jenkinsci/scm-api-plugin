@@ -24,37 +24,39 @@
 
 package jenkins.scm.impl.mock;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.TaskListener;
 import java.util.EnumSet;
 import java.util.Set;
 import jenkins.scm.api.SCMHeadObserver;
+import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
-import jenkins.scm.api.trait.SCMSourceRequestBuilder;
+import jenkins.scm.api.trait.SCMSourceContext;
 
-public class MockSCMSourceRequestBuilder extends SCMSourceRequestBuilder<MockSCMSourceRequestBuilder, MockSCMSourceRequest> {
+public class MockSCMSourceContext extends SCMSourceContext<MockSCMSourceContext, MockSCMSourceRequest> {
 
     private boolean needsBranches;
     private boolean needsTags;
     private boolean needsChangeRequests;
     private Set<ChangeRequestCheckoutStrategy> checkoutStrategies = EnumSet.noneOf(ChangeRequestCheckoutStrategy.class);
 
-    public MockSCMSourceRequestBuilder(MockSCMSource source, SCMSourceCriteria criteria, SCMHeadObserver observer) {
-        super(source, criteria, observer);
+    public MockSCMSourceContext(MockSCMSource source, SCMSourceCriteria criteria, SCMHeadObserver observer) {
+        super(criteria, observer);
     }
 
-    public MockSCMSourceRequestBuilder withBranches(boolean included) {
+    public MockSCMSourceContext withBranches(boolean included) {
         needsBranches = needsBranches || included;
         return this;
     }
 
-    public MockSCMSourceRequestBuilder withTags(boolean included) {
+    public MockSCMSourceContext withTags(boolean included) {
         needsTags = needsTags || included;
         return this;
     }
 
-    public MockSCMSourceRequestBuilder withChangeRequests(boolean included) {
+    public MockSCMSourceContext withChangeRequests(boolean included) {
         needsChangeRequests = needsChangeRequests || included;
         return this;
     }
@@ -75,18 +77,13 @@ public class MockSCMSourceRequestBuilder extends SCMSourceRequestBuilder<MockSCM
         return checkoutStrategies;
     }
 
-    public MockSCMSourceRequestBuilder withCheckoutStrategies(Set<ChangeRequestCheckoutStrategy> checkoutStrategies) {
+    public MockSCMSourceContext withCheckoutStrategies(Set<ChangeRequestCheckoutStrategy> checkoutStrategies) {
         this.checkoutStrategies.addAll(checkoutStrategies);
         return this;
     }
 
     @Override
-    public MockSCMSource source() {
-        return (MockSCMSource) super.source();
-    }
-
-    @Override
-    public MockSCMSourceRequest build(@NonNull TaskListener listener) {
-        return new MockSCMSourceRequest(this, listener);
+    public MockSCMSourceRequest newRequest(@NonNull SCMSource source, @CheckForNull TaskListener listener) {
+        return new MockSCMSourceRequest(source, this, listener);
     }
 }

@@ -25,78 +25,115 @@
 
 package jenkins.scm.api.trait;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.TaskListener;
 import hudson.scm.SCM;
-import hudson.util.LogTaskListener;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import hudson.scm.SCMDescriptor;
 import jenkins.scm.api.SCMBuilder;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMHeadObserver;
+import jenkins.scm.api.SCMSource;
 
-
+/**
+ * Represents a trait of behaviour or configuration that can be applied to a {@link SCMSource}.
+ *
+ * @since 2.2.0
+ */
 public class SCMSourceTrait extends AbstractDescribableImpl<SCMSourceTrait> {
 
-    public final <B extends SCMSourceRequestBuilder<B, R>, R extends SCMSourceRequest> void applyToRequest(B builder) {
-        if (getDescriptor().isApplicableTo(builder.getClass())) {
+    /**
+     * Applies this trait to the {@link SCMSourceContext}.
+     *
+     * @param context the context.
+     */
+    public final void applyToContext(SCMSourceContext<?, ?> context) {
+        if (getDescriptor().isApplicableTo(context.getClass())) {
             // guard against non-applicable
-            decorateRequest(builder);
+            decorateContext((SCMSourceContext) context);
         }
     }
 
-    protected <B extends SCMSourceRequestBuilder<B, R>, R extends SCMSourceRequest> void decorateRequest(B builder) {
+    /**
+     * SPI: Override this method to decorate a {@link SCMSourceContext}. You can assume that your
+     * {@link SCMSourceTraitDescriptor#isApplicableTo(Class)} is {@code true} within this method.
+     *
+     * @param context the context (invariant: {@link SCMSourceTraitDescriptor#isApplicableTo(Class)} is {@code true})
+     * @param <B>     generic type parameter to ensure type information available.
+     * @param <R>     generic type parameter to ensure type information available.
+     */
+    protected <B extends SCMSourceContext<B, R>, R extends SCMSourceRequest> void decorateContext(B context) {
     }
 
+    /**
+     * Applies this trait to an observer for use during a {@link SCMSourceRequest}.
+     *
+     * @param observer the observer.
+     * @return the supplied observer or a wrapped variant of it.
+     */
     @NonNull
     public final SCMHeadObserver applyToObserver(@NonNull SCMHeadObserver observer) {
         return decorateObserver(observer);
     }
 
+    /**
+     * SPI: Override this method to decorate the {@link SCMHeadObserver} used during a {@link SCMSourceRequest}.
+     *
+     * @param observer the observer.
+     * @return the supplied observer or a wrapped variant of it.
+     */
     @NonNull
-    public SCMHeadObserver decorateObserver(@NonNull SCMHeadObserver observer) {
+    protected SCMHeadObserver decorateObserver(@NonNull SCMHeadObserver observer) {
         return observer;
     }
 
-    public final <B extends SCMBuilder<B, S>, S extends SCM> void applyToSCM(B builder) {
+    /**
+     * Applies this trait to the {@link SCMBuilder}.
+     *
+     * @param builder the builder.
+     */
+    public final void applyToBuilder(SCMBuilder<?, ?> builder) {
         if (!getDescriptor().isApplicableTo(builder.getSCMDescriptor())) {
             // guard against non-applicable
         }
-        decorateSCM(builder);
-    }
-
-    protected <B extends SCMBuilder<B, S>, S extends SCM> void decorateSCM(B builder) {
-    }
-
-    public boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
-        return true;
-    }
-
-    @Override
-    public SCMSourceTraitDescriptor getDescriptor() {
-        return (SCMSourceTraitDescriptor) super.getDescriptor();
+        decorateBuilder((SCMBuilder) builder);
     }
 
     /**
-     * Turns a possibly {@code null} {@link TaskListener} reference into a guaranteed non-null reference.
+     * SPI: Override this method to decorate a {@link SCMBuilder}. You can assume that your
+     * {@link SCMSourceTraitDescriptor#isApplicableTo(SCMDescriptor)} is {@code true} within this method.
      *
-     * @param listener a possibly {@code null} {@link TaskListener} reference.
-     * @return guaranteed non-null {@link TaskListener}.
+     * @param builder the builder (invariant: {@link SCMSourceTraitDescriptor#isApplicableTo(SCMDescriptor)} is
+     *                {@code true})
+     * @param <B>     generic type parameter to ensure type information available.
+     * @param <S>     generic type parameter to ensure type information available.
      */
-    @NonNull
-    private TaskListener defaultListener(@CheckForNull TaskListener listener) {
-        if (listener == null) {
-            Level level;
-            try {
-                level = Level.parse(System.getProperty(getClass().getName() + ".defaultListenerLevel", "FINE"));
-            } catch (IllegalArgumentException e) {
-                level = Level.FINE;
-            }
-            return new LogTaskListener(Logger.getLogger(getClass().getName()), level);
-        }
-        return listener;
+    protected <B extends SCMBuilder<B, S>, S extends SCM> void decorateBuilder(B builder) {
+    }
+
+    /**
+     * Checks if the supplied category is required by this trait.
+     *
+     * @param category the category.
+     * @return {@code true} if this trait requires the supplied category.
+     */
+    public final boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
+        return includeCategory(category);
+    }
+
+    /**
+     * SPI: Override this method to control whether specific {@link SCMHeadCategory} instances are required.
+     *
+     * @param category the category.
+     * @return {@code true} to require the category.
+     */
+    protected boolean includeCategory(@NonNull SCMHeadCategory category) {
+        return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SCMSourceTraitDescriptor getDescriptor() {
+        return (SCMSourceTraitDescriptor) super.getDescriptor();
     }
 
 }

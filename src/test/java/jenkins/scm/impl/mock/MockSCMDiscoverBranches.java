@@ -29,7 +29,7 @@ import hudson.Extension;
 import hudson.scm.SCMDescriptor;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.trait.SCMSourceRequest;
-import jenkins.scm.api.trait.SCMSourceRequestBuilder;
+import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -41,14 +41,14 @@ public class MockSCMDiscoverBranches extends SCMSourceTrait {
     }
 
     @Override
-    protected <B extends SCMSourceRequestBuilder<B, R>, R extends SCMSourceRequest> void decorateRequest(B builder) {
-        if (builder instanceof MockSCMSourceRequestBuilder) {
-            ((MockSCMSourceRequestBuilder) builder).withBranches(true);
+    protected <B extends SCMSourceContext<B, R>, R extends SCMSourceRequest> void decorateContext(B context) {
+        if (context instanceof MockSCMSourceContext) {
+            ((MockSCMSourceContext) context).withBranches(true);
         }
     }
 
     @Override
-    public boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
+    public boolean includeCategory(@NonNull SCMHeadCategory category) {
         return category.isUncategorized();
     }
 
@@ -61,8 +61,8 @@ public class MockSCMDiscoverBranches extends SCMSourceTrait {
         }
 
         @Override
-        public boolean isApplicableTo(Class<? extends SCMSourceRequestBuilder> builderClass) {
-            return MockSCMSourceRequestBuilder.class.isAssignableFrom(builderClass);
+        public boolean isApplicableTo(Class<? extends SCMSourceContext> builderClass) {
+            return MockSCMSourceContext.class.isAssignableFrom(builderClass);
         }
 
         @Override

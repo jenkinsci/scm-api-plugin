@@ -37,12 +37,12 @@ import hudson.scm.SCMDescriptor;
 public abstract class SCMSourceTraitDescriptor extends Descriptor<SCMSourceTrait> {
 
     /**
-     * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMSourceRequestBuilder}.
+     * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMSourceContext}.
      *
-     * @param builderClass the type of {@link SCMSourceRequestBuilder}.
-     * @return {@code true} if applicable to the specified type of {@link SCMSourceRequestBuilder}.
+     * @param builderClass the type of {@link SCMSourceContext}.
+     * @return {@code true} if applicable to the specified type of {@link SCMSourceContext}.
      */
-    public boolean isApplicableTo(Class<? extends SCMSourceRequestBuilder> builderClass) {
+    public boolean isApplicableTo(Class<? extends SCMSourceContext> builderClass) {
         return true;
     }
 
