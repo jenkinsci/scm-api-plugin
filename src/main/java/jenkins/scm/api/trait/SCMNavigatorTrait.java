@@ -27,67 +27,67 @@ package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Describable;
 import hudson.scm.SCM;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.CheckForNull;
-import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMHeadObserver;
+import jenkins.scm.api.SCMNavigator;
+import jenkins.scm.api.SCMNavigatorDescriptor;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceDescriptor;
+import jenkins.scm.api.SCMSourceObserver;
 
 /**
  * Represents a trait of behaviour or configuration that can be applied to a {@link SCMSource}.
  *
  * @since 2.2.0
  */
-public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
+public class SCMNavigatorTrait extends SCMTrait<SCMNavigatorTrait> {
 
     /**
-     * Applies this trait to the {@link SCMSourceContext}.
+     * Applies this trait to the {@link SCMNavigatorContext}.
      *
      * @param context the context.
      */
-    public final void applyToContext(SCMSourceContext<?, ?> context) {
+    public final void applyToContext(SCMNavigatorContext<?, ?> context) {
         if (getDescriptor().isApplicableToContext(context.getClass())) {
             // guard against non-applicable
-            decorateContext((SCMSourceContext) context);
+            decorateContext((SCMNavigatorContext) context);
         }
     }
 
     /**
-     * SPI: Override this method to decorate a {@link SCMSourceContext}. You can assume that your
-     * {@link SCMSourceTraitDescriptor#isApplicableToContext(Class)} is {@code true} within this method.
+     * SPI: Override this method to decorate a {@link SCMNavigatorContext}. You can assume that your
+     * {@link SCMNavigatorTraitDescriptor#isApplicableToContext(Class)} is {@code true} within this method.
      *
-     * @param context the context (invariant: {@link SCMSourceTraitDescriptor#isApplicableToContext(Class)} is {@code true})
+     * @param context the context (invariant: {@link SCMNavigatorTraitDescriptor#isApplicableToContext(Class)} is {@code true})
      * @param <B>     generic type parameter to ensure type information available.
      * @param <R>     generic type parameter to ensure type information available.
      */
-    protected <B extends SCMSourceContext<B, R>, R extends SCMSourceRequest> void decorateContext(B context) {
+    protected <B extends SCMNavigatorContext<B, R>, R extends SCMNavigatorRequest> void decorateContext(B context) {
     }
 
     /**
-     * Applies this trait to an observer for use during a {@link SCMSourceRequest}.
+     * Applies this trait to an observer for use during a {@link SCMNavigatorRequest}.
      *
      * @param observer the observer.
      * @return the supplied observer or a wrapped variant of it.
      */
     @NonNull
-    public final SCMHeadObserver applyToObserver(@NonNull SCMHeadObserver observer) {
+    public final SCMSourceObserver applyToObserver(@NonNull SCMSourceObserver observer) {
         return decorateObserver(observer);
     }
 
     /**
-     * SPI: Override this method to decorate the {@link SCMHeadObserver} used during a {@link SCMSourceRequest}.
+     * SPI: Override this method to decorate the {@link SCMSourceObserver} used during a {@link SCMNavigatorRequest}.
      *
      * @param observer the observer.
      * @return the supplied observer or a wrapped variant of it.
      */
     @NonNull
-    protected SCMHeadObserver decorateObserver(@NonNull SCMHeadObserver observer) {
+    protected SCMSourceObserver decorateObserver(@NonNull SCMSourceObserver observer) {
         return observer;
     }
 
@@ -96,11 +96,11 @@ public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
      *
      * @param builder the builder.
      */
-    public final void applyToBuilder(SCMBuilder<?, ?> builder) {
+    public final void applyToBuilder(SCMSourceBuilder<?, ?> builder) {
         if (!getDescriptor().isApplicableToBuilder(builder)) {
             // guard against non-applicable
         }
-        decorateBuilder((SCMBuilder) builder);
+        decorateBuilder((SCMSourceBuilder) builder);
     }
 
     /**
@@ -112,7 +112,7 @@ public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
      * @param <B>     generic type parameter to ensure type information available.
      * @param <S>     generic type parameter to ensure type information available.
      */
-    protected <B extends SCMBuilder<B, S>, S extends SCM> void decorateBuilder(B builder) {
+    protected <B extends SCMSourceBuilder<B, S>, S extends SCMSource> void decorateBuilder(B builder) {
     }
 
     /**
@@ -137,33 +137,33 @@ public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
 
     /** {@inheritDoc} */
     @Override
-    public SCMSourceTraitDescriptor getDescriptor() {
-        return (SCMSourceTraitDescriptor) super.getDescriptor();
+    public SCMNavigatorTraitDescriptor getDescriptor() {
+        return (SCMNavigatorTraitDescriptor) super.getDescriptor();
     }
 
-    public static DescriptorExtensionList<SCMSourceTrait, SCMSourceTraitDescriptor> all() {
-        return SCMTrait.all(SCMSourceTrait.class);
+    public static DescriptorExtensionList<SCMNavigatorTrait, SCMNavigatorTraitDescriptor> all() {
+        return SCMTrait.all(SCMNavigatorTrait.class);
     }
 
-    public static List<SCMSourceTraitDescriptor> _for(Class<? extends SCMSourceContext> contextClass,
-                                                      Class<? extends SCMBuilder> builderClass) {
+    public static List<SCMNavigatorTraitDescriptor> _for(Class<? extends SCMNavigatorContext> contextClass,
+                                                      Class<? extends SCMSourceBuilder> builderClass) {
         return _for(null, contextClass, builderClass);
     }
 
-    public static List<SCMSourceTraitDescriptor> _for(@CheckForNull SCMSourceDescriptor scmSource,
-                                                      @CheckForNull Class<? extends SCMSourceContext> contextClass,
-                                                      @CheckForNull Class<? extends SCMBuilder> builderClass) {
-        List<SCMSourceTraitDescriptor> result = new ArrayList<SCMSourceTraitDescriptor>();
-        if (scmSource != null) {
-            for (SCMSourceTraitDescriptor d : all()) {
+    public static List<SCMNavigatorTraitDescriptor> _for(@CheckForNull SCMNavigatorDescriptor scmNavigator,
+                                                      @CheckForNull Class<? extends SCMNavigatorContext> contextClass,
+                                                      @CheckForNull Class<? extends SCMSourceBuilder> builderClass) {
+        List<SCMNavigatorTraitDescriptor> result = new ArrayList<SCMNavigatorTraitDescriptor>();
+        if (scmNavigator != null) {
+            for (SCMNavigatorTraitDescriptor d : all()) {
                 if ((contextClass == null || d.isApplicableToContext(contextClass))
                         && (builderClass == null || d.isApplicableToBuilder(builderClass))
-                        && d.isApplicableTo(scmSource)) {
+                        && d.isApplicableTo(scmNavigator)) {
                     result.add(d);
                 }
             }
         } else {
-            for (SCMSourceTraitDescriptor d : all()) {
+            for (SCMNavigatorTraitDescriptor d : all()) {
                 if ((contextClass == null || d.isApplicableToContext(contextClass))
                         && (builderClass == null || d.isApplicableToBuilder(builderClass))) {
                     result.add(d);

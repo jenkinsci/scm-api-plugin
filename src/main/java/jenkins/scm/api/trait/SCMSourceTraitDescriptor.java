@@ -25,34 +25,74 @@
 
 package jenkins.scm.api.trait;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.SCMSourceDescriptor;
 
 /**
  * Abstract base class for {@link Descriptor} of {@link SCMSourceTrait} implementations.
  *
  * @since 2.2.0
  */
-public abstract class SCMSourceTraitDescriptor extends Descriptor<SCMSourceTrait> {
+public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSourceTrait> {
+
+    protected SCMSourceTraitDescriptor(Class<? extends SCMSourceTrait> clazz) {
+        super(clazz);
+    }
+
+    protected SCMSourceTraitDescriptor() {
+        super();
+    }
+
+    /**
+     * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMBuilder}.
+     *
+     * @param builderClass the type of {@link SCMBuilder}.
+     * @return {@code true} if applicable to the specified type of {@link SCMBuilder}.
+     */
+    public boolean isApplicableToBuilder(@NonNull Class<? extends SCMBuilder> builderClass) {
+        return true;
+    }
+
+    /**
+     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCMBuilder}.
+     *
+     * @param builder the {@link SCMBuilder}.
+     * @return {@code true} if applicable to the specified type of {@link SCMBuilder}.
+     */
+    public boolean isApplicableToBuilder(@NonNull SCMBuilder<?, ?> builder) {
+        return isApplicableToBuilder(builder.getClass()) && isApplicableToSCM(builder.scmClass());
+    }
 
     /**
      * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMSourceContext}.
      *
-     * @param builderClass the type of {@link SCMSourceContext}.
+     * @param contextClass the type of {@link SCMSourceContext}.
      * @return {@code true} if applicable to the specified type of {@link SCMSourceContext}.
      */
-    public boolean isApplicableTo(Class<? extends SCMSourceContext> builderClass) {
+    public boolean isApplicableToContext(@NonNull Class<? extends SCMSourceContext> contextClass) {
         return true;
     }
 
     /**
-     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCM}.
+     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCMSourceContext}.
      *
-     * @param scm the {@link SCMDescriptor} for the type of {@link SCM}.
-     * @return {@code true} if applicable to the specified type of {@link SCM}.
+     * @param context the {@link SCMSourceContext}.
+     * @return {@code true} if applicable to the specified type of {@link SCMSourceContext}.
      */
-    public boolean isApplicableTo(SCMDescriptor<?> scm) {
+    public boolean isApplicableToContext(@NonNull SCMSourceContext context) {
+        return isApplicableToContext(context.getClass());
+    }
+
+    public boolean isApplicableTo(SCMSource source) {
+        return isApplicableTo(source.getDescriptor());
+    }
+
+    public boolean isApplicableTo(SCMSourceDescriptor descriptor) {
         return true;
     }
+
 }

@@ -26,7 +26,7 @@ package jenkins.scm.impl.mock;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.scm.SCMDescriptor;
+import jenkins.scm.api.trait.SCMBuilder;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceContext;
@@ -61,13 +61,13 @@ public class MockSCMDiscoverBranches extends SCMSourceTrait {
         }
 
         @Override
-        public boolean isApplicableTo(Class<? extends SCMSourceContext> builderClass) {
-            return MockSCMSourceContext.class.isAssignableFrom(builderClass);
+        public boolean isApplicableToContext(@NonNull Class<? extends SCMSourceContext> contextClass) {
+            return MockSCMSourceContext.class.isAssignableFrom(contextClass);
         }
 
         @Override
-        public boolean isApplicableTo(SCMDescriptor<?> scm) {
-            return scm instanceof MockSCM.DescriptorImpl;
+        public boolean isApplicableToBuilder(@NonNull Class<? extends SCMBuilder> builderClass) {
+            return MockSCMBuilder.class.isAssignableFrom(builderClass);
         }
     }
 }

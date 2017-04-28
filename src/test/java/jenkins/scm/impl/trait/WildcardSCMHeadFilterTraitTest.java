@@ -40,7 +40,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 
-public class WildcardNameFilterTraitTest {
+public class WildcardSCMHeadFilterTraitTest {
     @ClassRule
     public static JenkinsRule r = new JenkinsRule();
 
@@ -51,7 +51,7 @@ public class WildcardNameFilterTraitTest {
             c.createRepository("foo");
             c.createBranch("foo", "fork");
             c.createBranch("foo", "alt");
-            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new WildcardNameFilterTrait("master fo*", ""));
+            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("master fo*", ""));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
             Set<String> names = new TreeSet<String>();
             for (SCMHead h: result.keySet()) {
@@ -70,7 +70,7 @@ public class WildcardNameFilterTraitTest {
             c.createRepository("foo");
             c.createBranch("foo", "fork");
             c.createBranch("foo", "alt");
-            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new WildcardNameFilterTrait("*", "fo*"));
+            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("*", "fo*"));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
             Set<String> names = new TreeSet<String>();
             for (SCMHead h: result.keySet()) {
@@ -89,7 +89,7 @@ public class WildcardNameFilterTraitTest {
             c.createBranch("foo", "fork");
             c.createBranch("foo", "foo");
             c.createBranch("foo", "alt");
-            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new WildcardNameFilterTrait("master fo*", "foo"));
+            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("master fo*", "foo"));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
             Set<String> names = new TreeSet<String>();
             for (SCMHead h: result.keySet()) {

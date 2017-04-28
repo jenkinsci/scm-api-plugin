@@ -35,14 +35,14 @@ import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class WildcardNameFilterTrait extends SCMSourceTrait {
+public class WildcardSCMHeadFilterTrait extends SCMSourceTrait {
 
     private final String includes;
 
     private final String excludes;
 
     @DataBoundConstructor
-    public WildcardNameFilterTrait(String includes, String excludes) {
+    public WildcardSCMHeadFilterTrait(String includes, String excludes) {
         this.includes = includes;
         this.excludes = excludes;
     }
@@ -97,7 +97,7 @@ public class WildcardNameFilterTrait extends SCMSourceTrait {
 
         @Override
         public String getDisplayName() {
-            return Messages.WildcardNameFilterTrait_DisplayName();
+            return Messages.WildcardSCMHeadFilterTrait_DisplayName();
         }
     }
 }

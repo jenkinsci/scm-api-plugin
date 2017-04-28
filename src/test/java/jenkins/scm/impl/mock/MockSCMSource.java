@@ -342,23 +342,7 @@ public class MockSCMSource extends SCMSource {
         }
 
         public List<SCMSourceTraitDescriptor> getTraitDescriptors() {
-            MockSCM.DescriptorImpl scmDescriptor =
-                    ExtensionList.lookup(Descriptor.class).get(MockSCM.DescriptorImpl.class);
-            List<SCMSourceTraitDescriptor> result = new ArrayList<SCMSourceTraitDescriptor>();
-            for (Descriptor<SCMSourceTrait> d : Jenkins.getActiveInstance().getDescriptorList(SCMSourceTrait.class)) {
-                if (d instanceof SCMSourceTraitDescriptor) {
-                    SCMSourceTraitDescriptor descriptor = (SCMSourceTraitDescriptor) d;
-                    if (!descriptor.isApplicableTo(
-                            scmDescriptor)) {
-                        continue;
-                    }
-                    if (!descriptor.isApplicableTo(MockSCMSourceContext.class)) {
-                        continue;
-                    }
-                    result.add(descriptor);
-                }
-            }
-            return result;
+            return SCMSourceTrait._for(this, MockSCMSourceContext.class, MockSCMBuilder.class);
         }
 
         public List<SCMSourceTrait> getDefaultTraits() {

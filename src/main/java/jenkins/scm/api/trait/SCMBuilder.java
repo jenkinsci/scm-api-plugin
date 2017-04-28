@@ -1,19 +1,18 @@
-package jenkins.scm.api;
+package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.scm.SCM;
-import hudson.scm.SCMDescriptor;
 import java.util.Arrays;
 import java.util.Collection;
-import jenkins.model.Jenkins;
-import jenkins.scm.api.trait.SCMSourceTrait;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
 
 public abstract class SCMBuilder<B extends SCMBuilder<B,S>,S extends SCM> {
 
     private final Class<S> clazz;
-    private final SCMHead head;
-    private final SCMRevision revision;
+    private SCMHead head;
+    private SCMRevision revision;
 
     public SCMBuilder(Class<S> clazz, @NonNull SCMHead head, @CheckForNull SCMRevision revision) {
         this.clazz = clazz;
@@ -21,19 +20,33 @@ public abstract class SCMBuilder<B extends SCMBuilder<B,S>,S extends SCM> {
         this.revision = revision;
     }
 
-    public SCMHead getHead() {
+    public Class<S> scmClass() {
+        return clazz;
+    }
+
+    public SCMHead head() {
         return head;
     }
 
-    public SCMRevision getRevision() {
+    public B withHead(@NonNull SCMHead head) {
+        this.head = head;
+        return (B) this;
+    }
+
+    public SCMRevision revision() {
         return revision;
+    }
+
+    public B withRevision(@CheckForNull SCMRevision revision) {
+        this.revision = revision;
+        return (B) this;
     }
 
     public abstract S build();
 
     @SuppressWarnings("unchecked")
     public B withTrait(@NonNull SCMSourceTrait trait) {
-        trait.applyToBuilder((B)this);
+        trait.applyToBuilder(this);
         return (B) this;
     }
 
@@ -47,9 +60,5 @@ public abstract class SCMBuilder<B extends SCMBuilder<B,S>,S extends SCM> {
             withTrait(trait);
         }
         return (B) this;
-    }
-
-    public SCMDescriptor<S> getSCMDescriptor() {
-        return (SCMDescriptor<S>)Jenkins.getActiveInstance().getDescriptorOrDie(clazz);
     }
 }

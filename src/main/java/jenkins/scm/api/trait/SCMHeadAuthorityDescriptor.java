@@ -51,7 +51,7 @@ public abstract class SCMHeadAuthorityDescriptor extends Descriptor<SCMHeadAutho
             // this 'headClass' is the closest approximation of T of SCMHeadAuthority<T>.
             requestClass = Types.erasure(pt.getActualTypeArguments()[0]);
             headClass = Types.erasure(pt.getActualTypeArguments()[1]);
-            if (!SCMSource.class.isAssignableFrom(requestClass)) {
+            if (!SCMSourceRequest.class.isAssignableFrom(requestClass)) {
                 throw new AssertionError(
                         "Failed to correctly detect SCMSourceRequest specialization. Use the constructor that takes "
                                 + "the "

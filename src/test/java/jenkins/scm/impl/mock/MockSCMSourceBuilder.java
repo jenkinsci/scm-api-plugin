@@ -25,29 +25,34 @@
 
 package jenkins.scm.impl.mock;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.trait.SCMBuilder;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.trait.SCMSourceBuilder;
 
-public class MockSCMBuilder extends SCMBuilder<MockSCMBuilder,MockSCM> {
+public class MockSCMSourceBuilder extends SCMSourceBuilder<MockSCMSourceBuilder, MockSCMSource> {
+    private final String id;
+    private final String controllerId;
+    private final MockSCMController controller;
+    private final String repository;
 
-    private final MockSCMSource source;
+    public MockSCMSourceBuilder(String id, MockSCMController controller, String repository) {
+        super(MockSCMSource.class, repository);
+        this.id = id;
+        this.controllerId = controller.getId();
+        this.controller = controller;
+        this.repository = repository;
+    }
 
-    public MockSCMBuilder(@NonNull MockSCMSource source, @NonNull SCMHead head,
-                          @CheckForNull SCMRevision revision) {
-        super(MockSCM.class, head, revision);
-        this.source = source;
+    public MockSCMSourceBuilder(String id, String controllerId, String repository) {
+        super(MockSCMSource.class, repository);
+        this.id = id;
+        this.controllerId = controllerId;
+        this.controller = null;
+        this.repository = repository;
     }
 
     @Override
-    public MockSCM build() {
-        SCMRevision revision = revision();
-        return new MockSCM(source, head(),
-                revision instanceof MockSCMRevision || revision instanceof MockChangeRequestSCMRevision
-                        ? revision
-                        : null);
+    public MockSCMSource build() {
+        return controller == null
+                ? new MockSCMSource(id, controllerId, repository, traits())
+                : new MockSCMSource(id, controller, repository, traits());
     }
-
 }
