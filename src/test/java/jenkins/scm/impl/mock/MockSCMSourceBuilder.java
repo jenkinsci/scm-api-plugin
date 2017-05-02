@@ -24,6 +24,7 @@
 
 package jenkins.scm.impl.mock;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.trait.SCMSourceBuilder;
 
 public class MockSCMSourceBuilder extends SCMSourceBuilder<MockSCMSourceBuilder, MockSCMSource> {
@@ -48,6 +49,7 @@ public class MockSCMSourceBuilder extends SCMSourceBuilder<MockSCMSourceBuilder,
         this.repository = repository;
     }
 
+    @NonNull
     @Override
     public MockSCMSource build() {
         return controller == null

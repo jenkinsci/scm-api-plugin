@@ -31,58 +31,161 @@ import java.util.Arrays;
 import java.util.Collection;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMSource;
 
+/**
+ * Builder for a {@link SCM} instance. Typically instantiated in {@link SCMSource#build(SCMHead, SCMRevision)} or
+ * {@link SCMSource#build(SCMHead)} and then decorated by {@link SCMSourceTrait#applyToBuilder(SCMBuilder)} before
+ * calling {@link #build()} to generate the return value. Conventions:
+ * <ul>
+ * <li>The builder is not designed to be shared by multiple threads.</li>
+ * <li>All methods should be either {@code final} or {@code abstract} unless there is a documented reason for
+ * allowing overrides</li>
+ * <li>All "setter" methods will return {@link B} and be called "withXxx"</li>
+ * <li>All "getter" methods will called "xxx()" callers should not assume that the returned value is resistent
+ * from concurrent changes but implementations should ensure that the returned value is immutable by the caller.
+ * In other words, it is intentional to reduce intermediate allocations by
+ * {@code return Collections.unmodifiableList(theList);} rather than the concurrency safe
+ * {@code return Collections.unmodifiableList(new ArrayList<>(theList));}
+ * </li>
+ * </ul>
+ *
+ * @param <B> the type of {@link SCMBuilder} so that subclasses can chain correctly in their {@link #withHead(SCMHead)}
+ *            etc methods.
+ * @param <S> the type of {@link SCM} returned by {@link #build()}
+ */
 public abstract class SCMBuilder<B extends SCMBuilder<B,S>,S extends SCM> {
 
+    /**
+     * The base class of {@link SCM} that will be produced by the {@link SCMBuilder}.
+     */
+    @NonNull
     private final Class<S> clazz;
+    /**
+     * The {@link SCMHead} to produce the {@link SCM} for.
+     */
+    @NonNull
     private SCMHead head;
+    /**
+     * The {@link SCMRevision} to produce the {@link SCM} for or {@code null} to produce the {@link SCM} for the head
+     * revision.
+     */
+    @CheckForNull
     private SCMRevision revision;
 
+    /**
+     * Constructor.
+     *
+     * @param clazz    The base class of {@link SCM} that will be produced by the {@link SCMBuilder}.
+     * @param head     The {@link SCMHead} to produce the {@link SCM} for.
+     * @param revision The {@link SCMRevision} to produce the {@link SCM} for or {@code null} to produce the
+     *                 {@link SCM} for the head revision.
+     */
     public SCMBuilder(Class<S> clazz, @NonNull SCMHead head, @CheckForNull SCMRevision revision) {
         this.clazz = clazz;
         this.head = head;
         this.revision = revision;
     }
 
-    public Class<S> scmClass() {
+    /**
+     * Returns the base class of {@link SCM} that will be produced by the {@link SCMBuilder}.
+     *
+     * @return the base class of {@link SCM} that will be produced by the {@link SCMBuilder}.
+     */
+    @NonNull
+    public final Class<S> scmClass() {
         return clazz;
     }
 
-    public SCMHead head() {
+    /**
+     * Returns the {@link SCMHead} to produce the {@link SCM} for.
+     *
+     * @return the {@link SCMHead} to produce the {@link SCM} for.
+     */
+    @NonNull
+    public final SCMHead head() {
         return head;
     }
 
-    public B withHead(@NonNull SCMHead head) {
+    /**
+     * Replace the {@link #head()} with a new {@link SCMHead}.
+     *
+     * @param head the {@link SCMHead} to produce the {@link SCM} for.
+     * @return {@code this} for method chaining.
+     */
+    @NonNull
+    public final B withHead(@NonNull SCMHead head) {
         this.head = head;
         return (B) this;
     }
 
-    public SCMRevision revision() {
+    /**
+     * Returns the {@link SCMRevision} to produce the {@link SCM} for or {@code null} to produce the {@link SCM} for
+     * the head revision.
+     *
+     * @return the {@link SCMRevision} to produce the {@link SCM} for or {@code null} to produce the {@link SCM} for
+     * the head revision.
+     */
+    @CheckForNull
+    public final SCMRevision revision() {
         return revision;
     }
 
-    public B withRevision(@CheckForNull SCMRevision revision) {
+    /**
+     * Replace the {@link #revision()}  with a new {@link SCMRevision}
+     *
+     * @param revision the {@link SCMRevision} to produce the {@link SCM} for or {@code null} to produce the
+     *                 {@link SCM} for the head revision.
+     * @return {@code this} for method chaining.
+     */
+    @NonNull
+    public final B withRevision(@CheckForNull SCMRevision revision) {
         this.revision = revision;
         return (B) this;
     }
 
-    public abstract S build();
-
+    /**
+     * Apply the {@link SCMSourceTrait} to this {@link SCMBuilder}.
+     * @param trait the {@link SCMSourceTrait}.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public B withTrait(@NonNull SCMSourceTrait trait) {
+    @NonNull
+    public final B withTrait(@NonNull SCMSourceTrait trait) {
         trait.applyToBuilder(this);
         return (B) this;
     }
 
-    public B withTraits(@NonNull SCMSourceTrait... traits) {
+    /**
+     * Apply the {@link SCMSourceTrait} instances to this {@link SCMBuilder}.
+     *
+     * @param traits the {@link SCMSourceTrait} instances.
+     * @return {@code this} for method chaining.
+     */
+    @NonNull
+    public final B withTraits(@NonNull SCMSourceTrait... traits) {
         return withTraits(Arrays.asList(traits));
     }
 
+    /**
+     * Apply the {@link SCMSourceTrait} instances to this {@link SCMBuilder}.
+     *
+     * @param traits the {@link SCMSourceTrait} instances.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public B withTraits(@NonNull Collection<SCMSourceTrait> traits) {
+    @NonNull
+    public final B withTraits(@NonNull Collection<SCMSourceTrait> traits) {
         for (SCMSourceTrait trait : traits) {
             withTrait(trait);
         }
         return (B) this;
     }
+
+    /**
+     * Instantiates the {@link SCM}.
+     * @return the {@link S} instance
+     */
+    @NonNull
+    public abstract S build();
 }

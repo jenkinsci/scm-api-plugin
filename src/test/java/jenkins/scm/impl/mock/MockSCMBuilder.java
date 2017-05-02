@@ -40,6 +40,7 @@ public class MockSCMBuilder extends SCMBuilder<MockSCMBuilder,MockSCM> {
         this.source = source;
     }
 
+    @NonNull
     @Override
     public MockSCM build() {
         SCMRevision revision = revision();
