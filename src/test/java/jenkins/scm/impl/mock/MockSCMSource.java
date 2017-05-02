@@ -127,14 +127,14 @@ public class MockSCMSource extends SCMSource {
             if (request.isFetchBranches()) {
                 for (final String branch : controller().listBranches(repository)) {
                     if (request.process(new MockSCMHead(branch),
-                            new SCMSourceRequest.RevisionFactory<MockSCMHead, MockSCMRevision>() {
+                            new SCMSourceRequest.RevisionLambda<MockSCMHead, MockSCMRevision>() {
                                 @Override
                                 public MockSCMRevision create(MockSCMHead head) throws IOException, InterruptedException {
                                     controller().applyLatency();
                                     controller().checkFaults(repository, head.getName(), null, false);
                                     return new MockSCMRevision(head, controller().getRevision(repository, branch));
                                 }
-                            }, new SCMSourceRequest.ProbeFactory<MockSCMHead, MockSCMRevision>() {
+                            }, new SCMSourceRequest.ProbeLambda<MockSCMHead, MockSCMRevision>() {
                                 @Override
                                 public SCMSourceCriteria.Probe create(MockSCMHead head, MockSCMRevision revision) throws IOException, InterruptedException {
                                     controller().applyLatency();
@@ -149,7 +149,7 @@ public class MockSCMSource extends SCMSource {
             if (request.isFetchTags()) {
                 for (final String tag : controller().listTags(repository)) {
                     if (request.process(new MockTagSCMHead(tag, controller().getTagTimestamp(repository, tag)),
-                            new SCMSourceRequest.RevisionFactory<MockTagSCMHead, MockSCMRevision>() {
+                            new SCMSourceRequest.RevisionLambda<MockTagSCMHead, MockSCMRevision>() {
                                 @Override
                                 public MockSCMRevision create(MockTagSCMHead head)
                                         throws IOException, InterruptedException {
@@ -157,7 +157,7 @@ public class MockSCMSource extends SCMSource {
                                     controller().checkFaults(repository, head.getName(), null, false);
                                     return new MockSCMRevision(head, controller().getRevision(repository, tag));
                                 }
-                            }, new SCMSourceRequest.ProbeFactory<MockTagSCMHead, MockSCMRevision>() {
+                            }, new SCMSourceRequest.ProbeLambda<MockTagSCMHead, MockSCMRevision>() {
                                 @Override
                                 public SCMSourceCriteria.Probe create(MockTagSCMHead head, MockSCMRevision revision)
                                         throws IOException, InterruptedException {
@@ -183,7 +183,7 @@ public class MockSCMSource extends SCMSource {
                                                 ? new SCMHeadOrigin.Fork("fork")
                                                 : null,
                                         number, target, strategy, singleStrategy),
-                                new SCMSourceRequest.RevisionFactory<MockChangeRequestSCMHead, MockChangeRequestSCMRevision>() {
+                                new SCMSourceRequest.RevisionLambda<MockChangeRequestSCMHead, MockChangeRequestSCMRevision>() {
                                     @Override
                                     public MockChangeRequestSCMRevision create(MockChangeRequestSCMHead head)
                                             throws IOException, InterruptedException {
@@ -197,7 +197,7 @@ public class MockSCMSource extends SCMSource {
                                                 new MockSCMRevision(head.getTarget(), targetRevision), revision);
                                     }
                                 },
-                                new SCMSourceRequest.ProbeFactory<MockChangeRequestSCMHead, MockChangeRequestSCMRevision>() {
+                                new SCMSourceRequest.ProbeLambda<MockChangeRequestSCMHead, MockChangeRequestSCMRevision>() {
                                     @Override
                                     public SCMSourceCriteria.Probe create(MockChangeRequestSCMHead head,
                                                                           MockChangeRequestSCMRevision revision)
