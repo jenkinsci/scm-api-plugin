@@ -82,6 +82,7 @@ public class MockSCMSourceContext extends SCMSourceContext<MockSCMSourceContext,
         return this;
     }
 
+    @NonNull
     @Override
     public MockSCMSourceRequest newRequest(@NonNull SCMSource source, @CheckForNull TaskListener listener) {
         return new MockSCMSourceRequest(source, this, listener);
