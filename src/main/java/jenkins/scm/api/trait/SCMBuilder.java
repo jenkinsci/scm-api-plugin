@@ -88,16 +88,6 @@ public abstract class SCMBuilder<B extends SCMBuilder<B,S>,S extends SCM> {
     }
 
     /**
-     * Returns the base class of {@link SCM} that will be produced by the {@link SCMBuilder}.
-     *
-     * @return the base class of {@link SCM} that will be produced by the {@link SCMBuilder}.
-     */
-    @NonNull
-    public final Class<S> scmClass() {
-        return clazz;
-    }
-
-    /**
      * Returns the {@link SCMHead} to produce the {@link SCM} for.
      *
      * @return the {@link SCMHead} to produce the {@link SCM} for.
@@ -105,18 +95,6 @@ public abstract class SCMBuilder<B extends SCMBuilder<B,S>,S extends SCM> {
     @NonNull
     public final SCMHead head() {
         return head;
-    }
-
-    /**
-     * Replace the {@link #head()} with a new {@link SCMHead}.
-     *
-     * @param head the {@link SCMHead} to produce the {@link SCM} for.
-     * @return {@code this} for method chaining.
-     */
-    @NonNull
-    public final B withHead(@NonNull SCMHead head) {
-        this.head = head;
-        return (B) this;
     }
 
     /**
@@ -129,6 +107,28 @@ public abstract class SCMBuilder<B extends SCMBuilder<B,S>,S extends SCM> {
     @CheckForNull
     public final SCMRevision revision() {
         return revision;
+    }
+
+    /**
+     * Returns the base class of {@link SCM} that will be produced by the {@link SCMBuilder}.
+     *
+     * @return the base class of {@link SCM} that will be produced by the {@link SCMBuilder}.
+     */
+    @NonNull
+    public final Class<S> scmClass() {
+        return clazz;
+    }
+
+    /**
+     * Replace the {@link #head()} with a new {@link SCMHead}.
+     *
+     * @param head the {@link SCMHead} to produce the {@link SCM} for.
+     * @return {@code this} for method chaining.
+     */
+    @NonNull
+    public final B withHead(@NonNull SCMHead head) {
+        this.head = head;
+        return (B) this;
     }
 
     /**
