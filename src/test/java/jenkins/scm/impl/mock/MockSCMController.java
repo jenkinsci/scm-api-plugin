@@ -614,5 +614,4 @@ public class MockSCMController implements Closeable {
             return String.format("Commit %s%nDate: %tc%n%s%n", hash, timestamp, message);
         }
     }
-
 }

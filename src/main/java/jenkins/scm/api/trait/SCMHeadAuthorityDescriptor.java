@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.scm.api.trait;
 
 import hudson.model.Descriptor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.mixin.SCMHeadMixin;
 import org.jvnet.tiger_types.Types;
 

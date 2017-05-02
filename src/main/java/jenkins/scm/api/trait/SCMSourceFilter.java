@@ -21,12 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMNavigator;
 
 public abstract class SCMSourceFilter {
 

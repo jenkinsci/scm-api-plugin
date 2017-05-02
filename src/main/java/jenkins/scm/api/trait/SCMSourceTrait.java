@@ -20,20 +20,16 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
  */
 
 package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Describable;
 import hudson.scm.SCM;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.CheckForNull;
-import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMSource;

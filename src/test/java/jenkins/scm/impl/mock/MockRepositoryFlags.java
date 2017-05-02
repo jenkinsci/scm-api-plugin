@@ -25,8 +25,6 @@
 
 package jenkins.scm.impl.mock;
 
-import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
-
 /**
  * Feature flags for different types of repository.
  */

@@ -23,7 +23,4 @@
  *
  */
 
-/**
- * @author Stephen Connolly
- */
 package jenkins.scm.api.trait;

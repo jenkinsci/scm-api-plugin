@@ -21,25 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.scm.impl.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import java.util.regex.Pattern;
-import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMNavigator;
-import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.trait.SCMHeadPrefilter;
 import jenkins.scm.api.trait.SCMNavigatorContext;
 import jenkins.scm.api.trait.SCMNavigatorRequest;
 import jenkins.scm.api.trait.SCMNavigatorTrait;
 import jenkins.scm.api.trait.SCMNavigatorTraitDescriptor;
-import jenkins.scm.api.trait.SCMSourceBuilder;
-import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourcePrefilter;
-import jenkins.scm.api.trait.SCMSourceRequest;
-import jenkins.scm.api.trait.SCMSourceTrait;
-import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class WildcardSCMSourceFilterTrait extends SCMNavigatorTrait {
