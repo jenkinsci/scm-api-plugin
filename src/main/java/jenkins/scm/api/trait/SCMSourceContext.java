@@ -80,7 +80,7 @@ public abstract class SCMSourceContext<C extends SCMSourceContext<C, R>, R exten
      * The authorities.
      */
     @NonNull
-    private final List<SCMHeadAuthority<?, ?>> authorities = new ArrayList<SCMHeadAuthority<?, ?>>();
+    private final List<SCMHeadAuthority<?, ?, ?>> authorities = new ArrayList<SCMHeadAuthority<?, ?, ?>>();
     /**
      * The observer.
      */
@@ -104,7 +104,7 @@ public abstract class SCMSourceContext<C extends SCMSourceContext<C, R>, R exten
      * @return the (possibly empty) list of {@link SCMHeadAuthority} instances that can define trust.
      */
     @NonNull
-    public final List<SCMHeadAuthority<?, ?>> authorities() {
+    public final List<SCMHeadAuthority<?, ?, ?>> authorities() {
         return Collections.unmodifiableList(authorities);
     }
 
