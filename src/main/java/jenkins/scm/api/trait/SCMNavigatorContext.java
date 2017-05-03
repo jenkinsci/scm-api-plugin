@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import jenkins.scm.api.SCMNavigator;
+import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.api.SCMSourceObserver;
 
@@ -41,65 +42,169 @@ import jenkins.scm.api.SCMSourceObserver;
  * {@link SCMNavigatorContext#newRequest(SCMNavigator, SCMSourceObserver)} but there are some cases (such as
  * {@link SCMSourceEvent} processing) where only the context is required and as such this
  * type will be instantiated to obtain the context but no {@link SCMNavigatorRequest} will be created.
+ * Conventions:
+ * <ul>
+ * <li>The context is not designed to be shared by multiple threads.</li>
+ * <li>All methods should be either {@code final} or {@code abstract} unless there is a documented reason for
+ * allowing overrides</li>
+ * <li>All "setter" methods will return {@link C} and be called "withXxx"</li>
+ * <li>All "getter" methods will called "xxx()" callers should not assume that the returned value is resistent
+ * from concurrent changes but implementations should ensure that the returned value is immutable by the caller.
+ * In other words, it is intentional to reduce intermediate allocations by
+ * {@code return Collections.unmodifiableList(theList);} rather than the concurrency safe
+ * {@code return Collections.unmodifiableList(new ArrayList<>(theList));}
+ * </li>
+ * </ul>
  *
  * @param <C> the type of {@link SCMNavigatorContext}
  * @param <R> the type of {@link SCMNavigatorRequest} produced by this context.
  * @since 2.2.0
  */
 public abstract class SCMNavigatorContext<C extends SCMNavigatorContext<C, R>, R extends SCMNavigatorRequest> {
+    /**
+     * The pre-filters that do not need the context of a request.
+     */
     @NonNull
     private final List<SCMSourcePrefilter> prefilters = new ArrayList<SCMSourcePrefilter>();
+    /**
+     * The filters that need the context of a request.
+     */
     @NonNull
     private final List<SCMSourceFilter> filters = new ArrayList<SCMSourceFilter>();
+    /**
+     * The traits to apply to {@link SCMSource} instances for discovered projects.
+     */
     @NonNull
     private final List<SCMSourceTrait> traits = new ArrayList<SCMSourceTrait>();
+    /**
+     * The decorators to customize a subset of {@link SCMSource} instances.
+     */
     @NonNull
     private final List<SCMSourceDecorator<?,?>> decorators = new ArrayList<SCMSourceDecorator<?, ?>>();
 
+    /**
+     * Constructor.
+     */
     public SCMNavigatorContext() { }
 
+    /**
+     * Returns the (possibly empty) list of {@link SCMSourceDecorator} instances to apply to discovered projects.
+     *
+     * @return the (possibly empty) list of {@link SCMSourceDecorator} instances to apply to discovered projects.
+     */
+    @NonNull
+    public final List<SCMSourceDecorator<?, ?>> decorators() {
+        return Collections.unmodifiableList(decorators);
+    }
+
+    /**
+     * Returns the (possibly empty) list of {@link SCMNavigatorRequest} dependent filters.
+     *
+     * @return the (possibly empty) list of {@link SCMNavigatorRequest} dependent filters.
+     */
+    @NonNull
+    public final List<SCMSourceFilter> filters() {
+        return Collections.unmodifiableList(filters);
+    }
+
+    /**
+     * Returns the (possibly empty) list of {@link SCMNavigatorRequest} independent pre-filters.
+     *
+     * @return the (possibly empty) list of {@link SCMNavigatorRequest} independent pre-filters.
+     */
+    @NonNull
+    public final List<SCMSourcePrefilter> prefilters() {
+        return Collections.unmodifiableList(prefilters);
+    }
+
+    /**
+     * Returns the (possibly empty) list of {@link SCMSourceTrait} instances to apply to discovered projects.
+     *
+     * @return the (possibly empty) list of {@link SCMSourceTrait} instances to apply to discovered projects.
+     */
+    @NonNull
+    public final List<SCMSourceTrait> traits() {
+        return Collections.unmodifiableList(traits);
+    }
+
+
+    /**
+     * Adds the supplied {@link SCMSourceFilter}.
+     *
+     * @param filter the additional {@link SCMSourceFilter}.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public C withFilter(@CheckForNull SCMSourceFilter filter) {
+    @NonNull
+    public final C withFilter(@CheckForNull SCMSourceFilter filter) {
         if (filter != null) {
             this.filters.add(filter);
         }
         return (C) this;
     }
 
+    /**
+     * Adds the supplied {@link SCMSourcePrefilter}.
+     *
+     * @param prefilter the additional {@link SCMSourcePrefilter}.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public C withPrefilter(@CheckForNull SCMSourcePrefilter prefilter) {
+    @NonNull
+    public final C withPrefilter(@CheckForNull SCMSourcePrefilter prefilter) {
         if (prefilter != null) {
             this.prefilters.add(prefilter);
         }
         return (C) this;
     }
 
+    /**
+     * Applies the supplied {@link SCMNavigatorTrait}.
+     *
+     * @param trait the additional {@link SCMNavigatorTrait}.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public C withPrefilters(@CheckForNull Collection<SCMSourcePrefilter> prefilters) {
-        if (prefilters != null) {
-            this.prefilters.addAll(prefilters);
-        }
-        return (C) this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public C withTrait(@NonNull SCMNavigatorTrait trait) {
+    @NonNull
+    public final C withTrait(@NonNull SCMNavigatorTrait trait) {
         trait.applyToContext(this);
         return (C) this;
     }
 
+    /**
+     * Adds the supplied {@link SCMSourceTrait}.
+     *
+     * @param trait the additional {@link SCMSourceTrait}.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public C withTrait(@NonNull SCMSourceTrait trait) {
+    @NonNull
+    public final C withTrait(@NonNull SCMSourceTrait trait) {
         traits.add(trait);
         return (C) this;
     }
 
-    public C withTraits(@NonNull SCMTrait<? extends SCMTrait<?>>... traits) {
+    /**
+     * Adds / applies the supplied {@link SCMTrait}.
+     *
+     * @param traits the additional {@link SCMTrait} instances.
+     * @return {@code this} for method chaining.
+     */
+    @SuppressWarnings("unchecked")
+    @NonNull
+    public final C withTraits(@NonNull SCMTrait<? extends SCMTrait<?>>... traits) {
         return withTraits(Arrays.asList(traits));
     }
 
+    /**
+     * Adds / applies the supplied {@link SCMTrait}.
+     *
+     * @param traits the additional {@link SCMTrait} instances.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public C withTraits(@NonNull Collection<? extends SCMTrait<?>> traits) {
+    @NonNull
+    public final C withTraits(@NonNull Collection<? extends SCMTrait<?>> traits) {
         for (SCMTrait<?> trait : traits) {
             if (trait instanceof SCMNavigatorTrait) {
                 withTrait((SCMNavigatorTrait) trait);
@@ -112,42 +217,51 @@ public abstract class SCMNavigatorContext<C extends SCMNavigatorContext<C, R>, R
         return (C) this;
     }
 
+    /**
+     * Adds the supplied {@link SCMSourceDecorator}.
+     *
+     * @param decorator the additional {@link SCMSourceDecorator}.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public C withDecorator(@NonNull SCMSourceDecorator<?,?> decorator) {
+    @NonNull
+    public final C withDecorator(@NonNull SCMSourceDecorator<?, ?> decorator) {
         decorators.add(decorator);
         return (C) this;
     }
 
+    /**
+     * Adds the supplied {@link SCMSourceDecorator} instances.
+     *
+     * @param decorators the additional {@link SCMSourceDecorator} instances.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public C withDecorators(@NonNull SCMSourceDecorator<?,?>... decorator) {
-        return withDecorators(Arrays.asList(decorator));
+    @NonNull
+    public final C withDecorators(@NonNull SCMSourceDecorator<?, ?>... decorators) {
+        return withDecorators(Arrays.asList(decorators));
     }
 
+    /**
+     * Adds the supplied {@link SCMSourceDecorator} instances.
+     *
+     * @param decorators the additional {@link SCMSourceDecorator} instances.
+     * @return {@code this} for method chaining.
+     */
     @SuppressWarnings("unchecked")
-    public C withDecorators(@NonNull Collection<? extends SCMSourceDecorator<?,?>> decorators) {
+    @NonNull
+    public final C withDecorators(@NonNull Collection<? extends SCMSourceDecorator<?, ?>> decorators) {
         this.decorators.addAll(decorators);
         return (C) this;
     }
 
+    /**
+     * Creates a new {@link SCMNavigatorRequest}.
+     *
+     * @param navigator the {@link SCMNavigator}.
+     * @param observer  the {@Link SCMSourceObserver}.
+     * @return the {@link R}
+     */
     @NonNull
-    public List<SCMSourceTrait> traits() {
-        return new ArrayList<SCMSourceTrait>(traits);
-    }
-
-    @NonNull
-    public List<SCMSourceDecorator<?,?>> decorators() {
-        return new ArrayList<SCMSourceDecorator<?,?>>(decorators);
-    }
-
-    @NonNull
-    public List<SCMSourceFilter> filters() {
-        return Collections.unmodifiableList(filters);
-    }
-
-    @NonNull
-    public List<SCMSourcePrefilter> prefilters() {
-        return Collections.unmodifiableList(prefilters);
-    }
-
     public abstract R newRequest(@NonNull SCMNavigator navigator, @NonNull SCMSourceObserver observer);
 }

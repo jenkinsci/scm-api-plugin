@@ -252,7 +252,7 @@ public abstract class SCMSourceContext<C extends SCMSourceContext<C, R>, R exten
      * Creates a new {@link SCMSourceRequest}.
      *
      * @param source   the {@link SCMSource}.
-     * @param listener the (optional) {@Link TaskListener}.
+     * @param listener the (optional) {@link TaskListener}.
      * @return the {@link R}
      */
     @NonNull
