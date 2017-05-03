@@ -24,31 +24,126 @@
 
 package jenkins.scm.api.trait;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import hudson.model.AbstractDescribableImpl;
 import java.io.IOException;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.mixin.SCMHeadMixin;
 
-public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCMHeadMixin>
-        extends AbstractDescribableImpl<SCMHeadAuthority<?, ?>> {
+/**
+ * Abstraction to allow plugable definitions of trust for {@link SCMHead} and {@link SCMRevision} instances in the
+ * context of a specific {@link SCMSourceRequest}.
+ * <p>
+ * Note: there can be multiple authorities for the same types of head / revision active in the context of any one
+ * request. The ultimate trust state is determined by a logical OR operation, in other words if any one authority
+ * says that the head / revision is trusted then the head / revision is trusted.
+ *
+ * @param <S> the type of {@link SCMSourceRequest}.
+ * @param <H> the specialization of {@link SCMHeadMixin} that this authority provides trust information for.
+ * @param <R> the specialization of {@link SCMRevision} that this authority provides trust information for.
+ * @since 3.4.0
+ */
+public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCMHeadMixin, R extends SCMRevision>
+        extends AbstractDescribableImpl<SCMHeadAuthority<?, ?, ?>> {
 
+    /**
+     * Checks if this authority is relevant to the supplied {@link SCMHead}.
+     *
+     * @param head the supplied {@link SCMHead}.
+     * @return {@code true} if and only if this authority can provide trust information for the supplied head.
+     */
     public final boolean isApplicableTo(@NonNull SCMHead head) {
         return getDescriptor().isApplicableToHead(head);
     }
 
+    /**
+     * Checks if this authority is relevant to the supplied {@link SCMRevision}.
+     *
+     * @param revision the supplied {@link SCMRevision}.
+     * @return {@code true} if and only if this authority can provide trust information for the supplied revision.
+     */
+    public final boolean isApplicableTo(@NonNull SCMRevision revision) {
+        return getDescriptor().isApplicableToRevision(revision);
+    }
+
+    /**
+     * Checks if this authority is relevant to the supplied {@link SCMSourceRequest}.
+     *
+     * @param request the supplied {@link SCMSourceRequest}.
+     * @return {@code true} if and only if this authority can provide trust information for the supplied requesy.
+     */
     public final boolean isApplicableTo(@NonNull SCMSourceRequest request) {
         return getDescriptor().isApplicableToRequest(request);
     }
 
+    /**
+     * Checks if the supplied {@link SCMHead} is trusted in the context of the specified {@link SCMSourceRequest}.
+     *
+     * @param request the {@link SCMSourceRequest}.
+     * @param head    the {@link SCMHead}.
+     * @return {@code true} if the supplied head is trusted.
+     * @throws IOException          if there was an I/O error trying to establish the trust status.
+     * @throws InterruptedException if interrupted while trying to establing the trust status.
+     */
     @SuppressWarnings("unchecked")
     public final boolean isTrusted(@NonNull SCMSourceRequest request, @NonNull SCMHead head)
             throws IOException, InterruptedException {
-        return isApplicableTo(request) && isApplicableTo(head) && checkTrusted((S) request, (H) head);
+        return isApplicableTo(request)
+                && isApplicableTo(head)
+                && checkTrusted((S) request, (H) head);
     }
 
+    /**
+     * Checks if the supplied {@link SCMRevision} is trusted in the context of the specified {@link SCMSourceRequest}.
+     *
+     * @param request  the {@link SCMSourceRequest}.
+     * @param revision the {@link SCMRevision}.
+     * @return {@code true} if the supplied revision is trusted.
+     * @throws IOException          if there was an I/O error trying to establish the trust status.
+     * @throws InterruptedException if interrupted while trying to establing the trust status.
+     */
+    @SuppressWarnings("unchecked")
+    public final boolean isTrusted(@NonNull SCMSourceRequest request, @CheckForNull SCMRevision revision)
+            throws IOException, InterruptedException {
+        return isApplicableTo(request)
+                && isApplicableTo(revision.getHead())
+                && isApplicableTo(revision)
+                && checkTrusted((S) request, (H) revision);
+    }
+
+    /**
+     * SPI: checks if the supplied {@link SCMHead} is trusted in the context of the supplied {@link SCMSourceRequest}.
+     *
+     * @param request the {@link SCMSourceRequest}.
+     * @param head    the {@link SCMHead}.
+     * @return {@code true} if trusted.
+     * @throws IOException          if there was an I/O error trying to establish the trust status.
+     * @throws InterruptedException if interrupted while trying to establing the trust status.
+     */
     protected abstract boolean checkTrusted(@NonNull S request, @NonNull H head) throws IOException, InterruptedException;
 
+    /**
+     * SPI: checks if the supplied {@link SCMRevision} is trusted in the context of the supplied
+     * {@link SCMSourceRequest}. Default implementation just calls {@link #checkTrusted(SCMSourceRequest, SCMHeadMixin)}
+     * with {@link SCMRevision#getHead()}.
+     *
+     * @param request  the {@link SCMSourceRequest}.
+     * @param revision the {@link SCMRevision}.
+     * @return {@code true} if trusted.
+     * @throws IOException          if there was an I/O error trying to establish the trust status.
+     * @throws InterruptedException if interrupted while trying to establing the trust status.
+     */
+    @OverrideMustInvoke
+    protected boolean checkTrusted(@NonNull S request, @NonNull R revision) throws IOException, InterruptedException {
+        return checkTrusted(request, (H) revision.getHead());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SCMHeadAuthorityDescriptor getDescriptor() {
         return (SCMHeadAuthorityDescriptor) super.getDescriptor();
