@@ -36,10 +36,20 @@ import hudson.scm.SCMDescriptor;
  */
 public abstract class SCMTraitDescriptor<T extends SCMTrait<T>> extends Descriptor<T> {
 
+    /**
+     * Constructor to use when type inferrence using {@link #SCMTraitDescriptor()} does not work.
+     *
+     * @param clazz Pass in the type of {@link SCMTrait}
+     */
     protected SCMTraitDescriptor(Class<? extends T> clazz) {
         super(clazz);
     }
 
+    /**
+     * Infers the type of the corresponding {@link SCMTrait} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     */
     protected SCMTraitDescriptor() {
         super();
     }

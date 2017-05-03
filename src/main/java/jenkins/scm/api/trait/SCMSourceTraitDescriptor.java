@@ -36,10 +36,20 @@ import jenkins.scm.api.SCMSourceDescriptor;
  */
 public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSourceTrait> {
 
+    /**
+     * Constructor to use when type inferrence using {@link #SCMSourceTraitDescriptor()} does not work.
+     *
+     * @param clazz Pass in the type of {@link SCMTrait}
+     */
     protected SCMSourceTraitDescriptor(Class<? extends SCMSourceTrait> clazz) {
         super(clazz);
     }
 
+    /**
+     * Infers the type of the corresponding {@link SCMSourceTrait} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     */
     protected SCMSourceTraitDescriptor() {
         super();
     }
