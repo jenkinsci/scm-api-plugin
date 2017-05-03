@@ -30,6 +30,7 @@ import jenkins.scm.api.SCMSourceObserver;
 import jenkins.scm.api.trait.SCMNavigatorContext;
 
 public class MockSCMNavigatorContext extends SCMNavigatorContext<MockSCMNavigatorContext, MockSCMNavigatorRequest> {
+    @NonNull
     @Override
     public MockSCMNavigatorRequest newRequest(@NonNull SCMNavigator source, @NonNull SCMSourceObserver observer) {
         return new MockSCMNavigatorRequest(source, this, observer);
