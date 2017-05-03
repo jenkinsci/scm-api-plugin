@@ -25,10 +25,29 @@
 package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMNavigator;
 
+/**
+ * A {@link SCMNavigatorRequest} independent filter of project names. These filters may not make remote
+ * requests in order to determine exclusion.
+ * If multiple filters are used, if any exclude then the project name is excluded.
+ * The {@link SCMSourcePrefilter} instances are applied before {@link SCMSourceFilter} instances in order to minimize
+ * remote requests.
+ *
+ * @see SCMSourceFilter for {@link SCMNavigatorRequest} dependent filters / filters that can may require on-line
+ * operation.
+ * @since 3.4.0
+ */
 public abstract class SCMSourcePrefilter {
 
+    /**
+     * Checks if the supplied project name is excluded from the specified {@link SCMNavigator}.
+     *
+     * @param source      the {@link SCMNavigator}.
+     * @param projectName the project name.
+     * @return {@code true} if and only if the {@link SCMHead} is excluded from the request.
+     */
     public abstract boolean isExcluded(@NonNull SCMNavigator source, @NonNull String projectName);
 
 }

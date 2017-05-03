@@ -27,9 +27,14 @@ package jenkins.scm.api.trait;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
+import hudson.DescriptorExtensionList;
 import hudson.model.AbstractDescribableImpl;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.mixin.SCMHeadMixin;
 
@@ -148,4 +153,59 @@ public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCM
     public SCMHeadAuthorityDescriptor getDescriptor() {
         return (SCMHeadAuthorityDescriptor) super.getDescriptor();
     }
+
+    /**
+     * Returns a list of all {@link SCMHeadAuthorityDescriptor} instances.
+     *
+     * @return a list of all {@link SCMHeadAuthorityDescriptor} instances.
+     */
+    @SuppressWarnings("unchecked")
+    public static DescriptorExtensionList<SCMHeadAuthority<?, ?, ?>, SCMHeadAuthorityDescriptor> all() {
+        return (DescriptorExtensionList) Jenkins.getActiveInstance().getDescriptorList(SCMHeadAuthority.class);
+    }
+
+    /**
+     * Retursn the subset of {@link SCMHeadAuthorityDescriptor} instances applicable to the supplied criteria.
+     *
+     * @param requestClass  the {@link SCMSourceRequest} class (or {@code null} to match any).
+     * @param headClass     the {@link SCMHeadMixin} class (or {@code null} to match any).
+     * @param revisionClass the {@link SCMRevision} class (or {@code null} to match any).
+     * @param origins       the {@link SCMHeadOrigin} instances.
+     * @return the list of matching {@link SCMHeadAuthorityDescriptor} instances.
+     */
+    public static List<SCMHeadAuthorityDescriptor> _for(@CheckForNull Class<? extends SCMSourceRequest> requestClass,
+                                                        @CheckForNull Class<? extends SCMHeadMixin> headClass,
+                                                        @CheckForNull Class<? extends SCMRevision> revisionClass,
+                                                        Class<? extends SCMHeadOrigin>... origins) {
+        if (requestClass == null) {
+            requestClass = SCMSourceRequest.class;
+        }
+        if (headClass == null) {
+            headClass = SCMHeadMixin.class;
+        }
+        if (revisionClass == null) {
+            revisionClass = SCMRevision.class;
+        }
+        List<SCMHeadAuthorityDescriptor> result = new ArrayList<SCMHeadAuthorityDescriptor>();
+        for (SCMHeadAuthorityDescriptor d : all()) {
+            if (d.isApplicableToRequest(requestClass)
+                    && d.isApplicableToHead(headClass)
+                    && d.isApplicableToRevision(revisionClass)) {
+                boolean match = origins.length == 0;
+                if (!match) {
+                    for (Class<? extends SCMHeadOrigin> o : origins) {
+                        if (d.isApplicableToOrigin(o)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+                if (match) {
+                    result.add(d);
+                }
+            }
+        }
+        return result;
+    }
+
 }
