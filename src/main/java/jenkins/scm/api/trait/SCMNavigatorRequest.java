@@ -49,7 +49,6 @@ import jenkins.scm.impl.NoOpProjectObserver;
  */
 public abstract class SCMNavigatorRequest implements Closeable {
 
-    private static final Witness[] NO_WITNESSES = new Witness[0];
     /**
      * The {@link SCMNavigator} to use when applying the {@link #prefilters}.
      */
@@ -119,14 +118,24 @@ public abstract class SCMNavigatorRequest implements Closeable {
         this.decorators = new ArrayList<SCMSourceDecorator<?, ?>>(context.decorators());
     }
 
+    /**
+     * Returns the {@link SCMSourceTrait} instances to apply to every {@link SCMSource}.
+     *
+     * @return the {@link SCMSourceTrait} instances to apply to every {@link SCMSource}.
+     */
     @NonNull
     public final List<SCMSourceTrait> traits() {
-        return traits;
+        return Collections.unmodifiableList(traits);
     }
 
+    /**
+     * Returns the {@link SCMSourceDecorator} instances to apply to {@link SCMSource} instances.
+     *
+     * @return the {@link SCMSourceDecorator} instances to apply to {@link SCMSource} instances.
+     */
     @NonNull
     public final List<SCMSourceDecorator<?, ?>> decorators() {
-        return decorators;
+        return Collections.unmodifiableList(decorators);
     }
 
     /**
@@ -139,8 +148,10 @@ public abstract class SCMNavigatorRequest implements Closeable {
     @SuppressWarnings("unchecked")
     private static void record(@NonNull String projectName, boolean isMatch,
                                @NonNull Witness... witnesses) {
-        for (Witness witness : witnesses) {
-            witness.record(projectName, isMatch);
+        if (witnesses.length > 0) {
+            for (Witness witness : witnesses) {
+                witness.record(projectName, isMatch);
+            }
         }
     }
 
@@ -174,8 +185,22 @@ public abstract class SCMNavigatorRequest implements Closeable {
         return false;
     }
 
-    public boolean process(@NonNull String projectName, @NonNull SourceFactory sourceFactory,
-                           @CheckForNull AttributeFactory attributeFactory,
+    /**
+     * Processes a named project in the scope of the current request.
+     *
+     * @param projectName      the name of the project.
+     * @param sourceFactory    the factory for instantiating a {@link SCMSource}.
+     * @param attributeFactory (optional) factory for instantiating the attribute map.
+     * @param witnesses        the witnesses to record the processing result.
+     * @return {@code true} if and only if the request is completed, {@code false} if the request can process
+     * additional named projects.
+     * @throws IllegalArgumentException if the attribute factory provides attribute names that are unrecognized, or
+     *                                  repeats already added attribues.
+     * @throws IOException              if there is an I/O error.
+     * @throws InterruptedException     if the operation was interrupted.
+     */
+    public boolean process(@NonNull String projectName, @NonNull SourceLambda sourceFactory,
+                           @CheckForNull AttributeLambda attributeFactory,
                            Witness... witnesses)
             throws IllegalArgumentException, IOException, InterruptedException {
         return process(
@@ -186,8 +211,22 @@ public abstract class SCMNavigatorRequest implements Closeable {
         );
     }
 
-    public boolean process(@NonNull String projectName, @NonNull List<SourceFactory> sourceFactories,
-                           @CheckForNull List<AttributeFactory> attributeFactories,
+    /**
+     * Processes a named project in the scope of the current request.
+     *
+     * @param projectName        the name of the project.
+     * @param sourceFactories    the factories for instantiating the {@link SCMSource} instances.
+     * @param attributeFactories (optional) factories for instantiating the attribute maps.
+     * @param witnesses          the witnesses to record the processing result.
+     * @return {@code true} if and only if the request is completed, {@code false} if the request can process
+     * additional named projects.
+     * @throws IllegalArgumentException if an attribute factory provides attribute names that are unrecognized, or
+     *                                  repeats already added attribues.
+     * @throws IOException              if there is an I/O error.
+     * @throws InterruptedException     if the operation was interrupted.
+     */
+    public boolean process(@NonNull String projectName, @NonNull List<SourceLambda> sourceFactories,
+                           @CheckForNull List<AttributeLambda> attributeFactories,
                            Witness... witnesses)
             throws IllegalArgumentException, IOException, InterruptedException {
         if (Thread.interrupted()) {
@@ -204,11 +243,11 @@ public abstract class SCMNavigatorRequest implements Closeable {
             // we know this is safe to break contract with
             return !observer.isObserving();
         }
-        for (SourceFactory s: sourceFactories) {
+        for (SourceLambda s : sourceFactories) {
             po.addSource(s.create(projectName));
         }
         if (attributeFactories != null) {
-            for (AttributeFactory attributeFactory: attributeFactories) {
+            for (AttributeLambda attributeFactory : attributeFactories) {
                 for (Map.Entry<String, Object> entry : attributeFactory.create(projectName).entrySet()) {
                     po.addAttribute(entry.getKey(), entry.getValue());
                 }
@@ -261,15 +300,52 @@ public abstract class SCMNavigatorRequest implements Closeable {
         }
     }
 
+    /**
+     * A lambda that will create the {@link SCMSource} instance for a specific project name.
+     */
+    public interface SourceLambda {
+        /**
+         * Creates the {@link SCMSource} for the named project.
+         *
+         * @param projectName the named project.
+         * @return the {@link SCMSource} instance.
+         * @throws IOException          if there is an I/O error.
+         * @throws InterruptedException if the operation was interrupted.
+         */
+        @NonNull
+        SCMSource create(@NonNull String projectName) throws IOException, InterruptedException;
+    }
+
+    /**
+     * A lambda that will create the map of attributes for a specific project name.
+     */
+    public interface AttributeLambda {
+        /**
+         * Creates the attributes map for the named project.
+         *
+         * @param projectName the named project.
+         * @return the attributes map.
+         * @throws IOException          if there is an I/O error.
+         * @throws InterruptedException if the operation was interrupted.
+         */
+        @NonNull
+        Map<String, Object> create(@NonNull String projectName) throws IOException, InterruptedException;
+    }
+
+    /**
+     * Callback lambda to track the results of
+     * {@link #process(String, SourceLambda, AttributeLambda, Witness...)} or
+     * {@link #process(String, List, List, Witness...)}
+     */
     public interface Witness {
+
+        /**
+         * Records the result of the named project.
+         *
+         * @param projectName the project name.
+         * @param isMatch     {@code true} if the project matched.
+         */
         void record(@NonNull String projectName, boolean isMatch);
-    }
 
-    public interface SourceFactory {
-        SCMSource create(String projectName);
-    }
-
-    public interface AttributeFactory {
-        Map<String,Object> create(String projectName);
     }
 }

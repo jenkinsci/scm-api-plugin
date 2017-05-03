@@ -109,9 +109,10 @@ public class MockSCMNavigator extends SCMNavigator {
                 if (!request.isExcluded(name)) { // hack to allow the latency and faults to work
                     controller().applyLatency();
                     controller().checkFaults(name, null, null, false);
-                    if (request.process(name, new SCMNavigatorRequest.SourceFactory() {
+                    if (request.process(name, new SCMNavigatorRequest.SourceLambda() {
+                        @NonNull
                         @Override
-                        public SCMSource create(String name) {
+                        public SCMSource create(@NonNull String name) {
                             return new MockSCMSourceBuilder(getId() + "::" + name, controller, name)
                                     .withRequest(request)
                                     .build();
