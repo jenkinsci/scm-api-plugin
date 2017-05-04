@@ -116,7 +116,7 @@ public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCM
         return isApplicableTo(request)
                 && isApplicableTo(revision.getHead())
                 && isApplicableTo(revision)
-                && checkTrusted((S) request, (H) revision);
+                && checkTrusted((S) request, (R) revision);
     }
 
     /**
@@ -141,6 +141,7 @@ public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCM
      * @throws IOException          if there was an I/O error trying to establish the trust status.
      * @throws InterruptedException if interrupted while trying to establing the trust status.
      */
+    @SuppressWarnings("unchecked")
     @OverrideMustInvoke
     protected boolean checkTrusted(@NonNull S request, @NonNull R revision) throws IOException, InterruptedException {
         return checkTrusted(request, (H) revision.getHead());
