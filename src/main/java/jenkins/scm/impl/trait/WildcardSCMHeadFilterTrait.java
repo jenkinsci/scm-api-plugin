@@ -39,7 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * Decorates a {@link SCMSourceTrait} with a {@link SCMHeadPrefilter} that filters {@link SCMHead} instances based on
+ * Decorates a {@link SCMSource} with a {@link SCMHeadPrefilter} that filters {@link SCMHead} instances based on
  * matching wildcard include/exclude rules.
  *
  * @since 2.2.0
