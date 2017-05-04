@@ -102,12 +102,12 @@
       <version>1.6</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>git</artifactId>
-      <version>2.5.3</version> <!-- 2.4.x does not work since it lacks https://github.com/jenkinsci/git-plugin/pull/402 -->
-      <scope>test</scope>
-    </dependency>
+    <!--<dependency>-->
+    <!--<groupId>org.jenkins-ci.plugins</groupId>-->
+    <!--<artifactId>git</artifactId>-->
+    <!--<version>2.5.3</version> &lt;!&ndash; 2.4.x does not work since it lacks https://github.com/jenkinsci/git-plugin/pull/402 &ndash;&gt;-->
+    <!--<scope>test</scope>-->
+    <!--</dependency>-->
   </dependencies>
 
   <build>
@@ -115,6 +115,13 @@
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate-taglib-interface</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
           <compatibleSinceVersion>2.0.0</compatibleSinceVersion>
         </configuration>

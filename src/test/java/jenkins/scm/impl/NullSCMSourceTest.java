@@ -25,43 +25,23 @@
 
 package jenkins.scm.impl;
 
-import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
-import hudson.model.TopLevelItem;
-import hudson.model.TopLevelItemDescriptor;
-import hudson.plugins.git.GitSCM;
 import hudson.scm.NullSCM;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.Builder;
-import java.util.Map;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
-import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.SCMSourceCriteria;
-import jenkins.scm.api.SCMSourceOwner;
-import org.hamcrest.Matcher;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.mockito.InOrder;
-import org.mockito.Matchers;
 
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class NullSCMSourceTest {
 
