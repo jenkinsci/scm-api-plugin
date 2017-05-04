@@ -179,7 +179,7 @@ public class MockSCMNavigator extends SCMNavigator {
             return descriptors;
         }
 
-        public List<SCMTrait<?>> getDefaultTraits() {
+        public List<SCMTrait<?>> getTraitDefaults() {
             return Collections.<SCMTrait<?>>singletonList(new MockSCMDiscoverBranches());
         }
     }

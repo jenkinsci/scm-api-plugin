@@ -356,7 +356,7 @@ public class MockSCMSource extends SCMSource {
             return SCMSourceTrait._for(this, MockSCMSourceContext.class, MockSCMBuilder.class);
         }
 
-        public List<SCMSourceTrait> getDefaultTraits() {
+        public List<SCMSourceTrait> getTraitDefaults() {
             return Collections.<SCMSourceTrait>singletonList(new MockSCMDiscoverBranches());
         }
     }
