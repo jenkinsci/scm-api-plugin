@@ -41,7 +41,7 @@ public abstract class SCMTraitDescriptor<T extends SCMTrait<T>> extends Descript
      *
      * @param clazz Pass in the type of {@link SCMTrait}
      */
-    protected SCMTraitDescriptor(Class<? extends T> clazz) {
+    protected SCMTraitDescriptor(@NonNull Class<? extends T> clazz) {
         super(clazz);
     }
 
@@ -60,7 +60,7 @@ public abstract class SCMTraitDescriptor<T extends SCMTrait<T>> extends Descript
      * @param scm the {@link SCMDescriptor} for the type of {@link SCM}.
      * @return {@code true} if applicable to the specified type of {@link SCM}.
      */
-    public boolean isApplicableToSCM(SCMDescriptor<?> scm) {
+    public boolean isApplicableToSCM(@NonNull SCMDescriptor<?> scm) {
         return isApplicableToSCM(scm.getT());
     }
 

@@ -38,10 +38,20 @@ import jenkins.scm.api.SCMSourceDescriptor;
  */
 public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCMNavigatorTrait> {
 
-    protected SCMNavigatorTraitDescriptor(Class<? extends SCMNavigatorTrait> clazz) {
+    /**
+     * Constructor to use when type inferrence using {@link #SCMNavigatorTraitDescriptor()} does not work.
+     *
+     * @param clazz Pass in the type of {@link SCMNavigatorTrait}
+     */
+    protected SCMNavigatorTraitDescriptor(@NonNull Class<? extends SCMNavigatorTrait> clazz) {
         super(clazz);
     }
 
+    /**
+     * Infers the type of the corresponding {@link SCMNavigatorTrait} from the outer class.
+     * This version works when you follow the common convention, where a descriptor
+     * is written as the static nested class of the describable class.
+     */
     protected SCMNavigatorTraitDescriptor() {
         super();
     }
@@ -67,7 +77,7 @@ public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCM
     }
 
     /**
-     * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMNavigatorContext}.
+     * Checks if the {@link SCMNavigatorTrait} is relevant to the specified type of {@link SCMNavigatorContext}.
      *
      * @param contextClass the type of {@link SCMSourceContext}.
      * @return {@code true} if applicable to the specified type of {@link SCMSourceContext}.
@@ -77,7 +87,7 @@ public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCM
     }
 
     /**
-     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCMNavigatorContext}.
+     * Checks if the {@link SCMNavigatorTrait} is relevant to the specified {@link SCMNavigatorContext}.
      *
      * @param context the {@link SCMNavigatorContext}.
      * @return {@code true} if applicable to the specified type of {@link SCMNavigatorContext}.
@@ -86,23 +96,63 @@ public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCM
         return isApplicableToContext(context.getClass());
     }
 
-    public boolean isApplicableToSource(SCMSource source) {
+    /**
+     * Checks if the {@link SCMNavigatorTrait} is relevant to the specified {@link SCMSource}.
+     *
+     * @param source the {@link SCMSource}.
+     * @return {@code true} if applicable to the specified {@link SCMSource}.
+     */
+    public boolean isApplicableToSource(@NonNull SCMSource source) {
         return isApplicableToSource(source.getDescriptor());
     }
 
-    public boolean isApplicableToSource(SCMSourceDescriptor descriptor) {
+    /**
+     * Checks if the {@link SCMNavigatorTrait} is relevant to the specified {@link SCMSourceDescriptor}.
+     *
+     * @param descriptor the {@link SCMSourceDescriptor}.
+     * @return {@code true} if applicable to the specified {@link SCMSourceDescriptor}.
+     */
+    public boolean isApplicableToSource(@NonNull SCMSourceDescriptor descriptor) {
         return isApplicableToSource(descriptor.getT());
     }
 
-    public boolean isApplicableToSource(Class<? extends SCMSource> sourceClass) {
+    /**
+     * Checks if the {@link SCMNavigatorTrait} is relevant to the specified type of {@link SCMSource}.
+     *
+     * @param sourceClass the type of {@link SCMSource}.
+     * @return {@code true} if applicable to the specified type of {@link SCMSource}.
+     */
+    public boolean isApplicableToSource(@NonNull Class<? extends SCMSource> sourceClass) {
         return true;
     }
 
-    public boolean isApplicableTo(SCMNavigator navigator) {
+    /**
+     * Checks if the {@link SCMNavigatorTrait} is relevant to the specified {@link SCMNavigator}.
+     *
+     * @param navigator the {@link SCMNavigator}.
+     * @return {@code true} if applicable to the specified {@link SCMNavigator}.
+     */
+    public boolean isApplicableTo(@NonNull SCMNavigator navigator) {
         return isApplicableTo(navigator.getDescriptor());
     }
 
-    public boolean isApplicableTo(SCMNavigatorDescriptor descriptor) {
+    /**
+     * Checks if the {@link SCMNavigatorTrait} is relevant to the specified {@link SCMNavigatorDescriptor}.
+     *
+     * @param descriptor the {@link SCMNavigatorDescriptor}.
+     * @return {@code true} if applicable to the specified {@link SCMNavigatorDescriptor}.
+     */
+    public boolean isApplicableTo(@NonNull SCMNavigatorDescriptor descriptor) {
+        return isApplicableTo(descriptor.getT());
+    }
+
+    /**
+     * Checks if the {@link SCMNavigatorTrait} is relevant to the specified type of {@link SCMNavigator}.
+     *
+     * @param navigatorClass the type of {@link SCMNavigator}.
+     * @return {@code true} if applicable to the specified type of {@link SCMNavigator}.
+     */
+    public boolean isApplicableTo(@NonNull Class<? extends SCMNavigator> navigatorClass) {
         return true;
     }
 

@@ -25,7 +25,6 @@
 package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.scm.SCM;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,7 +81,7 @@ public abstract class SCMSourceBuilder<B extends SCMSourceBuilder<B, S>, S exten
      * @param clazz the base class of {@link SCMSource} that will be produced by the {@link SCMSourceBuilder}.
      * @param projectName the project name.
      */
-    public SCMSourceBuilder(Class<S> clazz, String projectName) {
+    public SCMSourceBuilder(@NonNull Class<S> clazz, @NonNull String projectName) {
         this.clazz = clazz;
         this.projectName = projectName;
     }
@@ -183,7 +182,7 @@ public abstract class SCMSourceBuilder<B extends SCMSourceBuilder<B, S>, S exten
      * @return {@code this} for method chaining.
      */
     @SuppressWarnings("unchecked")
-    public B withRequest(SCMNavigatorRequest request) {
+    public B withRequest(@NonNull SCMNavigatorRequest request) {
         withTraits(request.traits());
         for (SCMSourceDecorator<?,?> decorator: request.decorators()) {
             decorator.applyTo(this, projectName());

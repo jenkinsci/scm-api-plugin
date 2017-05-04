@@ -24,11 +24,11 @@
 
 package jenkins.scm.api.trait;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMNavigatorDescriptor;
 import jenkins.scm.api.SCMSource;
@@ -130,24 +130,50 @@ public class SCMNavigatorTrait extends SCMTrait<SCMNavigatorTrait> {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SCMNavigatorTraitDescriptor getDescriptor() {
         return (SCMNavigatorTraitDescriptor) super.getDescriptor();
     }
 
+    /**
+     * Returns all the {@link SCMNavigatorTraitDescriptor} instances.
+     *
+     * @return all the {@link SCMNavigatorTraitDescriptor} instances.
+     */
     public static DescriptorExtensionList<SCMNavigatorTrait, SCMNavigatorTraitDescriptor> all() {
         return SCMTrait.all(SCMNavigatorTrait.class);
     }
 
-    public static List<SCMNavigatorTraitDescriptor> _for(Class<? extends SCMNavigatorContext> contextClass,
-                                                      Class<? extends SCMSourceBuilder> builderClass) {
+    /**
+     * Returns the subset of {@link SCMNavigatorTraitDescriptor} instances that are applicable to the specified types
+     * of {@link SCMNavigatorContext} and {@link SCMSourceBuilder}.
+     *
+     * @param contextClass (optional) type of {@link SCMNavigatorContext}.
+     * @param builderClass (optional) type of {@link SCMSourceBuilder}.
+     * @return the list of matching {@link SCMNavigatorTraitDescriptor} instances.
+     */
+    public static List<SCMNavigatorTraitDescriptor> _for(
+            @CheckForNull Class<? extends SCMNavigatorContext> contextClass,
+            @CheckForNull Class<? extends SCMSourceBuilder> builderClass) {
         return _for(null, contextClass, builderClass);
     }
 
-    public static List<SCMNavigatorTraitDescriptor> _for(@CheckForNull SCMNavigatorDescriptor scmNavigator,
-                                                      @CheckForNull Class<? extends SCMNavigatorContext> contextClass,
-                                                      @CheckForNull Class<? extends SCMSourceBuilder> builderClass) {
+    /**
+     * Returns the subset of {@link SCMNavigatorTraitDescriptor} instances that are applicable to the specified
+     * {@link SCMNavigatorDescriptor} and specified types of {@link SCMNavigatorContext} and {@link SCMSourceBuilder}.
+     *
+     * @param scmNavigator (optional) {@link SCMNavigatorDescriptor}.
+     * @param contextClass (optional) type of {@link SCMNavigatorContext}.
+     * @param builderClass (optional) type of {@link SCMSourceBuilder}.
+     * @return the list of matching {@link SCMNavigatorTraitDescriptor} instances.
+     */
+    public static List<SCMNavigatorTraitDescriptor> _for(
+            @CheckForNull SCMNavigatorDescriptor scmNavigator,
+            @CheckForNull Class<? extends SCMNavigatorContext> contextClass,
+            @CheckForNull Class<? extends SCMSourceBuilder> builderClass) {
         List<SCMNavigatorTraitDescriptor> result = new ArrayList<SCMNavigatorTraitDescriptor>();
         if (scmNavigator != null) {
             for (SCMNavigatorTraitDescriptor d : all()) {

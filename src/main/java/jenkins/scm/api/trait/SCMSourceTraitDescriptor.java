@@ -41,7 +41,7 @@ public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSou
      *
      * @param clazz Pass in the type of {@link SCMTrait}
      */
-    protected SCMSourceTraitDescriptor(Class<? extends SCMSourceTrait> clazz) {
+    protected SCMSourceTraitDescriptor(@NonNull Class<? extends SCMSourceTrait> clazz) {
         super(clazz);
     }
 
@@ -94,11 +94,33 @@ public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSou
         return isApplicableToContext(context.getClass());
     }
 
-    public boolean isApplicableTo(SCMSource source) {
+    /**
+     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCMSource}.
+     *
+     * @param source the {@link SCMSource}.
+     * @return {@code true} if applicable to the specified {@link SCMSource}.
+     */
+    public boolean isApplicableTo(@NonNull SCMSource source) {
         return isApplicableTo(source.getDescriptor());
     }
 
-    public boolean isApplicableTo(SCMSourceDescriptor descriptor) {
+    /**
+     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCMSourceDescriptor}.
+     *
+     * @param descriptor the {@link SCMSourceDescriptor}.
+     * @return {@code true} if applicable to the specified {@link SCMSourceDescriptor}.
+     */
+    public boolean isApplicableTo(@NonNull SCMSourceDescriptor descriptor) {
+        return isApplicableTo(descriptor.getT());
+    }
+
+    /**
+     * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMSource}.
+     *
+     * @param sourceClass the type of {@link SCMSource}.
+     * @return {@code true} if applicable to the specified type of {@link SCMSource}.
+     */
+    public boolean isApplicableTo(@NonNull Class<? extends SCMSource> sourceClass) {
         return true;
     }
 
