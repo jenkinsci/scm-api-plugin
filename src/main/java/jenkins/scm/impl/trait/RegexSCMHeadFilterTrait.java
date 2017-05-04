@@ -31,17 +31,12 @@ import hudson.util.FormValidation;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMHeadPrefilter;
-import jenkins.scm.api.trait.SCMNavigatorContext;
-import jenkins.scm.api.trait.SCMNavigatorRequest;
-import jenkins.scm.api.trait.SCMNavigatorTrait;
-import jenkins.scm.api.trait.SCMNavigatorTraitDescriptor;
 import jenkins.scm.api.trait.SCMSourceContext;
-import jenkins.scm.api.trait.SCMSourcePrefilter;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
+import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -118,7 +113,7 @@ public class RegexSCMHeadFilterTrait extends SCMSourceTrait {
      * Our descriptor.
      */
     @Extension
-    public static class DescriptorImpl extends SCMNavigatorTraitDescriptor {
+    public static class DescriptorImpl extends SCMSourceTraitDescriptor {
 
         /**
          * {@inheritDoc}
