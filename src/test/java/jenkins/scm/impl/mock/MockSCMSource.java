@@ -35,6 +35,7 @@ import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -42,6 +43,7 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
+import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.SCMProbe;
 import jenkins.scm.api.SCMProbeStat;
 import jenkins.scm.api.SCMRevision;
@@ -51,10 +53,13 @@ import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.api.metadata.ContributorMetadataAction;
 import jenkins.scm.api.metadata.ObjectMetadataAction;
+import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
+import org.codehaus.plexus.util.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 public class MockSCMSource extends SCMSource {
@@ -63,6 +68,7 @@ public class MockSCMSource extends SCMSource {
     private final boolean includeBranches;
     private final boolean includeTags;
     private final boolean includeChangeRequests;
+    private Set<ChangeRequestCheckoutStrategy> strategies = EnumSet.of(ChangeRequestCheckoutStrategy.HEAD);
     private transient MockSCMController controller;
 
     @DataBoundConstructor
@@ -96,6 +102,27 @@ public class MockSCMSource extends SCMSource {
             controller = MockSCMController.lookup(controllerId);
         }
         return controller;
+    }
+
+    public String getStrategiesStr() {
+        StringBuilder r = new StringBuilder();
+        for (ChangeRequestCheckoutStrategy s: strategies) {
+            r.append(s.name()).append(", ");
+        }
+        return r.toString();
+    }
+
+    @DataBoundSetter
+    public void setStrategiesStr(String strategiesStr) {
+        Set<ChangeRequestCheckoutStrategy> strategies = EnumSet.noneOf(ChangeRequestCheckoutStrategy.class);
+        for (String s : StringUtils.split(strategiesStr, ", ")) {
+            try {
+                strategies.add(ChangeRequestCheckoutStrategy.valueOf(s.trim()));
+            } catch (IllegalArgumentException e) {
+                // ignore
+            }
+        }
+        setStrategies(strategies);
     }
 
     public String getRepository() {
@@ -158,18 +185,29 @@ public class MockSCMSource extends SCMSource {
         if (includeChangeRequests) {
             for (final Integer number : controller().listChangeRequests(repository)) {
                 checkInterrupt();
+                Set<MockRepositoryFlags> repoFlags = controller().getFlags(repository);
                 String revision = controller().getRevision(repository, "change-request/" + number);
                 String target = controller().getTarget(repository, number);
-                MockChangeRequestSCMHead head = new MockChangeRequestSCMHead(number, target);
-                if (includes != null && !includes.contains(head)) {
-                    continue;
-                }
-                controller().applyLatency();
-                controller().checkFaults(repository, head.getName(), null, false);
-                if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
+                String targetRevision = controller().getRevision(repository, target);
+                Set<MockChangeRequestFlags> crFlags = controller.getFlags(repository, number);
+                boolean singleStrategy = strategies.size() == 1;
+                for (ChangeRequestCheckoutStrategy strategy : strategies) {
+                    MockChangeRequestSCMHead head = new MockChangeRequestSCMHead(
+                                crFlags.contains(MockChangeRequestFlags.FORK)
+                                        ? new SCMHeadOrigin.Fork("fork")
+                                        : null,
+                                number, target, strategy, singleStrategy);
+                    if (includes != null && !includes.contains(head)) {
+                        continue;
+                    }
                     controller().applyLatency();
-                    controller().checkFaults(repository, head.getName(), revision, false);
-                    observer.observe(head, new MockSCMRevision(head, revision));
+                    controller().checkFaults(repository, head.getName(), null, false);
+                    if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
+                        controller().applyLatency();
+                        controller().checkFaults(repository, head.getName(), revision, false);
+                        observer.observe(head, new MockChangeRequestSCMRevision(head,
+                                new MockSCMRevision(head.getTarget(), targetRevision), revision));
+                    }
                 }
             }
         }
@@ -178,7 +216,10 @@ public class MockSCMSource extends SCMSource {
     @NonNull
     @Override
     public SCM build(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {
-        return new MockSCM(this, head, revision instanceof MockSCMRevision ? (MockSCMRevision) revision : null);
+        if (revision instanceof MockSCMRevision || revision instanceof MockChangeRequestSCMRevision) {
+            return new MockSCM(this, head, revision);
+        }
+        return new MockSCM(this, head, null);
     }
 
 
@@ -210,7 +251,15 @@ public class MockSCMSource extends SCMSource {
                                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         controller().applyLatency();
-        controller().checkFaults(repository, revision.getHead().getName(), ((MockSCMRevision)revision).getHash(), true);
+        String hash ;
+        if (revision instanceof MockSCMRevision) {
+            hash = ((MockSCMRevision) revision).getHash();
+        } else if (revision instanceof MockChangeRequestSCMRevision) {
+            hash = ((MockChangeRequestSCMRevision) revision).getHash();
+        } else {
+            throw new IOException("Unexpected revision");
+        }
+        controller().checkFaults(repository, revision.getHead().getName(), hash, true);
         return Collections.<Action>singletonList(new MockSCMLink("revision"));
     }
 
@@ -248,6 +297,15 @@ public class MockSCMSource extends SCMSource {
             return includeTags;
         }
         return true;
+    }
+
+    public Set<ChangeRequestCheckoutStrategy> getStrategies() {
+        return Collections.unmodifiableSet(strategies);
+    }
+
+    public void setStrategies(@NonNull Set<ChangeRequestCheckoutStrategy> strategies) {
+        this.strategies = strategies.isEmpty()
+                ? EnumSet.noneOf(ChangeRequestCheckoutStrategy.class) : EnumSet.copyOf(strategies);
     }
 
     @Extension

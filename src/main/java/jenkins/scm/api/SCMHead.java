@@ -100,11 +100,24 @@ public class SCMHead implements SCMHeadMixin {
         this.name = name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Exported
     @NonNull
     public String getName() {
         return name;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Exported
+    @NonNull
+    public SCMHeadOrigin getOrigin() {
+        return SCMHeadOrigin.DEFAULT;
     }
 
     /**

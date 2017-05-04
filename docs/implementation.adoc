@@ -773,6 +773,13 @@ public class MySCMHead extends SCMHead {
     public MySCMHead(@NonNull String name) {
         super(name);
     }
+
+    @Override // overriding to illustrate, by default returns SCMHeadOrigin.DEFAULT
+    @NonNull
+    public SCMHeadOrigin getOrigin() {
+        // if branch like things can come from different places (i.e. branches from forks)
+        return SCMHeadOrigin.DEFAULT;
+    }
 }
 ----
 
@@ -785,6 +792,13 @@ public class MyTagSCMHead extends MySCMHead implements TagSCMHead {
 
     public MyTagSCMHead(@NonNull String name) {
         super(name);
+    }
+
+    @Override // overriding to illustrate, by default returns SCMHeadOrigin.DEFAULT
+    @NonNull
+    public SCMHeadOrigin getOrigin() {
+        // if tag like things can come from different places (i.e. tags from forks)
+        return SCMHeadOrigin.DEFAULT;
     }
 }
 ----
@@ -840,14 +854,14 @@ public class MySCMRevision extends SCMRevision {
 * Change request like things are special. For one, the actual strategy used to determine what to build can be different from a regular head. The change request may be built against the original baseline revision, or it mat be built against the current revision of the original baseline branch.
 +
 You should consider whether it makes sense for change request like things to extend the same base class you used for branch and tag like thing or whether you should extend from `SCMHead` directly.
-In either case you should implement the `ChangeRequestSCMHead` mix-in interface.
+In either case you should implement the `ChangeRequestSCMHead2` mix-in interface.
 +
 Another important concern with change request like things is where the change request can originate from untrusted users.
 Implementers should always make it configurable whether change request like things will be excluded from the `SCMSource` and also where possible to differentiate between trusted and untrusted users.
 +
 [source,java]
 ----
-public class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
+public class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2 {
     private static final long serialVersionUID = 1L;
 
     private final String id;
@@ -867,26 +881,46 @@ public class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMH
         return target;
     }
 
+    @NonNull
+    public ChangeRequestCheckoutStrategy getCheckoutStrategy() {
+        // because My SCM checks out change requests by merging the two heads the effective revision will
+        // always depend on the revision of the target and the revision of the change request so we
+        // return MERGE.
+        return ChangeRequestCheckoutStrategy.MERGE;
+    }
+
+    @NonNull
+    public String getOriginName() {
+        // My SCM does not create change requests from branches, rather you request a new change request
+        // and commit your changes to that. Hence, unlike GitHub, Bitbucket, etc there is no concept
+        // of a different name when considered as a branch, so we just pass through getName()
+        return getName();
+    }
+
+    @Override // overriding to illustrate, by default returns SCMHeadOrigin.DEFAULT
+    @NonNull
+    public SCMHeadOrigin getOrigin() {
+        // My SCM is a centralized source control system so there is only ever one origin
+        // If My SCM allowed users to "fork" the repository and have change requests originate from
+        // forks then we might return `new SCMHeadOrigin.Fork(name)`
+        // If My SCM was a distributed source control system with some sort of automatic discovery
+        // mechanism (akin to peer discovery in Bittorrent say) then we might create our own
+        // subclass of SCMHeadOrigin to represent those peers as the simple "name" of a Fork
+        // would not be sufficient to uniquely identify the origin.
+        return SCMHeadOrigin.DEFAULT;
+    }
+
 }
-public class MyChangeRequestSCMRevision extends SCMRevision {
+public class MyChangeRequestSCMRevision extends ChangeRequestSCMRevision<MySCMHead> {
     private static final long serialVersionUID = 1L;
 
-    private final String base;
     private final String change;
 
     public MyChangeRequestSCMRevision(@NonNull MyChangeRequestSCMHead head,
-                                      @NonNull String base,
+                                      @NonNull MySCMRevision target,
                                       @NonNull String change) {
-        super(head);
-        this.base = base;
+        super(head, target);
         this.change = change;
-    }
-
-    /**
-     * The commit hash of the base branch we are tracking.
-     */
-    public String getBase() {
-        return base;
     }
 
     /**
@@ -897,24 +931,23 @@ public class MyChangeRequestSCMRevision extends SCMRevision {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equivalent(ChangeRequestSCMRevision<?> o) {
         if (!(o instanceof MyChangeRequestSCMRevision)) {
             return false;
         }
         MyChangeRequestSCMRevision other = (MyChangeRequestSCMRevision) o;
         return getHead().equals(other.getHead())
-            && base.equals(other.base)
             && change.equals(other.change);
     }
 
     @Override
-    public int hashCode() {
+    protected int _hashCode() {
         return change.hashCode();
     }
 
     @Override
     public String toString() {
-        return base + "+" + change;
+        return getTarget().getHash() + "+" + change;
     }
 }
 ----

@@ -44,6 +44,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
@@ -51,7 +53,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import jenkins.scm.api.SCM2;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadOrigin;
+import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.xml.sax.SAXException;
@@ -60,7 +66,7 @@ public class MockSCM extends SCM2 implements Serializable {
     private final String controllerId;
     private final String repository;
     private final SCMHead head;
-    private final MockSCMRevision revision;
+    private final SCMRevision revision;
     private transient MockSCMController controller;
 
     @DataBoundConstructor
@@ -73,16 +79,41 @@ public class MockSCM extends SCM2 implements Serializable {
         // though it would be simpler to not have a unified namespace for tags and branches in MockSCMController
         // and to have MockSCMController use a separate set of API methods in checking out change requests
         // instead of merging them into the MockSCMController namespace under change-request/#
-        Matcher m = Pattern.compile("CR-(\\d+)").matcher(head);
+        Matcher m = Pattern.compile("CR-(\\d+)(-[a-zA-Z]+)?").matcher(head);
         if (m.matches()) {
             int number = Integer.parseInt(m.group(1));
             String target = null;
+            String targetRevision = null;
+            Set<MockChangeRequestFlags> flags = null;
             try {
                 target = controller().getTarget(repository, number);
+                targetRevision = controller().getRevision(repository, target);
+                flags = controller().getFlags(repository, number);
             } catch (IOException e) {
                 // ignore
             }
-            this.head = new MockChangeRequestSCMHead(number, target);
+            ChangeRequestCheckoutStrategy strategy = ChangeRequestCheckoutStrategy.HEAD;
+            String strategyStr = m.group(2);
+            if (StringUtils.isNotBlank(strategyStr)) {
+                for (ChangeRequestCheckoutStrategy s : ChangeRequestCheckoutStrategy.values()) {
+                    if (strategyStr.equals("-"+(s.name().toLowerCase(Locale.ENGLISH)))) {
+                        strategy = s;
+                        break;
+                    }
+                }
+            }
+            MockChangeRequestSCMHead h = new MockChangeRequestSCMHead(
+                    flags == null || !flags.contains(MockChangeRequestFlags.FORK)
+                            ? SCMHeadOrigin.DEFAULT
+                            : new SCMHeadOrigin.Fork("fork"),
+                    number,
+                    target,
+                    strategy,
+                    StringUtils.isNotBlank(strategyStr)
+            );
+            this.head = h;
+            this.revision = new MockChangeRequestSCMRevision(h,
+                    new MockSCMRevision(h.getTarget(), targetRevision), revision);
         } else if (head.startsWith("TAG:")) {
             long timestamp = 0;
             try {
@@ -91,20 +122,21 @@ public class MockSCM extends SCM2 implements Serializable {
                 // ignore
             }
             this.head = new MockTagSCMHead(head.substring(4), timestamp);
+            this.revision = revision == null ? null : new MockSCMRevision(this.head, revision);
         } else {
             this.head = new MockSCMHead(head);
+            this.revision = revision == null ? null : new MockSCMRevision(this.head, revision);
         }
-        this.revision = revision == null ? null : new MockSCMRevision(this.head, revision);
     }
 
-    public MockSCM(MockSCMSource config, SCMHead head, MockSCMRevision revision) {
+    public MockSCM(MockSCMSource config, SCMHead head, SCMRevision revision) {
         this.controllerId = config.getControllerId();
         this.repository = config.getRepository();
         this.head = head;
         this.revision = revision;
     }
 
-    public MockSCM(MockSCMController controller, String repository, SCMHead head, MockSCMRevision revision) {
+    public MockSCM(MockSCMController controller, String repository, SCMHead head, SCMRevision revision) {
         this.controllerId = controller.getId();
         this.controller = controller;
         this.repository = repository;
@@ -138,7 +170,13 @@ public class MockSCM extends SCM2 implements Serializable {
     }
 
     public String getRevision() {
-        return revision == null ? null : revision.getHash();
+        if (revision instanceof MockSCMRevision) {
+            return ((MockSCMRevision) revision).getHash();
+        }
+        if (revision instanceof MockChangeRequestSCMRevision) {
+            return ((MockChangeRequestSCMRevision) revision).getHash();
+        }
+        return null;
     }
 
     @Override
@@ -158,15 +196,17 @@ public class MockSCM extends SCM2 implements Serializable {
             throws IOException, InterruptedException {
         if (baseline instanceof MockSCMRevisionState) {
             String revision;
-            if (this.revision == null) {
+            if (this.revision instanceof MockSCMRevision) {
+                revision = ((MockSCMRevision) this.revision).getHash();
+            } else if (this.revision instanceof MockChangeRequestSCMRevision) {
+                revision = ((MockChangeRequestSCMRevision) this.revision).getHash();
+            } else {
                 if (head instanceof MockChangeRequestSCMHead) {
                     revision = controller()
                             .getRevision(repository, "change-request/" + ((MockChangeRequestSCMHead) head).getNumber());
                 } else {
                     revision = controller().getRevision(repository, head.getName());
                 }
-            } else {
-                revision = this.revision.getHash();
             }
             if (((MockSCMRevisionState) baseline).getRevision().getHash().equals(revision)) {
                 return PollingResult.NO_CHANGES;
@@ -180,8 +220,15 @@ public class MockSCM extends SCM2 implements Serializable {
     public void checkout(@Nonnull Run<?, ?> build, @Nonnull Launcher launcher, @Nonnull FilePath workspace,
                          @Nonnull TaskListener listener, @CheckForNull File changelogFile,
                          @CheckForNull SCMRevisionState baseline) throws IOException, InterruptedException {
-        String hash =
-                controller().checkout(workspace, repository, revision == null ? head.getName() : revision.getHash());
+        String identifier;
+        if (this.revision instanceof MockSCMRevision) {
+            identifier = ((MockSCMRevision) this.revision).getHash();
+        } else if (this.revision instanceof MockChangeRequestSCMRevision) {
+            identifier = ((MockChangeRequestSCMRevision) this.revision).getHash();
+        } else {
+            identifier = head.getName();
+        }
+        String hash = controller().checkout(workspace, repository, identifier);
         FileWriter writer = new FileWriter(changelogFile);
         try {
             Items.XSTREAM2.toXML(controller().log(repository, hash), writer);

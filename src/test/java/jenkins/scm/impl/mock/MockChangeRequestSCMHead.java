@@ -26,17 +26,30 @@
 package jenkins.scm.impl.mock;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Locale;
+import jenkins.scm.api.SCMHeadOrigin;
+import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
 
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
+public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2 {
     private final String target;
     private final Integer number;
+    private final SCMHeadOrigin origin;
+    private final ChangeRequestCheckoutStrategy strategy;
 
-    public MockChangeRequestSCMHead(Integer number, String target) {
-        super("CR-" + number);
+    public MockChangeRequestSCMHead(SCMHeadOrigin origin, Integer number, String target,
+                                    ChangeRequestCheckoutStrategy strategy, boolean singleStrategy) {
+        super("CR-"+number + (singleStrategy ? "" : "-"+strategy.name().toLowerCase(Locale.ENGLISH)));
         this.number = number;
         this.target = target;
+        this.origin = origin;
+        this.strategy = ChangeRequestCheckoutStrategy.HEAD;
+    }
+
+    public MockChangeRequestSCMHead(Integer number, String target) {
+        this(null, number, target, ChangeRequestCheckoutStrategy.HEAD, true);
     }
 
     @NonNull
@@ -55,4 +68,22 @@ public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSC
         return number;
     }
 
+    @NonNull
+    @Override
+    public SCMHeadOrigin getOrigin() {
+        return origin == null ? SCMHeadOrigin.DEFAULT : origin;
+    }
+
+    @NonNull
+    @Override
+    public ChangeRequestCheckoutStrategy getCheckoutStrategy() {
+        return strategy;
+    }
+
+    @Override
+    public String getOriginName() {
+        // MockSCMController maintains a separate list of change-requests independent from the branches
+        // so unlike GitHub or Bitbucket, the name of a change request in the origin is the name.
+        return getName();
+    }
 }
