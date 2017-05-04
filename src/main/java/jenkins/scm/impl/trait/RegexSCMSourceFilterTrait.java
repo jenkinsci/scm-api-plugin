@@ -36,25 +36,56 @@ import jenkins.scm.api.trait.SCMNavigatorRequest;
 import jenkins.scm.api.trait.SCMNavigatorTrait;
 import jenkins.scm.api.trait.SCMNavigatorTraitDescriptor;
 import jenkins.scm.api.trait.SCMSourcePrefilter;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+/**
+ * Decorates a {@link SCMNavigator} with a {@link SCMSourcePrefilter} that excludes projects with names that do not
+ * match a user supplied regular expression.
+ *
+ * @since 2.2.0
+ */
 public class RegexSCMSourceFilterTrait extends SCMNavigatorTrait {
 
+    /**
+     * The regular expression.
+     */
+    @NonNull
     private final String regex;
+    /**
+     * The compiled {@link Pattern}.
+     */
     @CheckForNull
     private transient Pattern pattern;
 
+    /**
+     * Stapler constructor.
+     *
+     * @param regex the regular expression.
+     */
     @DataBoundConstructor
-    public RegexSCMSourceFilterTrait(String regex) {
+    public RegexSCMSourceFilterTrait(@NonNull String regex) {
         pattern = Pattern.compile(regex);
         this.regex = regex;
     }
 
+    /**
+     * Gets the regular expression.
+     *
+     * @return the regular expression.
+     */
+    @NonNull
     public String getRegex() {
         return regex;
     }
 
+    /**
+     * Gets the compiled {@link Pattern}.
+     *
+     * @return the compiled {@link Pattern}.
+     */
     @NonNull
     private Pattern getPattern() {
         if (pattern == null) {
@@ -64,6 +95,9 @@ public class RegexSCMSourceFilterTrait extends SCMNavigatorTrait {
         return pattern;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected <B extends SCMNavigatorContext<B, R>, R extends SCMNavigatorRequest> void decorateContext(B context) {
         context.withPrefilter(new SCMSourcePrefilter() {
@@ -74,14 +108,27 @@ public class RegexSCMSourceFilterTrait extends SCMNavigatorTrait {
         });
     }
 
+    /**
+     * Our descriptor.
+     */
     @Extension
     public static class DescriptorImpl extends SCMNavigatorTraitDescriptor {
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String getDisplayName() {
             return Messages.RegexSCMSourceFilterTrait_DisplayName();
         }
 
+        /**
+         * Form validation for the regular expression.
+         *
+         * @param value the regular expression.
+         * @return the validation results.
+         */
+        @Restricted(NoExternalUse.class) // stapler
         public FormValidation doCheckRegex(@QueryParameter String value) {
             try {
                 Pattern.compile(value);

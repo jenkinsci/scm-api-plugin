@@ -24,38 +24,73 @@
 
 package jenkins.scm.impl.trait;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import java.util.regex.Pattern;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMHeadPrefilter;
-import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceContext;
+import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+/**
+ * Decorates a {@link SCMSourceTrait} with a {@link SCMHeadPrefilter} that filters {@link SCMHead} instances based on
+ * matching wildcard include/exclude rules.
+ *
+ * @since 2.2.0
+ */
 public class WildcardSCMHeadFilterTrait extends SCMSourceTrait {
 
+    /**
+     * The include rules.
+     */
+    @NonNull
     private final String includes;
 
+    /**
+     * The exclude rules.
+     */
+    @NonNull
     private final String excludes;
 
+    /**
+     * Stapler constructor.
+     *
+     * @param includes the include rules.
+     * @param excludes the exclude rules.
+     */
     @DataBoundConstructor
-    public WildcardSCMHeadFilterTrait(String includes, String excludes) {
-        this.includes = includes;
-        this.excludes = excludes;
+    public WildcardSCMHeadFilterTrait(@CheckForNull String includes, String excludes) {
+        this.includes = StringUtils.defaultIfBlank(includes, "*");
+        this.excludes = StringUtils.defaultIfBlank(excludes, "");
     }
 
+    /**
+     * Returns the include rules.
+     *
+     * @return the include rules.
+     */
     public String getIncludes() {
         return includes;
     }
 
+    /**
+     * Returns the exclude rules.
+     *
+     * @return the exclude rules.
+     */
     public String getExcludes() {
         return excludes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected <B extends SCMSourceContext<B, R>, R extends SCMSourceRequest> void decorateContext(B context) {
         context.withPrefilter(new SCMHeadPrefilter() {
@@ -92,10 +127,15 @@ public class WildcardSCMHeadFilterTrait extends SCMSourceTrait {
         return quotedBranches.toString();
     }
 
-
+    /**
+     * Our descriptor.
+     */
     @Extension
     public static class DescriptorImpl extends SCMSourceTraitDescriptor {
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String getDisplayName() {
             return Messages.WildcardSCMHeadFilterTrait_DisplayName();

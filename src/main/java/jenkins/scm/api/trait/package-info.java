@@ -23,4 +23,10 @@
  *
  */
 
+/**
+ * An API/SPI to allow the sharing of common traits between different {@link jenkins.scm.api.SCMSource} and
+ * {@link jenkins.scm.api.SCMNavigator} implementations.
+ *
+ * @since 2.2.0
+ */
 package jenkins.scm.api.trait;

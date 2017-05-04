@@ -259,7 +259,7 @@ public abstract class SCMNavigatorContext<C extends SCMNavigatorContext<C, R>, R
      * Creates a new {@link SCMNavigatorRequest}.
      *
      * @param navigator the {@link SCMNavigator}.
-     * @param observer  the {@Link SCMSourceObserver}.
+     * @param observer  the {@link SCMSourceObserver}.
      * @return the {@link R}
      */
     @NonNull

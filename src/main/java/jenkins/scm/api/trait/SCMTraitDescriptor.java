@@ -36,12 +36,14 @@ import hudson.scm.SCMDescriptor;
  */
 public abstract class SCMTraitDescriptor<T extends SCMTrait<T>> extends Descriptor<T> {
 
+    // Constructors are package private in order to restrict trait specializations to the ones defined in this plugin
+
     /**
      * Constructor to use when type inferrence using {@link #SCMTraitDescriptor()} does not work.
      *
      * @param clazz Pass in the type of {@link SCMTrait}
      */
-    protected SCMTraitDescriptor(@NonNull Class<? extends T> clazz) {
+    /*package*/ SCMTraitDescriptor(@NonNull Class<? extends T> clazz) {
         super(clazz);
     }
 
@@ -50,7 +52,7 @@ public abstract class SCMTraitDescriptor<T extends SCMTrait<T>> extends Descript
      * This version works when you follow the common convention, where a descriptor
      * is written as the static nested class of the describable class.
      */
-    protected SCMTraitDescriptor() {
+    /*package*/ SCMTraitDescriptor() {
         super();
     }
 

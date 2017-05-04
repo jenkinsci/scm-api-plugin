@@ -28,6 +28,11 @@ import hudson.DescriptorExtensionList;
 import hudson.model.AbstractDescribableImpl;
 import jenkins.model.Jenkins;
 
+/**
+ * Base class for common traits.
+ *
+ * @param <T> the type of {@link SCMTrait} specialization.
+ */
 public class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribableImpl<T> {
     /**
      * {@inheritDoc}
@@ -37,8 +42,16 @@ public class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribableImpl<T> 
         return (SCMTraitDescriptor<T>) super.getDescriptor();
     }
 
-    public static <T extends SCMTrait<T>,D extends SCMTraitDescriptor<T>> DescriptorExtensionList<T, D> all(Class<T> type) {
-        return Jenkins.getActiveInstance().getDescriptorList(type);
+    /**
+     * Returns all the {@link SCMTrait} instances of the supplied specialization.
+     *
+     * @param specialization the specialization of {@link SCMTrait}
+     * @return all the {@link SCMTrait} instances of the supplied specialization.
+     */
+    /*package*/
+    static <T extends SCMTrait<T>, D extends SCMTraitDescriptor<T>> DescriptorExtensionList<T, D> all(
+            Class<T> specialization) {
+        return Jenkins.getActiveInstance().getDescriptorList(specialization);
     }
 
 }

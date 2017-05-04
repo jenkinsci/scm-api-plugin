@@ -27,6 +27,7 @@ package jenkins.scm.impl.mock;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.TaskListener;
@@ -128,18 +129,22 @@ public class MockSCMSource extends SCMSource {
                 for (final String branch : controller().listBranches(repository)) {
                     if (request.process(new MockSCMHead(branch),
                             new SCMSourceRequest.RevisionLambda<MockSCMHead, MockSCMRevision>() {
+                                @NonNull
                                 @Override
-                                public MockSCMRevision create(MockSCMHead head) throws IOException, InterruptedException {
+                                public MockSCMRevision create(@NonNull MockSCMHead head)
+                                        throws IOException, InterruptedException {
                                     controller().applyLatency();
                                     controller().checkFaults(repository, head.getName(), null, false);
                                     return new MockSCMRevision(head, controller().getRevision(repository, branch));
                                 }
                             }, new SCMSourceRequest.ProbeLambda<MockSCMHead, MockSCMRevision>() {
+                                @NonNull
                                 @Override
-                                public SCMSourceCriteria.Probe create(MockSCMHead head, MockSCMRevision revision) throws IOException, InterruptedException {
+                                public SCMSourceCriteria.Probe create(@NonNull MockSCMHead head, @Nullable
+                                        MockSCMRevision revisionInfo) throws IOException, InterruptedException {
                                     controller().applyLatency();
-                                    controller().checkFaults(repository, head.getName(), revision.getHash(), false);
-                                    return new MockSCMProbe(head, revision.getHash());
+                                    controller().checkFaults(repository, head.getName(), revisionInfo.getHash(), false);
+                                    return new MockSCMProbe(head, revisionInfo.getHash());
                                 }
                             })) {
                         return;
@@ -150,20 +155,23 @@ public class MockSCMSource extends SCMSource {
                 for (final String tag : controller().listTags(repository)) {
                     if (request.process(new MockTagSCMHead(tag, controller().getTagTimestamp(repository, tag)),
                             new SCMSourceRequest.RevisionLambda<MockTagSCMHead, MockSCMRevision>() {
+                                @NonNull
                                 @Override
-                                public MockSCMRevision create(MockTagSCMHead head)
+                                public MockSCMRevision create(@NonNull MockTagSCMHead head)
                                         throws IOException, InterruptedException {
                                     controller().applyLatency();
                                     controller().checkFaults(repository, head.getName(), null, false);
                                     return new MockSCMRevision(head, controller().getRevision(repository, tag));
                                 }
                             }, new SCMSourceRequest.ProbeLambda<MockTagSCMHead, MockSCMRevision>() {
+                                @NonNull
                                 @Override
-                                public SCMSourceCriteria.Probe create(MockTagSCMHead head, MockSCMRevision revision)
+                                public SCMSourceCriteria.Probe create(@NonNull MockTagSCMHead head, @Nullable
+                                        MockSCMRevision revisionInfo)
                                         throws IOException, InterruptedException {
                                     controller().applyLatency();
-                                    controller().checkFaults(repository, head.getName(), revision.getHash(), false);
-                                    return new MockSCMProbe(head, revision.getHash());
+                                    controller().checkFaults(repository, head.getName(), revisionInfo.getHash(), false);
+                                    return new MockSCMProbe(head, revisionInfo.getHash());
                                 }
                             })) {
                         return;
@@ -183,9 +191,11 @@ public class MockSCMSource extends SCMSource {
                                                 ? new SCMHeadOrigin.Fork("fork")
                                                 : null,
                                         number, target, strategy, singleStrategy),
-                                new SCMSourceRequest.RevisionLambda<MockChangeRequestSCMHead, MockChangeRequestSCMRevision>() {
+                                new SCMSourceRequest.RevisionLambda<MockChangeRequestSCMHead,
+                                        MockChangeRequestSCMRevision>() {
+                                    @NonNull
                                     @Override
-                                    public MockChangeRequestSCMRevision create(MockChangeRequestSCMHead head)
+                                    public MockChangeRequestSCMRevision create(@NonNull MockChangeRequestSCMHead head)
                                             throws IOException, InterruptedException {
                                         controller().applyLatency();
                                         controller().checkFaults(repository, head.getName(), null, false);
@@ -197,14 +207,18 @@ public class MockSCMSource extends SCMSource {
                                                 new MockSCMRevision(head.getTarget(), targetRevision), revision);
                                     }
                                 },
-                                new SCMSourceRequest.ProbeLambda<MockChangeRequestSCMHead, MockChangeRequestSCMRevision>() {
+                                new SCMSourceRequest.ProbeLambda<MockChangeRequestSCMHead,
+                                        MockChangeRequestSCMRevision>() {
+                                    @NonNull
                                     @Override
-                                    public SCMSourceCriteria.Probe create(MockChangeRequestSCMHead head,
-                                                                          MockChangeRequestSCMRevision revision)
+                                    public SCMSourceCriteria.Probe create(@NonNull MockChangeRequestSCMHead head,
+                                                                          @Nullable
+                                                                                  MockChangeRequestSCMRevision revisionInfo)
                                             throws IOException, InterruptedException {
                                         controller().applyLatency();
-                                        controller().checkFaults(repository, head.getName(), revision.getHash(), false);
-                                        return new MockSCMProbe(head, revision.getHash());
+                                        controller()
+                                                .checkFaults(repository, head.getName(), revisionInfo.getHash(), false);
+                                        return new MockSCMProbe(head, revisionInfo.getHash());
                                     }
                                 })) {
                             return;

@@ -58,7 +58,8 @@ public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
      * SPI: Override this method to decorate a {@link SCMSourceContext}. You can assume that your
      * {@link SCMSourceTraitDescriptor#isApplicableToContext(Class)} is {@code true} within this method.
      *
-     * @param context the context (invariant: {@link SCMSourceTraitDescriptor#isApplicableToContext(Class)} is {@code true})
+     * @param context the context (invariant: {@link SCMSourceTraitDescriptor#isApplicableToContext(Class)} is {@code
+     *                true})
      * @param <B>     generic type parameter to ensure type information available.
      * @param <R>     generic type parameter to ensure type information available.
      */
@@ -131,21 +132,45 @@ public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SCMSourceTraitDescriptor getDescriptor() {
         return (SCMSourceTraitDescriptor) super.getDescriptor();
     }
 
+    /**
+     * Returns all the {@link SCMSourceTraitDescriptor} instances.
+     *
+     * @return all the {@link SCMSourceTraitDescriptor} instances.
+     */
     public static DescriptorExtensionList<SCMSourceTrait, SCMSourceTraitDescriptor> all() {
         return SCMTrait.all(SCMSourceTrait.class);
     }
 
+    /**
+     * Returns the subset of {@link SCMSourceTraitDescriptor} instances that are applicable to the specified types
+     * of {@link SCMSourceContext} and {@link SCMSourceBuilder}.
+     *
+     * @param contextClass (optional) type of {@link SCMSourceContext}.
+     * @param builderClass (optional) type of {@link SCMBuilder}.
+     * @return the list of matching {@link SCMSourceTraitDescriptor} instances.
+     */
     public static List<SCMSourceTraitDescriptor> _for(Class<? extends SCMSourceContext> contextClass,
                                                       Class<? extends SCMBuilder> builderClass) {
         return _for(null, contextClass, builderClass);
     }
 
+    /**
+     * Returns the subset of {@link SCMSourceTraitDescriptor} instances that are applicable to the specified
+     * {@link SCMSourceDescriptor} and specified types of {@link SCMNavigatorContext} and {@link SCMSourceBuilder}.
+     *
+     * @param scmSource    (optional) {@link SCMSourceDescriptor}.
+     * @param contextClass (optional) type of {@link SCMSourceContext}.
+     * @param builderClass (optional) type of {@link SCMBuilder}.
+     * @return the list of matching {@link SCMSourceTraitDescriptor} instances.
+     */
     public static List<SCMSourceTraitDescriptor> _for(@CheckForNull SCMSourceDescriptor scmSource,
                                                       @CheckForNull Class<? extends SCMSourceContext> contextClass,
                                                       @CheckForNull Class<? extends SCMBuilder> builderClass) {

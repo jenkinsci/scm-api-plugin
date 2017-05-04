@@ -33,28 +33,62 @@ import jenkins.scm.api.trait.SCMNavigatorRequest;
 import jenkins.scm.api.trait.SCMNavigatorTrait;
 import jenkins.scm.api.trait.SCMNavigatorTraitDescriptor;
 import jenkins.scm.api.trait.SCMSourcePrefilter;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+/**
+ * Decorates a {@link SCMNavigator} with a {@link SCMSourcePrefilter} that filters project names based on
+ * matching wildcard include/exclude rules.
+ *
+ * @since 2.2.0
+ */
 public class WildcardSCMSourceFilterTrait extends SCMNavigatorTrait {
 
+    /**
+     * The include rules.
+     */
+    @NonNull
     private final String includes;
 
+    /**
+     * The exclude rules.
+     */
+    @NonNull
     private final String excludes;
 
+    /**
+     * Stapler constructor.
+     *
+     * @param includes the include rules.
+     * @param excludes the exclude rules.
+     */
     @DataBoundConstructor
     public WildcardSCMSourceFilterTrait(String includes, String excludes) {
-        this.includes = includes;
-        this.excludes = excludes;
+        this.includes = StringUtils.defaultIfBlank(includes, "*");
+        this.excludes = StringUtils.defaultIfBlank(excludes, "");
     }
 
+    /**
+     * Returns the include rules.
+     *
+     * @return the include rules.
+     */
     public String getIncludes() {
         return includes;
     }
 
+    /**
+     * Returns the exclude rules.
+     *
+     * @return the exclude rules.
+     */
     public String getExcludes() {
         return excludes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected <B extends SCMNavigatorContext<B, R>, R extends SCMNavigatorRequest> void decorateContext(B context) {
         context.withPrefilter(new SCMSourcePrefilter() {
@@ -91,10 +125,15 @@ public class WildcardSCMSourceFilterTrait extends SCMNavigatorTrait {
         return quotedBranches.toString();
     }
 
-
+    /**
+     * Our descriptor.
+     */
     @Extension
     public static class DescriptorImpl extends SCMNavigatorTraitDescriptor {
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String getDisplayName() {
             return Messages.WildcardSCMSourceFilterTrait_DisplayName();

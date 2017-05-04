@@ -118,7 +118,7 @@ public abstract class SCMSourceRequest implements Closeable {
     /**
      * Constructor.
      *
-     * @param source  the source.
+     * @param source   the source.
      * @param context  the context.
      * @param listener the (optional) {@link TaskListener}.
      */
@@ -134,6 +134,22 @@ public abstract class SCMSourceRequest implements Closeable {
         this.observer = context.observer();
         this.observerIncludes = observer.getIncludes();
         this.listener = defaultListener(listener);
+    }
+
+    /**
+     * Records a processing result to the {@linkplain Witness}es.
+     *
+     * @param head      the {@link SCMHead}.
+     * @param revision  the {@link SCMRevision}.
+     * @param isMatch   {@code true} if the head:revision pair was sent to the {@link #observer}.
+     * @param witnesses the {@link Witness} instances to notify.
+     */
+    @SuppressWarnings("unchecked")
+    private static void record(@NonNull SCMHead head, SCMRevision revision, boolean isMatch,
+                               @NonNull Witness... witnesses) {
+        for (Witness witness : witnesses) {
+            witness.record(head, revision, isMatch);
+        }
     }
 
     /**
@@ -154,22 +170,6 @@ public abstract class SCMSourceRequest implements Closeable {
             return new LogTaskListener(Logger.getLogger(getClass().getName()), level);
         }
         return listener;
-    }
-
-    /**
-     * Records a processing result to the {@linkplain Witness}es.
-     *
-     * @param head      the {@link SCMHead}.
-     * @param revision  the {@link SCMRevision}.
-     * @param isMatch   {@code true} if the head:revision pair was sent to the {@link #observer}.
-     * @param witnesses the {@link Witness} instances to notify.
-     */
-    @SuppressWarnings("unchecked")
-    private static void record(@NonNull SCMHead head, SCMRevision revision, boolean isMatch,
-                               @NonNull Witness... witnesses) {
-        for (Witness witness : witnesses) {
-            witness.record(head, revision, isMatch);
-        }
     }
 
     /**
@@ -244,19 +244,22 @@ public abstract class SCMSourceRequest implements Closeable {
      * @throws InterruptedException if the processing was interrupted.
      */
     public final <H extends SCMHead, R extends SCMRevision> boolean process(final @NonNull H head,
-                                                                            final R revision,
+                                                                            final @NonNull R revision,
                                                                             @NonNull ProbeLambda<H, R> probeFactory,
                                                                             @NonNull Witness... witnesses)
             throws IOException, InterruptedException {
         return process(head, new IntermediateLambda<R>() {
+            @Nullable
             @Override
             public R create() throws IOException, InterruptedException {
                 return revision;
             }
         }, probeFactory, new LazyRevisionLambda<H, SCMRevision, R>() {
+            @NonNull
             @Override
-            public SCMRevision create(H head, R intermediate) throws IOException, InterruptedException {
-                return intermediate;
+            public SCMRevision create(@NonNull H head, @Nullable R ignored)
+                    throws IOException, InterruptedException {
+                return revision;
             }
         }, witnesses);
     }
@@ -283,14 +286,18 @@ public abstract class SCMSourceRequest implements Closeable {
                                                                             @NonNull Witness... witnesses)
             throws IOException, InterruptedException {
         return process(head, new IntermediateLambda<R>() {
+            @NonNull
             @Override
             public R create() throws IOException, InterruptedException {
                 return revisionFactory.create(head);
             }
         }, probeFactory, new LazyRevisionLambda<H, SCMRevision, R>() {
+            @NonNull
             @Override
-            public SCMRevision create(H head, R intermediate) throws IOException, InterruptedException {
-                return intermediate;
+            public SCMRevision create(@NonNull H head, @Nullable R revision)
+                    throws IOException, InterruptedException {
+                assert revision != null;
+                return revision;
             }
         }, witnesses);
     }
@@ -335,7 +342,7 @@ public abstract class SCMSourceRequest implements Closeable {
             try {
                 for (SCMSourceCriteria c : criteria) {
                     if (!c.isHead(probe, listener)) {
-                        record((H) head, null, false, witnesses);
+                        record(head, null, false, witnesses);
                         // not a match against criteria
                         return !observer.isObserving();
                     }
@@ -423,6 +430,14 @@ public abstract class SCMSourceRequest implements Closeable {
      * @param <R> the type of {@link SCMRevision}.
      */
     public interface RevisionLambda<H extends SCMHead, R extends SCMRevision> {
+        /**
+         * Creates a {@link SCMRevision} for the specified {@link SCMHead}.
+         *
+         * @param head the {@link SCMHead}.
+         * @return the {@link SCMRevision}.
+         * @throws IOException          if there is an I/O error.
+         * @throws InterruptedException if the operation was interrupted.
+         */
         @NonNull
         R create(@NonNull H head) throws IOException, InterruptedException;
     }
@@ -439,21 +454,23 @@ public abstract class SCMSourceRequest implements Closeable {
      * @see IntermediateLambda
      */
     public interface ProbeLambda<H extends SCMHead, I> {
+        /**
+         * Creates a {@link SCMSourceCriteria.Probe} (ideally a {@link SCMProbe}) for the specified {@link SCMHead}
+         * and {@link SCMRevision} produced by {@link RevisionLambda} or intermediate produced by
+         * {@link IntermediateLambda}
+         *
+         * @param head         the {@link SCMHead}.
+         * @param revisionInfo depending on the type of {@link I} this is either a {@link SCMRevision} produced by a
+         *                     {@link RevisionLambda} or an intermediate produced by a {@link IntermediateLambda}.
+         *                     It could also be {@code null} if the implementation has captured sufficient information
+         *                     to create the {@link SCMSourceCriteria.Probe}.
+         * @return ideally a {@link SCMProbe}.
+         * @throws IOException          if there is an I/O error.
+         * @throws InterruptedException if the operation was interrupted.
+         */
         @NonNull
-        SCMSourceCriteria.Probe create(@NonNull H head, @Nullable I revision) throws IOException, InterruptedException;
-    }
-
-    /**
-     * A lambda that will create the {@link SCMRevision} instance for a specific {@link SCMHead} using the intermediate
-     * value produced by a {@link IntermediateLambda}.
-     * @param <H> the type of {@link SCMHead}
-     * @param <R> the type of {@link SCMRevision}.
-     * @param <I> the type of intermediate value produced by the {@link IntermediateLambda}.
-     *           @see IntermediateLambda
-     */
-    public interface LazyRevisionLambda<H extends SCMHead, R extends SCMRevision, I> {
-        @NonNull
-        R create(@NonNull H head, @Nullable I intermediate) throws IOException, InterruptedException;
+        SCMSourceCriteria.Probe create(@NonNull H head, @Nullable I revisionInfo)
+                throws IOException, InterruptedException;
     }
 
     /**
@@ -471,21 +488,66 @@ public abstract class SCMSourceRequest implements Closeable {
      * the computation of the merge revision can be avoided completely.
      *
      * @param <I> the type of intermediate value or {@link Void} if no intermediate is required.
-     *           @see LazyRevisionLambda
-     *           @see ProbeLambda
+     * @see LazyRevisionLambda
+     * @see ProbeLambda
      */
     public interface IntermediateLambda<I> {
+
+        /**
+         * Creates an intermediate representation of the {@link SCMRevision} that can be used by {@link ProbeLambda}
+         * and {@link LazyRevisionLambda} to create the {@link SCMSourceCriteria.Probe} and {@link SCMRevision}
+         * respectively. This lambda is used where the creation of the {@link SCMRevision} may involve a
+         * <strong>more time costly</strong> operation that the creation of the {@link SCMSourceCriteria.Probe}.
+         *
+         * @return the intermediate (or {@code null} if the implementer of {@link ProbeLambda} and
+         * {@link LazyRevisionLambda} is expecting {@code null} under defined conditions).
+         * @throws IOException          if there is an I/O error.
+         * @throws InterruptedException if the operation was interrupted.
+         */
         @Nullable
         I create() throws IOException, InterruptedException;
     }
 
     /**
+     * A lambda that will create the {@link SCMRevision} instance for a specific {@link SCMHead} using the intermediate
+     * value produced by a {@link IntermediateLambda}.
+     *
+     * @param <H> the type of {@link SCMHead}
+     * @param <R> the type of {@link SCMRevision}.
+     * @param <I> the type of intermediate value produced by the {@link IntermediateLambda}.
+     * @see IntermediateLambda
+     */
+    public interface LazyRevisionLambda<H extends SCMHead, R extends SCMRevision, I> {
+        /**
+         * Creates a {@link SCMRevision} for the specified {@link SCMHead} using the supplied intermediate previously
+         * generated by an {@link IntermediateLambda}.
+         *
+         * @param head         the {@link SCMHead}.
+         * @param intermediate the intermediate (may be {@code null} if no {@link IntermediateLambda} was provided
+         *                     or if the {@link IntermediateLambda} can return {@code null}.
+         * @return the {@link SCMRevision}.
+         * @throws IOException          if there is an I/O error.
+         * @throws InterruptedException if the operation was interrupted.
+         */
+        @NonNull
+        R create(@NonNull H head, @Nullable I intermediate) throws IOException, InterruptedException;
+    }
+
+    /**
      * Callback lambda to track the results of
      * {@link #process(SCMHead, IntermediateLambda, ProbeLambda, LazyRevisionLambda, Witness[])}
+     *
      * @param <H> the type of {@link SCMHead}
      * @param <R> the type of {@link SCMRevision}
      */
     public interface Witness<H extends SCMHead, R extends SCMRevision> {
+        /**
+         * Records the result of a {@link SCMHead}.
+         *
+         * @param head     the {@link SCMHead}.
+         * @param revision (optional) the resolved {@link SCMRevision}.
+         * @param isMatch  {@code true} if the head matched.
+         */
         void record(@NonNull H head, @CheckForNull R revision, boolean isMatch);
     }
 }
