@@ -48,9 +48,9 @@ import jenkins.scm.api.SCMSourceObserver;
  * <li>All methods should be either {@code final} or {@code abstract} unless there is a documented reason for
  * allowing overrides</li>
  * <li>All "setter" methods will return {@link C} and be called "withXxx"</li>
- * <li>All "getter" methods will called "xxx()" callers should not assume that the returned value is resistent
- * from concurrent changes but implementations should ensure that the returned value is immutable by the caller.
- * In other words, it is intentional to reduce intermediate allocations by
+ * <li>All "getter" methods will be called "xxx()". Callers should not assume that the returned value is resistant
+ * from concurrent changes. Implementations should ensure that the returned value is immutable by the caller.
+ * In other words, it is intentional for implementations to reduce intermediate allocations by
  * {@code return Collections.unmodifiableList(theList);} rather than the concurrency safe
  * {@code return Collections.unmodifiableList(new ArrayList<>(theList));}
  * </li>
