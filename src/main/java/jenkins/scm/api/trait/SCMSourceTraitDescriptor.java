@@ -55,13 +55,22 @@ public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSou
     }
 
     /**
+     * Returns the type of {@link SCMBuilder} that this {@link SCMSourceTrait} is applicable to.
+     *
+     * @return the type of {@link SCMBuilder} that this {@link SCMSourceTrait} is applicable to.
+     */
+    public Class<? extends SCMBuilder> getBuilderClass() {
+        return SCMBuilder.class;
+    }
+
+    /**
      * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMBuilder}.
      *
      * @param builderClass the type of {@link SCMBuilder}.
      * @return {@code true} if applicable to the specified type of {@link SCMBuilder}.
      */
     public boolean isApplicableToBuilder(@NonNull Class<? extends SCMBuilder> builderClass) {
-        return true;
+        return getBuilderClass().isAssignableFrom(builderClass);
     }
 
     /**
@@ -75,13 +84,22 @@ public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSou
     }
 
     /**
+     * Returns the type of {@link SCMSourceContext} that this {@link SCMSourceTrait} is applicable to.
+     *
+     * @return the type of {@link SCMSourceContext} that this {@link SCMSourceTrait} is applicable to.
+     */
+    public Class<? extends SCMSourceContext> getContextClass() {
+        return SCMSourceContext.class;
+    }
+
+    /**
      * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMSourceContext}.
      *
      * @param contextClass the type of {@link SCMSourceContext}.
      * @return {@code true} if applicable to the specified type of {@link SCMSourceContext}.
      */
     public boolean isApplicableToContext(@NonNull Class<? extends SCMSourceContext> contextClass) {
-        return true;
+        return getContextClass().isAssignableFrom(contextClass);
     }
 
     /**
@@ -95,13 +113,22 @@ public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSou
     }
 
     /**
-     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCMSource}.
+     * Returns the type of {@link SCMSource} that this {@link SCMSourceTrait} is applicable to.
      *
-     * @param source the {@link SCMSource}.
-     * @return {@code true} if applicable to the specified {@link SCMSource}.
+     * @return the type of {@link SCMSource} that this {@link SCMSourceTrait} is applicable to.
      */
-    public boolean isApplicableTo(@NonNull SCMSource source) {
-        return isApplicableTo(source.getDescriptor());
+    public Class<? extends SCMSource> getSourceClass() {
+        return SCMSource.class;
+    }
+
+    /**
+     * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMSource}.
+     *
+     * @param sourceClass the type of {@link SCMSource}.
+     * @return {@code true} if applicable to the specified type of {@link SCMSource}.
+     */
+    public boolean isApplicableTo(@NonNull Class<? extends SCMSource> sourceClass) {
+        return getSourceClass().isAssignableFrom(sourceClass);
     }
 
     /**
@@ -115,13 +142,13 @@ public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSou
     }
 
     /**
-     * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMSource}.
+     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCMSource}.
      *
-     * @param sourceClass the type of {@link SCMSource}.
-     * @return {@code true} if applicable to the specified type of {@link SCMSource}.
+     * @param source the {@link SCMSource}.
+     * @return {@code true} if applicable to the specified {@link SCMSource}.
      */
-    public boolean isApplicableTo(@NonNull Class<? extends SCMSource> sourceClass) {
-        return true;
+    public boolean isApplicableTo(@NonNull SCMSource source) {
+        return isApplicableTo(source.getDescriptor());
     }
 
 }

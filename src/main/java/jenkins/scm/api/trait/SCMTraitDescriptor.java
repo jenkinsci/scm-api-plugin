@@ -57,23 +57,32 @@ public abstract class SCMTraitDescriptor<T extends SCMTrait<T>> extends Descript
     }
 
     /**
-     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCM}.
+     * Returns the type of {@link SCM} that this {@link SCMTrait} is applicable to.
+     *
+     * @return the type of {@link SCM} that this {@link SCMTrait} is applicable to.
+     */
+    public Class<? extends SCM> getScmClass() {
+        return SCM.class;
+    }
+
+    /**
+     * Checks if the {@link SCMTrait} is relevant to the specified type of {@link SCM}.
+     *
+     * @param scmClass the type of {@link SCM}.
+     * @return {@code true} if applicable to the specified type of {@link SCM}.
+     */
+    public boolean isApplicableToSCM(@NonNull Class<? extends SCM> scmClass) {
+        return getScmClass().isAssignableFrom(scmClass);
+    }
+
+    /**
+     * Checks if the {@link SCMTrait} is relevant to the specified {@link SCM}.
      *
      * @param scm the {@link SCMDescriptor} for the type of {@link SCM}.
      * @return {@code true} if applicable to the specified type of {@link SCM}.
      */
     public boolean isApplicableToSCM(@NonNull SCMDescriptor<?> scm) {
         return isApplicableToSCM(scm.getT());
-    }
-
-    /**
-     * Checks if the {@link SCMSourceTrait} is relevant to the specified type of {@link SCMBuilder}.
-     *
-     * @param scmClass the type of {@link SCMBuilder}.
-     * @return {@code true} if applicable to the specified type of {@link SCMBuilder}.
-     */
-    public boolean isApplicableToSCM(@NonNull Class<? extends SCM> scmClass) {
-        return true;
     }
 
 }
