@@ -172,14 +172,14 @@ public class MockSCMNavigator extends SCMNavigator {
             return result;
         }
 
-        public List<SCMTraitDescriptor<?>> getTraitDescriptors() {
+        public List<SCMTraitDescriptor<?>> getTraitsDescriptors() {
             List<SCMTraitDescriptor<?>> descriptors = new ArrayList<SCMTraitDescriptor<?>>();
             descriptors.addAll(SCMNavigatorTrait._for(MockSCMNavigatorContext.class, MockSCMSourceBuilder.class));
             descriptors.addAll(SCMSourceTrait._for(MockSCMSourceContext.class, MockSCMBuilder.class));
             return descriptors;
         }
 
-        public List<SCMTrait<?>> getTraitDefaults() {
+        public List<SCMTrait<?>> getTraitsDefaults() {
             return Collections.<SCMTrait<?>>singletonList(new MockSCMDiscoverBranches());
         }
     }

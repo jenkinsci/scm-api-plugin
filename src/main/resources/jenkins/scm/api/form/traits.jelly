@@ -29,7 +29,9 @@ THE SOFTWARE.
   <st:documentation>
     Data-bound only version of &lt;f:hetero-list&gt; specialized for traits.
     <st:attribute name="field" use="required">
-      Used for the data binding.
+      Used for the data binding. Note: if the descriptor implements a getXxxDescriptorLists that returns a List
+      of jenkins.scm.impl.form.NamedArrayList this will enable the sectioned listing of traits otherwise this
+      will fall back to looking for a getXxxDescriptors and finally inferrence of the descriptors.
     </st:attribute>
     <st:attribute name="default">
       default configuration to use (if descriptor does not have a getFieldDefaults() method).
@@ -82,46 +84,87 @@ THE SOFTWARE.
   </d:taglib>
 
   <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
+  <st:adjunct includes="jenkins.scm.api.form.traits.traits"/>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
-  <j:set var="descriptors"
-         value="${descriptor[attrs.field+'Descriptors'] ?: descriptor.getPropertyType(instance,attrs.field).getApplicableItemDescriptors()}"/>
+  <j:set var="descriptorLists" value="${descriptor[attrs.field+'DescriptorLists']}"/>
+  <j:if test="${descriptorLists==null}">
+    <!-- if you don't implement a descriptor.getXxxDescriptorLists then fall back to standard and no sections -->
+    <j:new var="descriptorLists" className="java.util.ArrayList"/>
+    <j:invoke on="${descriptorLists}" method="add">
+      <j:arg value="${descriptor[attrs.field+'Descriptors'] ?: descriptor.getPropertyType(instance,attrs.field).getApplicableItemDescriptors()}"/>
+    </j:invoke>
+  </j:if>
+  <j:set var="renderSections" value="${descriptorLists.size() &gt; 1}"/>
   <div class="hetero-list-container with-drag-drop one-each honor-order">
     <!-- display existing items -->
-    <j:forEach var="i"
-               items="${instance != null ? instance[attrs.field] : (attrs.default ?: descriptor[attrs.field+'Defaults'])}">
-      <j:set var="descriptor" value="${i.descriptor}"/>
-      <j:set var="instance" value="${i}"/>
-      <div name="${attrs.field}" class="repeated-chunk" descriptorId="${descriptor.id}">
-        <local:body deleteCaption="${attrs.deleteCaption}">
-          <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
-        </local:body>
-      </div>
+    <j:set var="instances"
+           value="${instance != null ? instance[attrs.field] : (attrs.default ?: descriptor[attrs.field+'Defaults'])}"/>
+    <j:forEach var="descriptors" items="${descriptorLists}" varStatus="descriptorsLoop">
+      <j:if test="${renderSections}">
+        <!-- hijack descriptorId to provide permanent placeholders for the section headers
+          descriptorId is not used in form submission, only to determine sections already present (one-each CSS style)
+          and to determine the placing of sections with the sequence (honor-order CSS style)
+          thus we get the section headers in the menu (but disabled) and the entries are added to their respective
+          sections
+        -->
+        <div name="${attrs.field}" class="repeated-chunk trait-section"
+             descriptorId="!fake@section/[${descriptorsLoop.index}]">
+          <span class="trait-section-header">
+            <span>${descriptors.getName()}</span>
+          </span>
+        </div>
+      </j:if>
+      <j:forEach var="i" items="${instances}">
+        <j:if test="${descriptors.contains(i.descriptor)}">
+          <j:set var="descriptor" value="${i.descriptor}"/>
+          <j:set var="instance" value="${i}"/>
+          <div name="${attrs.field}" class="repeated-chunk" descriptorId="${descriptor.id}">
+            <local:body deleteCaption="${attrs.deleteCaption}">
+              <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
+            </local:body>
+          </div>
+        </j:if>
+      </j:forEach>
     </j:forEach>
 
     <div class="repeatable-insertion-point"/>
 
     <div class="prototypes to-be-removed">
-      <!-- render one prototype for each type -->
-      <j:set var="instance" value="${null}"/>
-      <j:set var="descriptors" value="${h.filterDescriptors(it,descriptors)}"/>
-      <j:forEach var="descriptor" items="${descriptors}" varStatus="loop">
-        <div name="${attrs.field}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}"
-             descriptorId="${descriptor.id}">
-          <j:set var="capture" value="${attrs.capture?:''}"/>
-          <local:body deleteCaption="${attrs.deleteCaption}">
-            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,${capture}">
-              <l:ajax>
-                <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
-              </l:ajax>
-            </l:renderOnDemand>
-          </local:body>
-        </div>
+      <j:forEach var="descriptors" items="${descriptorLists}" varStatus="descriptorsLoop">
+        <!-- render one prototype for each type -->
+        <j:set var="instance" value="${null}"/>
+        <j:set var="filteredDescriptors" value="${h.filterDescriptors(it,descriptors)}"/>
+        <j:if test="${!filteredDescriptors.isEmpty()}">
+          <j:if test="${renderSections}">
+            <div name="${attrs.field}" title="&#8212; ${descriptors.getName()} &#8212;"
+                 descriptorId="!fake@section/[${descriptorsLoop.index}]">
+              <span class="trait-section-header">
+                <span>${descriptors.getName()}</span>
+              </span>
+            </div>
+          </j:if>
+          <j:forEach var="descriptor" items="${filteredDescriptors}" varStatus="loop">
+            <div name="${attrs.field}" title="${descriptor.displayName}"
+                 tooltip="${descriptor.tooltip?:'Why does nobody use me'}"
+                 descriptorId="${descriptor.id}">
+              <j:set var="capture" value="${attrs.capture?:''}"/>
+              <local:body deleteCaption="${attrs.deleteCaption}">
+                <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,${capture}">
+                  <l:ajax>
+                    <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
+                  </l:ajax>
+                </l:renderOnDemand>
+              </local:body>
+            </div>
+          </j:forEach>
+        </j:if>
       </j:forEach>
     </div>
 
     <div>
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}"
+      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add trait-add"
+             menualign="${attrs.menuAlign}"
              suffix="${attrs.field}"/>
     </div>
   </div>
