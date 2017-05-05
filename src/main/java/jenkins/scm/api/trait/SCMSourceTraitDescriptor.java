@@ -138,7 +138,7 @@ public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSou
      * @return {@code true} if applicable to the specified {@link SCMSourceDescriptor}.
      */
     public boolean isApplicableTo(@NonNull SCMSourceDescriptor descriptor) {
-        return isApplicableTo(descriptor.getT());
+        return isApplicableTo(descriptor.clazz);
     }
 
     /**

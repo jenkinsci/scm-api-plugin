@@ -82,7 +82,7 @@ public abstract class SCMTraitDescriptor<T extends SCMTrait<T>> extends Descript
      * @return {@code true} if applicable to the specified type of {@link SCM}.
      */
     public boolean isApplicableToSCM(@NonNull SCMDescriptor<?> scm) {
-        return isApplicableToSCM(scm.getT());
+        return isApplicableToSCM(scm.clazz);
     }
 
 }

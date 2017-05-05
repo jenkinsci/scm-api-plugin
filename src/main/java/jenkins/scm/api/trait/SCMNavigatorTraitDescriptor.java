@@ -140,7 +140,7 @@ public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCM
      * @return {@code true} if applicable to the specified {@link SCMSourceDescriptor}.
      */
     public boolean isApplicableToSource(@NonNull SCMSourceDescriptor descriptor) {
-        return isApplicableToSource(descriptor.getT());
+        return isApplicableToSource(descriptor.clazz);
     }
 
     /**
@@ -179,7 +179,7 @@ public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCM
      * @return {@code true} if applicable to the specified {@link SCMNavigatorDescriptor}.
      */
     public boolean isApplicableTo(@NonNull SCMNavigatorDescriptor descriptor) {
-        return isApplicableTo(descriptor.getT());
+        return isApplicableTo(descriptor.clazz);
     }
 
     /**
