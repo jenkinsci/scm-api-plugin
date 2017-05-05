@@ -94,6 +94,29 @@ public class NamedArrayList<E> extends ArrayList<E> {
     public static <E> void select(@NonNull List<? extends E> source, @NonNull String name,
                                   @CheckForNull Predicate<? super E> selector, boolean removeSelectedFromSource,
                                   @NonNull List<NamedArrayList<? extends E>> destination) {
+        select(source, name, selector, removeSelectedFromSource, destination, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Helper method that creates a new {@link NamedArrayList} by selecting matching elements from a source list
+     * and appends the new {@link NamedArrayList} to a list of {@link NamedArrayList}.
+     *
+     * @param source                   the list of candidate elements.
+     * @param name                     the name.
+     * @param selector                 the (optional) selection criteria (if {@code null} then all candidate elements
+     *                                 will be added)
+     * @param removeSelectedFromSource if {@code true} then the matching elements will be removed from the source.
+     * @param destination              the {@link List} of {@link NamedArrayList} to add to (empty selections will
+     *                                 not be added)
+     * @param index                    index at which the specified selection is to be inserted (will be coerced into
+     *                                 the valid range
+     *                                 to remove the risk of {@link IndexOutOfBoundsException}).
+     * @param <E>                      the type of element.
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> void select(@NonNull List<? extends E> source, @NonNull String name,
+                                  @CheckForNull Predicate<? super E> selector, boolean removeSelectedFromSource,
+                                  @NonNull List<NamedArrayList<? extends E>> destination, int index) {
         NamedArrayList<E> selection = new NamedArrayList<E>(name);
         if (selector == null) {
             selection.addAll(source);
@@ -112,7 +135,7 @@ public class NamedArrayList<E> extends ArrayList<E> {
             }
         }
         if (!selection.isEmpty()) {
-            destination.add(selection);
+            destination.add(Math.min(destination.size(), Math.max(index, 0)), selection);
         }
     }
 
