@@ -5,6 +5,10 @@ DIV.repeated-chunk.trait-section {
     padding: 0.1em;
 }
 
+DIV.repeated-chunk.trait-section.trait-section-empty {
+    display: none;
+}
+
 SPAN.trait-section-header {
     position: relative;
     overflow: hidden;

@@ -112,6 +112,7 @@ public class RegexSCMSourceFilterTrait extends SCMNavigatorTrait {
      * Our descriptor.
      */
     @Extension
+    @Selection
     public static class DescriptorImpl extends SCMNavigatorTraitDescriptor {
 
         /**

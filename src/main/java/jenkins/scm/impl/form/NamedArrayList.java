@@ -26,15 +26,15 @@ package jenkins.scm.impl.form;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import jenkins.scm.api.FormTagLib;
 
 /**
- * An {@link ArrayList} that also has an associated name for use with the {@link FormTagLib#traits()} tag.
+ * An {@link ArrayList} that also has an associated name for use with the {@code FormTagLib.traits()} tag.
  *
  * @param <E> the type of element.
  */
@@ -140,6 +140,71 @@ public class NamedArrayList<E> extends ArrayList<E> {
     }
 
     /**
+     * Combines {@link Predicate} instances using a boolean short-circuit logical AND.
+     *
+     * @param predicates the predicates to combine.
+     * @param <E>        type.
+     * @return a composite predicate.
+     */
+    public static <E> Predicate<E> allOf(final Predicate<? super E>... predicates) {
+        if (predicates.length < 2) {
+            throw new IllegalArgumentException("Must supply at least two predicates");
+        }
+        return new Predicate<E>() {
+            @Override
+            public boolean test(E e) {
+                for (Predicate<? super E> p : predicates) {
+                    if (!p.test(e)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        };
+    }
+
+    /**
+     * Combines {@link Predicate} instances using a boolean short-circuit logical OR.
+     *
+     * @param predicates the predicates to combine.
+     * @param <E>        type.
+     * @return a composite predicate.
+     */
+    public static <E> Predicate<E> anyOf(final Predicate<E>... predicates) {
+        if (predicates.length < 2) {
+            throw new IllegalArgumentException("Must supply at least two predicates");
+        }
+        return new Predicate<E>() {
+            @Override
+            public boolean test(E e) {
+                for (Predicate<? super E> p : predicates) {
+                    if (p.test(e)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
+
+    /**
+     * Returns a {@link Predicate} that checks if the object class has been annotated with the supplied
+     * annotation.
+     *
+     * @param annotation the annotation to check.
+     * @param <A>        the type of annotation.
+     * @return the predicate.
+     */
+    public static <A extends Annotation> Predicate<Object> withAnnotation(final Class<A> annotation) {
+        return new Predicate<Object>() {
+            @Override
+            public boolean test(Object o) {
+                return o.getClass().getAnnotation(annotation) != null;
+            }
+        };
+    }
+
+    /**
      * Represents a predicate (boolean-valued function) of one argument.
      *
      * @param <T> the type of the input to the predicate
@@ -152,4 +217,5 @@ public class NamedArrayList<E> extends ArrayList<E> {
     public interface Predicate<T> { // extends java.util.function.Predicate<T>
         boolean test(T t);
     }
+
 }

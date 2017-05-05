@@ -96,7 +96,7 @@ THE SOFTWARE.
     </j:invoke>
   </j:if>
   <j:set var="renderSections" value="${descriptorLists.size() &gt; 1}"/>
-  <div class="hetero-list-container with-drag-drop one-each honor-order">
+  <div class="hetero-list-container with-drag-drop one-each honor-order trait-container">
     <!-- display existing items -->
     <j:set var="instances"
            value="${instance != null ? instance[attrs.field] : (attrs.default ?: descriptor[attrs.field+'Defaults'])}"/>
@@ -146,7 +146,7 @@ THE SOFTWARE.
           </j:if>
           <j:forEach var="descriptor" items="${filteredDescriptors}" varStatus="loop">
             <div name="${attrs.field}" title="${descriptor.displayName}"
-                 tooltip="${descriptor.tooltip?:'Why does nobody use me'}"
+                 tooltip="${descriptor.tooltip}"
                  descriptorId="${descriptor.id}">
               <j:set var="capture" value="${attrs.capture?:''}"/>
               <local:body deleteCaption="${attrs.deleteCaption}">
