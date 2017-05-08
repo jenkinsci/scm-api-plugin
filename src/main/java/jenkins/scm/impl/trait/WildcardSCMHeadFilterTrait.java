@@ -32,7 +32,6 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMHeadPrefilter;
 import jenkins.scm.api.trait.SCMSourceContext;
-import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import org.apache.commons.lang.StringUtils;
@@ -92,7 +91,7 @@ public class WildcardSCMHeadFilterTrait extends SCMSourceTrait {
      * {@inheritDoc}
      */
     @Override
-    protected <B extends SCMSourceContext<B, R>, R extends SCMSourceRequest> void decorateContext(B context) {
+    protected void decorateContext(SCMSourceContext<?, ?> context) {
         context.withPrefilter(new SCMHeadPrefilter() {
             @Override
             public boolean isExcluded(@NonNull SCMSource request, @NonNull SCMHead head) {

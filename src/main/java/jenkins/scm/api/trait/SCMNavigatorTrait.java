@@ -47,21 +47,23 @@ public class SCMNavigatorTrait extends SCMTrait<SCMNavigatorTrait> {
      * @param context the context.
      */
     public final void applyToContext(SCMNavigatorContext<?, ?> context) {
-        if (getDescriptor().isApplicableToContext(context.getClass())) {
+        SCMNavigatorTraitDescriptor d = getDescriptor();
+        if (d.getContextClass().isInstance(context) && d.isApplicableToContext(context.getClass())) {
             // guard against non-applicable
-            decorateContext((SCMNavigatorContext) context);
+            decorateContext(context);
         }
     }
 
     /**
      * SPI: Override this method to decorate a {@link SCMNavigatorContext}. You can assume that your
-     * {@link SCMNavigatorTraitDescriptor#isApplicableToContext(Class)} is {@code true} within this method.
+     * {@link SCMNavigatorTraitDescriptor#isApplicableToContext(Class)} is {@code true} within this method and that
+     * the provided context is an instance of {@link SCMNavigatorTraitDescriptor#getContextClass()}.
      *
-     * @param context the context (invariant: {@link SCMNavigatorTraitDescriptor#isApplicableToContext(Class)} is {@code true})
-     * @param <B>     generic type parameter to ensure type information available.
-     * @param <R>     generic type parameter to ensure type information available.
+     * @param context the context (invariant: {@link SCMNavigatorTraitDescriptor#isApplicableToContext(Class)} is {@code
+     *                true} and {@link SCMNavigatorTraitDescriptor#getContextClass()} {@link Class#isInstance(Object)})
+     *                is {@code true})
      */
-    protected <B extends SCMNavigatorContext<B, R>, R extends SCMNavigatorRequest> void decorateContext(B context) {
+    protected void decorateContext(SCMNavigatorContext<?, ?> context) {
     }
 
     /**
@@ -92,22 +94,25 @@ public class SCMNavigatorTrait extends SCMTrait<SCMNavigatorTrait> {
      * @param builder the builder.
      */
     public final void applyToBuilder(SCMSourceBuilder<?, ?> builder) {
-        if (!getDescriptor().isApplicableToBuilder(builder)) {
+        SCMNavigatorTraitDescriptor d = getDescriptor();
+        if (d.getBuilderClass().isInstance(builder) && d.isApplicableToBuilder(builder)) {
             // guard against non-applicable
+            decorateBuilder(builder);
         }
-        decorateBuilder((SCMSourceBuilder) builder);
     }
 
     /**
      * SPI: Override this method to decorate a {@link SCMBuilder}. You can assume that your
-     * {@link SCMSourceTraitDescriptor#isApplicableToBuilder(SCMBuilder)} is {@code true} within this method.
+     * {@link SCMNavigatorTraitDescriptor#isApplicableToBuilder(SCMSourceBuilder)} is {@code true} within this method
+     * and that
+     * the provided builder is an instance of {@link SCMNavigatorTraitDescriptor#getBuilderClass()}.
      *
-     * @param builder the builder (invariant: {@link SCMSourceTraitDescriptor#isApplicableToBuilder(SCMBuilder)} is
-     *                {@code true})
-     * @param <B>     generic type parameter to ensure type information available.
-     * @param <S>     generic type parameter to ensure type information available.
+     * @param builder the builder (invariant:
+     *                {@link SCMNavigatorTraitDescriptor#isApplicableToBuilder(SCMSourceBuilder)} is
+     *                {@code true} and {@link SCMNavigatorTraitDescriptor#getBuilderClass()}
+     *                {@link Class#isInstance(Object)}) is {@code true})
      */
-    protected <B extends SCMSourceBuilder<B, S>, S extends SCMSource> void decorateBuilder(B builder) {
+    protected void decorateBuilder(SCMSourceBuilder<?, ?> builder) {
     }
 
     /**

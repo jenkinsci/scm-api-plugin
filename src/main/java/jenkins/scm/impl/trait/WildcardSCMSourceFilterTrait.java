@@ -29,7 +29,6 @@ import hudson.Extension;
 import java.util.regex.Pattern;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.trait.SCMNavigatorContext;
-import jenkins.scm.api.trait.SCMNavigatorRequest;
 import jenkins.scm.api.trait.SCMNavigatorTrait;
 import jenkins.scm.api.trait.SCMNavigatorTraitDescriptor;
 import jenkins.scm.api.trait.SCMSourcePrefilter;
@@ -90,7 +89,7 @@ public class WildcardSCMSourceFilterTrait extends SCMNavigatorTrait {
      * {@inheritDoc}
      */
     @Override
-    protected <B extends SCMNavigatorContext<B, R>, R extends SCMNavigatorRequest> void decorateContext(B context) {
+    protected void decorateContext(SCMNavigatorContext<?, ?> context) {
         context.withPrefilter(new SCMSourcePrefilter() {
             @Override
             public boolean isExcluded(@NonNull SCMNavigator source, @NonNull String projectName) {

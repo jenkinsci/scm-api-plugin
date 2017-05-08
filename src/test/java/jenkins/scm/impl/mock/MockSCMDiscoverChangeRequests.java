@@ -30,11 +30,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
-import jenkins.scm.api.trait.SCMBuilder;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
+import jenkins.scm.api.trait.SCMBuilder;
 import jenkins.scm.api.trait.SCMSourceContext;
-import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
@@ -81,11 +80,10 @@ public class MockSCMDiscoverChangeRequests extends SCMSourceTrait {
 
 
     @Override
-    protected <B extends SCMSourceContext<B, R>, R extends SCMSourceRequest> void decorateContext(B context) {
-        if (context instanceof MockSCMSourceContext) {
-            ((MockSCMSourceContext) context).withChangeRequests(true);
-            ((MockSCMSourceContext) context).withCheckoutStrategies(strategies);
-        }
+    protected void decorateContext(SCMSourceContext<?, ?> context) {
+        MockSCMSourceContext ctx = (MockSCMSourceContext) context;
+        ctx.withChangeRequests(true);
+        ctx.withCheckoutStrategies(strategies);
     }
 
     @Override

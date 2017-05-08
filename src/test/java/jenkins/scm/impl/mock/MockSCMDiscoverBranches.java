@@ -26,9 +26,8 @@ package jenkins.scm.impl.mock;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import jenkins.scm.api.trait.SCMBuilder;
 import jenkins.scm.api.SCMHeadCategory;
-import jenkins.scm.api.trait.SCMSourceRequest;
+import jenkins.scm.api.trait.SCMBuilder;
 import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
@@ -41,10 +40,8 @@ public class MockSCMDiscoverBranches extends SCMSourceTrait {
     }
 
     @Override
-    protected <B extends SCMSourceContext<B, R>, R extends SCMSourceRequest> void decorateContext(B context) {
-        if (context instanceof MockSCMSourceContext) {
-            ((MockSCMSourceContext) context).withBranches(true);
-        }
+    protected void decorateContext(SCMSourceContext<?, ?> context) {
+        ((MockSCMSourceContext) context).withBranches(true);
     }
 
     @Override

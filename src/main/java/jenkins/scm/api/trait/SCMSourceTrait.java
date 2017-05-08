@@ -24,12 +24,11 @@
 
 package jenkins.scm.api.trait;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
-import hudson.scm.SCM;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMSource;
@@ -48,22 +47,23 @@ public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
      * @param context the context.
      */
     public final void applyToContext(SCMSourceContext<?, ?> context) {
-        if (getDescriptor().isApplicableToContext(context.getClass())) {
+        SCMSourceTraitDescriptor d = getDescriptor();
+        if (d.getContextClass().isInstance(context) && d.isApplicableToContext(context.getClass())) {
             // guard against non-applicable
-            decorateContext((SCMSourceContext) context);
+            decorateContext(context);
         }
     }
 
     /**
      * SPI: Override this method to decorate a {@link SCMSourceContext}. You can assume that your
-     * {@link SCMSourceTraitDescriptor#isApplicableToContext(Class)} is {@code true} within this method.
+     * {@link SCMSourceTraitDescriptor#isApplicableToContext(Class)} is {@code true} within this method and that
+     * the provided context is an instance of {@link SCMSourceTraitDescriptor#getContextClass()}.
      *
      * @param context the context (invariant: {@link SCMSourceTraitDescriptor#isApplicableToContext(Class)} is {@code
-     *                true})
-     * @param <B>     generic type parameter to ensure type information available.
-     * @param <R>     generic type parameter to ensure type information available.
+     *                true} and {@link SCMSourceTraitDescriptor#getContextClass()} {@link Class#isInstance(Object)})
+     *                is {@code true})
      */
-    protected <B extends SCMSourceContext<B, R>, R extends SCMSourceRequest> void decorateContext(B context) {
+    protected void decorateContext(SCMSourceContext<?, ?> context) {
     }
 
     /**
@@ -94,22 +94,23 @@ public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
      * @param builder the builder.
      */
     public final void applyToBuilder(SCMBuilder<?, ?> builder) {
-        if (!getDescriptor().isApplicableToBuilder(builder)) {
+        SCMSourceTraitDescriptor d = getDescriptor();
+        if (d.getBuilderClass().isInstance(builder) && d.isApplicableToBuilder(builder)) {
             // guard against non-applicable
+            decorateBuilder(builder);
         }
-        decorateBuilder((SCMBuilder) builder);
     }
 
     /**
      * SPI: Override this method to decorate a {@link SCMBuilder}. You can assume that your
-     * {@link SCMSourceTraitDescriptor#isApplicableToBuilder(SCMBuilder)} is {@code true} within this method.
+     * {@link SCMSourceTraitDescriptor#isApplicableToBuilder(SCMBuilder)} is {@code true} within this method and that
+     * the provided builder is an instance of {@link SCMSourceTraitDescriptor#getBuilderClass()}.
      *
      * @param builder the builder (invariant: {@link SCMSourceTraitDescriptor#isApplicableToBuilder(SCMBuilder)} is
-     *                {@code true})
-     * @param <B>     generic type parameter to ensure type information available.
-     * @param <S>     generic type parameter to ensure type information available.
+     *                {@code true} and {@link SCMSourceTraitDescriptor#getBuilderClass()}
+     *                {@link Class#isInstance(Object)}) is {@code true})
      */
-    protected <B extends SCMBuilder<B, S>, S extends SCM> void decorateBuilder(B builder) {
+    protected void decorateBuilder(SCMBuilder<?, ?> builder) {
     }
 
     /**
@@ -157,8 +158,9 @@ public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
      * @param builderClass (optional) type of {@link SCMBuilder}.
      * @return the list of matching {@link SCMSourceTraitDescriptor} instances.
      */
-    public static List<SCMSourceTraitDescriptor> _for(Class<? extends SCMSourceContext> contextClass,
-                                                      Class<? extends SCMBuilder> builderClass) {
+    public static List<SCMSourceTraitDescriptor> _for(
+            @CheckForNull Class<? extends SCMSourceContext> contextClass,
+            @CheckForNull Class<? extends SCMBuilder> builderClass) {
         return _for(null, contextClass, builderClass);
     }
 
@@ -171,9 +173,10 @@ public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
      * @param builderClass (optional) type of {@link SCMBuilder}.
      * @return the list of matching {@link SCMSourceTraitDescriptor} instances.
      */
-    public static List<SCMSourceTraitDescriptor> _for(@CheckForNull SCMSourceDescriptor scmSource,
-                                                      @CheckForNull Class<? extends SCMSourceContext> contextClass,
-                                                      @CheckForNull Class<? extends SCMBuilder> builderClass) {
+    public static List<SCMSourceTraitDescriptor> _for(
+            @CheckForNull SCMSourceDescriptor scmSource,
+            @CheckForNull Class<? extends SCMSourceContext> contextClass,
+            @CheckForNull Class<? extends SCMBuilder> builderClass) {
         List<SCMSourceTraitDescriptor> result = new ArrayList<SCMSourceTraitDescriptor>();
         if (scmSource != null) {
             for (SCMSourceTraitDescriptor d : all()) {
