@@ -10,9 +10,6 @@ import org.junit.Test;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
-/**
- * @author Stephen Connolly
- */
 public class SCMRevisionActionTest {
     @Test
     public void given__legacyData__when__gettingRevision__then__legacyReturned() throws Exception {
