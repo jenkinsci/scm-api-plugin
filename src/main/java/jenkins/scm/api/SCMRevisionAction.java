@@ -25,16 +25,26 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.RestrictedSince;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.InvisibleAction;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * {@link Action} added to {@link AbstractBuild} to remember
  * which revision is built in the given build.
  */
 public class SCMRevisionAction extends InvisibleAction {
+    /**
+     * The {@link SCMSource#getId()} or {@code null} for legacy instances.
+     *
+     * @since 2.2.0
+     */
+    @CheckForNull
+    private final String sourceId;
     /**
      * The {@link SCMRevision}.
      */
@@ -44,11 +54,36 @@ public class SCMRevisionAction extends InvisibleAction {
     /**
      * Constructor.
      *
-     * @param rev the {@link SCMRevision}.
+     * @param revision the {@link SCMRevision}.
+     * @deprecated use {@link #SCMRevisionAction(SCMSource, SCMRevision)}
      */
-    public SCMRevisionAction(@NonNull SCMRevision rev) {
-        rev.getClass(); // fail fast if null
-        this.revision = rev;
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("2.2.0")
+    @Deprecated
+    public SCMRevisionAction(@NonNull SCMRevision revision) {
+        this(revision, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param source   the {@link SCMSource}.
+     * @param revision the {@link SCMRevision}.
+     */
+    public SCMRevisionAction(@NonNull SCMSource source, @NonNull SCMRevision revision) {
+        this(revision, source.getId());
+    }
+
+    /**
+     * Common constructor (exposed for tests)
+     *
+     * @param revision the revision.
+     * @param sourceId the source id.
+     */
+    /*package*/ SCMRevisionAction(@NonNull SCMRevision revision, @CheckForNull String sourceId) {
+        revision.getClass(); // fail fast if null
+        this.sourceId = sourceId;
+        this.revision = revision;
     }
 
     /**
@@ -62,14 +97,52 @@ public class SCMRevisionAction extends InvisibleAction {
     }
 
     /**
+     * Gets the {@link SCMSource#getId()} that the revision was created for.
+     *
+     * @return the {@link SCMSource#getId()} that the revision was created for or {@code null} when legacy data
+     * @since 2.2.0
+     */
+    @CheckForNull
+    public String getSourceId() {
+        return sourceId;
+    }
+
+    /**
      * Gets the {@link SCMRevision} from the specified {@link Actionable}.
      *
      * @param actionable {@link Actionable} containing a possible {@link SCMRevisionAction}.
      * @return the {@link SCMRevision}.
+     * @deprecated use {@link #getRevision(SCMSource, Actionable)}
      */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("2.2.0")
     @CheckForNull
     public static SCMRevision getRevision(@NonNull Actionable actionable) {
         SCMRevisionAction action = actionable.getAction(SCMRevisionAction.class);
         return action != null ? action.getRevision() : null;
+    }
+
+    /**
+     * Gets the {@link SCMRevision} for the specified {@link SCMSource} from the specified {@link Actionable}.
+     *
+     * @param source     the {@link SCMSource} to get the revision for.
+     * @param actionable {@link Actionable} containing a possible {@link SCMRevisionAction}.
+     * @return the {@link SCMRevision}.
+     */
+    @CheckForNull
+    public static SCMRevision getRevision(@NonNull SCMSource source, @NonNull Actionable actionable) {
+        String sourceId = source.getId();
+        SCMRevisionAction fallback = null;
+        for (SCMRevisionAction a : actionable.getActions(SCMRevisionAction.class)) {
+            if (sourceId.equals(a.getSourceId())) {
+                return a.getRevision();
+            }
+            if (a.getSourceId() == null && fallback == null) {
+                // preserve legacy behaviour of first match when dealing with legacy data
+                fallback = a;
+            }
+        }
+        return fallback == null ? null : fallback.getRevision();
     }
 }
