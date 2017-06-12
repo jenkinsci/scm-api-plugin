@@ -850,6 +850,7 @@ public class MySCMRevision extends SCMRevision {
     }
 }
 ----
+====
 
 * Change request like things are special. For one, the actual strategy used to determine what to build can be different from a regular head. The change request may be built against the original baseline revision, or it mat be built against the current revision of the original baseline branch.
 +
