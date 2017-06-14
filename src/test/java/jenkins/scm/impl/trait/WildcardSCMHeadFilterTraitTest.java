@@ -51,7 +51,7 @@ public class WildcardSCMHeadFilterTraitTest {
             c.createRepository("foo");
             c.createBranch("foo", "fork");
             c.createBranch("foo", "alt");
-            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("master fo*", ""));
+            MockSCMSource src = new MockSCMSource(c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("master fo*", ""));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
             Set<String> names = new TreeSet<String>();
             for (SCMHead h: result.keySet()) {
@@ -70,7 +70,7 @@ public class WildcardSCMHeadFilterTraitTest {
             c.createRepository("foo");
             c.createBranch("foo", "fork");
             c.createBranch("foo", "alt");
-            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("*", "fo*"));
+            MockSCMSource src = new MockSCMSource(c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("*", "fo*"));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
             Set<String> names = new TreeSet<String>();
             for (SCMHead h: result.keySet()) {
@@ -89,7 +89,7 @@ public class WildcardSCMHeadFilterTraitTest {
             c.createBranch("foo", "fork");
             c.createBranch("foo", "foo");
             c.createBranch("foo", "alt");
-            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("master fo*", "foo"));
+            MockSCMSource src = new MockSCMSource(c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("master fo*", "foo"));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
             Set<String> names = new TreeSet<String>();
             for (SCMHead h: result.keySet()) {

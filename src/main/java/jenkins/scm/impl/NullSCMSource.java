@@ -53,7 +53,8 @@ public class NullSCMSource extends SCMSource {
      * Constructor.
      */
     public NullSCMSource() {
-        super(ID);
+        super();
+        setId(ID);
     }
 
     /**

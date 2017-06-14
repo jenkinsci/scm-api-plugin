@@ -52,8 +52,10 @@ public class MockSCMSourceBuilder extends SCMSourceBuilder<MockSCMSourceBuilder,
     @NonNull
     @Override
     public MockSCMSource build() {
-        return controller == null
-                ? new MockSCMSource(id, controllerId, repository, traits())
-                : new MockSCMSource(id, controller, repository, traits());
+        MockSCMSource source = controller == null
+                ? new MockSCMSource(controllerId, repository, traits())
+                : new MockSCMSource(controller, repository, traits());
+        source.setId(id);
+        return source;
     }
 }

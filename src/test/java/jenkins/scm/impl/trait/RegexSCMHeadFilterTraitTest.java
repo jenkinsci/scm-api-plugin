@@ -51,7 +51,7 @@ public class RegexSCMHeadFilterTraitTest {
             c.createRepository("foo");
             c.createBranch("foo", "fork");
             c.createBranch("foo", "alt");
-            MockSCMSource src = new MockSCMSource("foo", c, "foo", new MockSCMDiscoverBranches(), new RegexSCMHeadFilterTrait("[fm].*"));
+            MockSCMSource src = new MockSCMSource(c, "foo", new MockSCMDiscoverBranches(), new RegexSCMHeadFilterTrait("[fm].*"));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
             Set<String> names = new TreeSet<String>();
             for (SCMHead h: result.keySet()) {

@@ -26,6 +26,7 @@ package jenkins.scm.impl;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.RestrictedSince;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
@@ -33,25 +34,23 @@ import hudson.model.TopLevelItemDescriptor;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
-import jenkins.scm.api.SCMFile;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
-import jenkins.scm.api.SCMProbe;
-import jenkins.scm.api.SCMProbeStat;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * A single fixed branch using a legacy SCM implementation.
@@ -79,14 +78,30 @@ public class SingleSCMSource extends SCMSource {
     /**
      * Our constructor.
      *
-     * @param id   source id.
      * @param name the name of the branch.
      * @param scm  the configuration.
+     * @since 2.2.0
      */
     @SuppressWarnings("unused") // stapler
     @DataBoundConstructor
+    public SingleSCMSource(String name, SCM scm) {
+        this.name = name;
+        this.scm = scm;
+    }
+
+    /**
+     * Legacy constructor.
+     *
+     * @param id   source id.
+     * @param name the name of the branch.
+     * @param scm  the configuration.
+     * @deprecated use {@link #SingleSCMSource(String, SCM)} and {@link #setId(String)}.
+     */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.2.0")
+    @Deprecated
     public SingleSCMSource(String id, String name, SCM scm) {
-        super(id);
+        setId(id);
         this.name = name;
         this.scm = scm;
     }
@@ -121,6 +136,20 @@ public class SingleSCMSource extends SCMSource {
             return scm;
         }
         return new NullSCM();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return "SingleSCMSource{" +
+                "super=" + super.toString() +
+                ", name='" + name + '\'' +
+                ", scm=" + scm +
+                ", head=" + head +
+                ", revisionHash=" + revisionHash +
+                '}';
     }
 
     /**

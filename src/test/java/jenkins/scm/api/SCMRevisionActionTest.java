@@ -16,7 +16,7 @@ public class SCMRevisionActionTest {
     public void given__legacyData__when__gettingRevision__then__legacyReturned() throws Exception {
         MockSCMController c = MockSCMController.create();
         try {
-            MockSCMSource source = new MockSCMSource("foo", c, "test", new MockSCMDiscoverBranches());
+            MockSCMSource source = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
             SCMRevision revision = new MockSCMRevision(new MockSCMHead("head"), "hash");
             Actionable a = new ActionableImpl();
             a.addAction(new SCMRevisionAction(revision, null));
@@ -30,9 +30,12 @@ public class SCMRevisionActionTest {
     public void given__mixedData__when__gettingRevision__then__legacyReturnedForUnmatched() throws Exception {
         MockSCMController c = MockSCMController.create();
         try {
-            MockSCMSource source1 = new MockSCMSource("foo", c, "test", new MockSCMDiscoverBranches());
-            MockSCMSource source2 = new MockSCMSource("bar", c, "test", new MockSCMDiscoverBranches());
-            MockSCMSource source3 = new MockSCMSource("manchu", c, "test", new MockSCMDiscoverBranches());
+            MockSCMSource source1 = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
+            source1.setId("foo");
+            MockSCMSource source2 = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
+            source2.setId("bar");
+            MockSCMSource source3 = new MockSCMSource( c, "test", new MockSCMDiscoverBranches());
+            source3.setId("manchu");
             SCMRevision revision1 = new MockSCMRevision(new MockSCMHead("head1"), "hash1");
             SCMRevision revision2 = new MockSCMRevision(new MockSCMHead("head2"), "hash2");
             SCMRevision revision3 = new MockSCMRevision(new MockSCMHead("head3"), "hash3");
@@ -52,9 +55,12 @@ public class SCMRevisionActionTest {
     public void given__mixedData__when__gettingRevision__then__firstlegacyReturnedForUnmatched() throws Exception {
         MockSCMController c = MockSCMController.create();
         try {
-            MockSCMSource source1 = new MockSCMSource("foo", c, "test", new MockSCMDiscoverBranches());
-            MockSCMSource source2 = new MockSCMSource("bar", c, "test", new MockSCMDiscoverBranches());
-            MockSCMSource source3 = new MockSCMSource("manchu", c, "test", new MockSCMDiscoverBranches());
+            MockSCMSource source1 = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
+            source1.setId("foo");
+            MockSCMSource source2 = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
+            source2.setId("bar");
+            MockSCMSource source3 = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
+            source3.setId("manchu");
             SCMRevision revision1 = new MockSCMRevision(new MockSCMHead("head1"), "hash1");
             SCMRevision revision2 = new MockSCMRevision(new MockSCMHead("head2"), "hash2");
             SCMRevision revision3 = new MockSCMRevision(new MockSCMHead("head3"), "hash3");

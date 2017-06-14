@@ -53,6 +53,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.TransientActionFactory;
 import net.jcip.annotations.GuardedBy;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * A {@link SCMSource} is responsible for fetching {@link SCMHead} and corresponding {@link SCMRevision} instances from
@@ -131,14 +133,65 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @param id the id or {@code null}.
      */
+    @Deprecated
     protected SCMSource(@CheckForNull String id) {
         this.id = id == null ? UUID.randomUUID().toString() : id;
     }
 
     /**
-     * The ID of this source. The ID is not related to anything at all.
+     * Constructor.
+     */
+    protected SCMSource() {
+    }
+
+    /**
+     * Sets the ID that is used to ensure this {@link SCMSource} can be retrieved from its {@link SCMSourceOwner}
+     * provided that this {@link SCMSource} does not already {@link #hasId()}.
+     * <p>
+     * Note this is a <strong>one-shot</strong> setter. If {@link #getId()} is called first, then its value will stick,
+     * otherwise the first call to {@link #setId(String)} will stick.
+     *
+     * @param id the ID.
+     * @see #hasId()
+     * @see #getId()
+     * @since 2.2.0
+     */
+    @DataBoundSetter
+    public final synchronized void setId(@CheckForNull String id) {
+        if (this.id == null) {
+            this.id = id;
+        }
+    }
+
+    /**
+     * Variant of {@link #setId(String)} that can be useful for method chaining.
+     * @param id the ID
+     * @return {@code this} for method chaining
+     */
+    public final SCMSource withId(@CheckForNull String id) {
+        setId(id);
+        return this;
+    }
+
+    /**
+     * Returns {@code true} if and only if this {@link SCMSource} has been assigned an ID. Once an ID has been assigned
+     * it should be preserved.
+     *
+     * @return {@code true} if and only if this {@link SCMSource} has been assigned an ID.
+     * @see #setId(String)
+     * @see #getId()
+     * @since 2.2.0
+     */
+    public final synchronized boolean hasId() {
+        return this.id != null;
+    }
+    /**
+     * The ID of this source. The ID is not related to anything at all. If this {@link SCMSource} does not have an ID
+     * then one will be generated.
      *
      * @return the ID of this source.
+     * @see #setId(String)
+     * @see #hasId()
      */
     @NonNull
     public final synchronized String getId() {

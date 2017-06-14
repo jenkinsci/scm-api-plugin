@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import hudson.RestrictedSince;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
@@ -63,6 +64,8 @@ import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -72,28 +75,63 @@ public class MockSCMSource extends SCMSource {
     private final List<SCMSourceTrait> traits;
     private transient MockSCMController controller;
 
-    @DataBoundConstructor
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.2.0")
+    @Deprecated
     public MockSCMSource(@CheckForNull String id, String controllerId, String repository, List<SCMSourceTrait> traits) {
-        super(id);
+        super();
+        this.controllerId = controllerId;
+        this.repository = repository;
+        this.traits = new ArrayList<SCMSourceTrait>(traits);
+        setId(id);
+    }
+
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.2.0")
+    @Deprecated
+    public MockSCMSource(@CheckForNull String id, String controllerId, String repository, SCMSourceTrait... traits) {
+        this(controllerId, repository, Arrays.asList(traits));
+        setId(id);
+    }
+
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.2.0")
+    @Deprecated
+    public MockSCMSource(String id, MockSCMController controller, String repository, List<SCMSourceTrait> traits) {
+        this(controller, repository, traits);
+        setId(id);
+    }
+
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.2.0")
+    @Deprecated
+    public MockSCMSource(String id, MockSCMController controller, String repository, SCMSourceTrait... traits) {
+        this(controller, repository, Arrays.asList(traits));
+        setId(id);
+    }
+
+    @DataBoundConstructor
+    public MockSCMSource(String controllerId, String repository, List<SCMSourceTrait> traits) {
+        super();
         this.controllerId = controllerId;
         this.repository = repository;
         this.traits = new ArrayList<SCMSourceTrait>(traits);
     }
 
-    public MockSCMSource(@CheckForNull String id, String controllerId, String repository, SCMSourceTrait... traits) {
-        this(id, controllerId, repository, Arrays.asList(traits));
+    public MockSCMSource(String controllerId, String repository, SCMSourceTrait... traits) {
+        this(controllerId, repository, Arrays.asList(traits));
     }
 
-    public MockSCMSource(String id, MockSCMController controller, String repository, List<SCMSourceTrait> traits) {
-        super(id);
+    public MockSCMSource(MockSCMController controller, String repository, List<SCMSourceTrait> traits) {
+        super();
         this.controllerId = controller.getId();
         this.controller = controller;
         this.repository = repository;
         this.traits = new ArrayList<SCMSourceTrait>(traits);
     }
 
-    public MockSCMSource(String id, MockSCMController controller, String repository, SCMSourceTrait... traits) {
-        this(id, controller, repository, Arrays.asList(traits));
+    public MockSCMSource(MockSCMController controller, String repository, SCMSourceTrait... traits) {
+        this(controller, repository, Arrays.asList(traits));
     }
 
     public String getControllerId() {
