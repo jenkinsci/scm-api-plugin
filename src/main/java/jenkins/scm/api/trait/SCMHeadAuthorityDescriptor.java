@@ -25,6 +25,7 @@
 package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import hudson.model.Descriptor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -115,6 +116,7 @@ public abstract class SCMHeadAuthorityDescriptor extends Descriptor<SCMHeadAutho
      * @param head the {@link SCMHead}.
      * @return {@code true} if applicable.
      */
+    @OverrideMustInvoke
     public boolean isApplicableToHead(@NonNull SCMHead head) {
         return isApplicableToHead(head.getClass()) && isApplicableToOrigin(head.getOrigin());
     }
@@ -125,6 +127,7 @@ public abstract class SCMHeadAuthorityDescriptor extends Descriptor<SCMHeadAutho
      * @param headClass the type of {@link SCMHead}.
      * @return {@code true} if applicable.
      */
+    @OverrideMustInvoke
     public boolean isApplicableToHead(@NonNull Class<? extends SCMHeadMixin> headClass) {
         return this.headClass.isAssignableFrom(headClass);
     }
@@ -135,6 +138,7 @@ public abstract class SCMHeadAuthorityDescriptor extends Descriptor<SCMHeadAutho
      * @param revision the {@link SCMRevision}.
      * @return {@code true} if applicable.
      */
+    @OverrideMustInvoke
     public boolean isApplicableToRevision(@NonNull SCMRevision revision) {
         return isApplicableToHead(revision.getHead()) && isApplicableToRevision(revision.getClass());
     }
@@ -145,6 +149,7 @@ public abstract class SCMHeadAuthorityDescriptor extends Descriptor<SCMHeadAutho
      * @param revisionClass the type of {@link SCMRevision}.
      * @return {@code true} if applicable.
      */
+    @OverrideMustInvoke
     public boolean isApplicableToRevision(@NonNull Class<? extends SCMRevision> revisionClass) {
         return this.revisionClass.isAssignableFrom(revisionClass);
     }
@@ -155,6 +160,7 @@ public abstract class SCMHeadAuthorityDescriptor extends Descriptor<SCMHeadAutho
      * @param request the {@link SCMSourceRequest}.
      * @return {@code true} if applicable.
      */
+    @OverrideMustInvoke
     public boolean isApplicableToRequest(@NonNull SCMSourceRequest request) {
         return requestClass.isInstance(request);
     }
@@ -165,6 +171,7 @@ public abstract class SCMHeadAuthorityDescriptor extends Descriptor<SCMHeadAutho
      * @param requestClass the type of {@link SCMSourceRequest}.
      * @return {@code true} if applicable.
      */
+    @OverrideMustInvoke
     public boolean isApplicableToRequest(@NonNull Class<? extends SCMSourceRequest> requestClass) {
         return this.requestClass.isAssignableFrom(requestClass);
     }
