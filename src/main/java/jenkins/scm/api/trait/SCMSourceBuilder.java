@@ -51,6 +51,9 @@ import jenkins.scm.api.SCMSourceObserver;
  * {@code return Collections.unmodifiableList(new ArrayList<>(theList));}
  * </li>
  * </ul>
+ * When applying {@link SCMTrait} instances to the builder, the {@link SCMNavigatorTrait} instances will modify the
+ * builder itself while the {@link SCMSourceTrait} instances will be retained to be added to the {@link SCMSource}
+ * during {@link #build()}
  *
  * @param <B> the type of {@link SCMSourceBuilder} so that subclasses can chain correctly in their
  *            {@link #withTrait(SCMSourceTrait)}  etc methods.
@@ -191,7 +194,8 @@ public abstract class SCMSourceBuilder<B extends SCMSourceBuilder<B, S>, S exten
     }
 
     /**
-     * Instantiates the {@link SCMSource}.
+     * Instantiates the {@link SCMSource}. The implementation is responsible to ensure that the {@link #traits()}
+     * are provided to the {@link SCMSource}.
      *
      * @return the {@link S} instance
      */
