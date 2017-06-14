@@ -28,25 +28,32 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.trait.SCMSourceBuilder;
 
 public class MockSCMSourceBuilder extends SCMSourceBuilder<MockSCMSourceBuilder, MockSCMSource> {
-    private final String id;
+    private String id;
     private final String controllerId;
     private final MockSCMController controller;
     private final String repository;
 
-    public MockSCMSourceBuilder(String id, MockSCMController controller, String repository) {
+    public MockSCMSourceBuilder(MockSCMController controller, String repository) {
         super(MockSCMSource.class, repository);
-        this.id = id;
         this.controllerId = controller.getId();
         this.controller = controller;
         this.repository = repository;
     }
 
-    public MockSCMSourceBuilder(String id, String controllerId, String repository) {
+    public MockSCMSourceBuilder(String controllerId, String repository) {
         super(MockSCMSource.class, repository);
-        this.id = id;
         this.controllerId = controllerId;
         this.controller = null;
         this.repository = repository;
+    }
+
+    public final MockSCMSourceBuilder withId(String id) {
+        this.id = id;
+        return this;
+    }
+
+    public final String id() {
+        return id;
     }
 
     @NonNull
@@ -55,7 +62,9 @@ public class MockSCMSourceBuilder extends SCMSourceBuilder<MockSCMSourceBuilder,
         MockSCMSource source = controller == null
                 ? new MockSCMSource(controllerId, repository, traits())
                 : new MockSCMSource(controller, repository, traits());
-        source.setId(id);
+        if (id != null) {
+            source.setId(id());
+        }
         return source;
     }
 }
