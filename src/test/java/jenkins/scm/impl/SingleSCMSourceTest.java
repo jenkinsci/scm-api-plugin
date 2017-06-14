@@ -73,11 +73,27 @@ public class SingleSCMSourceTest {
         MockSCMController c = MockSCMController.create();
         try {
             c.createRepository("foo");
-            SingleSCMSource source =
-                    new SingleSCMSource("the-id", "the-name", new MockSCM(c, "foo",
-                            new MockSCMHead("master"), null));
+            SingleSCMSource source = new SingleSCMSource(
+                    "the-id",
+                    "the-name",
+                    new MockSCM(
+                            c,
+                            "foo",
+                            new MockSCMHead("master"),
+                            null
+                    )
+            );
             SCMSourceBuilder builder = new SCMSourceBuilder(source);
-            r.assertEqualDataBoundBeans(builder, r.configRoundtrip(builder));
+            r.assertEqualDataBoundBeans(new SCMSourceBuilder(new SingleSCMSource(
+                    "the-id",
+                    "the-name",
+                    new MockSCM(
+                            c,
+                            "foo",
+                            new MockSCMHead("master"),
+                            null
+                    )
+            )), r.configRoundtrip(builder));
         } finally {
             c.close();
         }
