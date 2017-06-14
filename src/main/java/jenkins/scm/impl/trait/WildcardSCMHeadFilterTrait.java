@@ -35,6 +35,7 @@ import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -129,6 +130,7 @@ public class WildcardSCMHeadFilterTrait extends SCMSourceTrait {
     /**
      * Our descriptor.
      */
+    @Symbol("headWildcardFilter")
     @Extension
     @Selection
     public static class DescriptorImpl extends SCMSourceTraitDescriptor {

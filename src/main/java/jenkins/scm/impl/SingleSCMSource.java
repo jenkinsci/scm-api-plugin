@@ -44,6 +44,7 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -172,6 +173,7 @@ public class SingleSCMSource extends SCMSource {
     /**
      * Our descriptor.
      */
+    @Symbol("fromScm")
     @Extension
     @SuppressWarnings("unused") // instantiated by Jenkins
     public static class DescriptorImpl extends SCMSourceDescriptor {

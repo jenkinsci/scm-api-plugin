@@ -35,6 +35,7 @@ import jenkins.scm.api.trait.SCMNavigatorContext;
 import jenkins.scm.api.trait.SCMNavigatorTrait;
 import jenkins.scm.api.trait.SCMNavigatorTraitDescriptor;
 import jenkins.scm.api.trait.SCMSourcePrefilter;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -110,6 +111,7 @@ public class RegexSCMSourceFilterTrait extends SCMNavigatorTrait {
     /**
      * Our descriptor.
      */
+    @Symbol("sourceRegexFilter")
     @Extension
     @Selection
     public static class DescriptorImpl extends SCMNavigatorTraitDescriptor {

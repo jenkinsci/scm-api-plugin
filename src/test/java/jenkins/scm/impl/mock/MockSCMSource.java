@@ -62,6 +62,7 @@ import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -315,6 +316,7 @@ public class MockSCMSource extends SCMSource {
         return false;
     }
 
+    @Symbol("mockScm")
     @Extension
     public static class DescriptorImpl extends SCMSourceDescriptor {
         @Nonnull

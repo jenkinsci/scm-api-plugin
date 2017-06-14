@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.List;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceObserver;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -77,6 +78,7 @@ public class SingleSCMNavigator extends SCMNavigator {
         projectObserver.complete();
     }
 
+    @Symbol("fromSource")
     @Extension
     public static class DescriptorImpl extends SCMNavigatorDescriptor {
 
