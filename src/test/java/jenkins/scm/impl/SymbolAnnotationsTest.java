@@ -25,7 +25,6 @@
 
 package jenkins.scm.impl;
 
-import java.util.Arrays;
 import java.util.Collections;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.impl.mock.MockSCM;
@@ -47,8 +46,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
@@ -71,6 +70,12 @@ public class SymbolAnnotationsTest {
                     not(containsString("[$")),
                     not(containsString("{$"))
             ));
+            assertThat(DescribableModel.uninstantiate2_(instance).toString(), is("@mockScm("
+                    + "controllerId=" + c.getId() + ","
+                    + "head=master,"
+                    + "repository=test,"
+                    + "revision=" + c.getRevision("test", "master")
+                    + ")"));
         } finally {
             c.close();
         }
@@ -91,6 +96,18 @@ public class SymbolAnnotationsTest {
                     not(containsString("[$")),
                     not(containsString("{$"))
             ));
+            assertThat(DescribableModel.uninstantiate2_(instance).toString(), is("@mockScm("
+                    + "controllerId=" + c.getId() + ","
+                    + "id=" + instance.getId() + ","
+                    + "repository=test,"
+                    + "traits=["
+                    + "@discoverBranches$MockSCMDiscoverBranches(), "
+                    + "@discoverChangeRequests$MockSCMDiscoverChangeRequests(strategiesStr=HEAD, ), "
+                    + "@discoverTags$MockSCMDiscoverTags(), "
+                    + "@headWildcardFilter$WildcardSCMHeadFilterTrait(excludes=ignore,includes=*), "
+                    + "@headRegexFilter$RegexSCMHeadFilterTrait(regex=i.*)"
+                    + "]"
+                    + ")"));
         } finally {
             c.close();
         }
@@ -109,7 +126,7 @@ public class SymbolAnnotationsTest {
                     new RegexSCMHeadFilterTrait("i.*"),
                     new WildcardSCMSourceFilterTrait("i*", "ignored"),
                     new RegexSCMSourceFilterTrait("ig.*")
-                    );
+            );
             assertThat(DescribableModel.uninstantiate2_(instance).toString(), allOf(
                     startsWith("@"),
                     not(containsString(", $")),
@@ -117,6 +134,17 @@ public class SymbolAnnotationsTest {
                     not(containsString("[$")),
                     not(containsString("{$"))
             ));
+            assertThat(DescribableModel.uninstantiate2_(instance).toString(), is("@mockScm("
+                    + "controllerId=" + c.getId() + ",traits=["
+                    + "@discoverBranches$MockSCMDiscoverBranches(), "
+                    + "@discoverChangeRequests$MockSCMDiscoverChangeRequests(strategiesStr=HEAD, ), "
+                    + "@discoverTags$MockSCMDiscoverTags(), "
+                    + "@headWildcardFilter$WildcardSCMHeadFilterTrait(excludes=ignore,includes=*), "
+                    + "@headRegexFilter$RegexSCMHeadFilterTrait(regex=i.*), "
+                    + "@sourceWildcardFilter$WildcardSCMSourceFilterTrait(excludes=ignored,includes=i*), "
+                    + "@sourceRegexFilter$RegexSCMSourceFilterTrait(regex=ig.*)"
+                    + "]"
+                    + ")"));
         } finally {
             c.close();
         }
@@ -137,6 +165,15 @@ public class SymbolAnnotationsTest {
                     not(containsString("[$")),
                     not(containsString("{$"))
             ));
+            assertThat(DescribableModel.uninstantiate2_(instance).toString(), is("@fromSource(name=foo,"
+                    + "sources=[@mockScm$MockSCMSource("
+                    + "controllerId=" + c.getId() + ","
+                    + "id=" + instance.getSources().get(0).getId() + ","
+                    + "repository=test,"
+                    + "traits=[]"
+                    + ")"
+                    + "]"
+                    + ")"));
         } finally {
             c.close();
         }
@@ -158,6 +195,16 @@ public class SymbolAnnotationsTest {
                     not(containsString("[$")),
                     not(containsString("{$"))
             ));
+            assertThat(DescribableModel.uninstantiate2_(instance).toString(), is("@fromScm("
+                    + "id=foo,"
+                    + "name=foo,"
+                    + "scm=@mockScm$MockSCM("
+                    + "controllerId=" + c.getId() + ","
+                    + "head=master,"
+                    + "repository=test,"
+                    + "revision=" + c.getRevision("test", "master")
+                    + ")"
+                    + ")"));
         } finally {
             c.close();
         }
