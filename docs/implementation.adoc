@@ -551,6 +551,12 @@ public class MySCMSource extends SCMSource {
      * non-mandatory fields should be non-final
      */
 
+    /**
+     * Using traits is not required but it does make your implementation easier for others to extend.
+     */
+    @NonNull
+    private List<SCMSourceTrait> traits = new ArrayList<>();
+
     @DataBoundConstructor
     public MockSCMSource(String id, /*mandatory configuration*/) {
         super(id); /* see note on ids*/
@@ -562,6 +568,16 @@ public class MySCMSource extends SCMSource {
 
     // Getters for all the configuration fields
 
+    @NonNull
+    public List<SCMSourceTrait> getTraits() {
+        return new ArrayList<>(traits);
+    }
+
+    @DataBoundSetter
+    public void setTraits(@CheckForNull List<SCMSourceTrait> traits) {
+        this.traits = new ArrayList<>(Util.fixNull(traits));
+    }
+
     // use @DataBoundSetter to inject the non-mandatory configuration elements
     // as this will simplify the usage from pipeline
 
@@ -571,35 +587,37 @@ public class MySCMSource extends SCMSource {
                             @CheckForNull SCMHeadEvent<?> event,
                             @NonNull TaskListener listener)
         throws IOException, InterruptedException {
-        // When you implement event support, if you have events that can be trusted
-        // you may want to use the payloads of those events to avoid extra network
-        // calls for identifying the observed heads
-        Iterable<...> candidates = null;
-        Set<SCMHead> includes = observer.getIncludes();
-        if (includes != null) {
-            // at least optimize for the case where the includes is one and only one
-            if (includes.size() == 1 && includes.iterator().next() instanceof MySCMHead) {
-                candidates = getSpecificCandidateFromSourceControl();
-            }
-        }
-        if (candidates == null) {
-            candidates = getAllCandiatesFromSourceControl();
-        }
-        for (candidate : candidates) {
-            checkInterrupt(); // important to call this periodically
-            SCMHead head = new ...;
-            SCMRevision revision = new ...;
-            if (criteria != null) {
-                /* see note on SCMProbe */
-                try (SCMProbe probe = createProbe(head, revision)) {
-                    if (!criteria.isHead(probe, listener)) {
-                        continue;
-                    }
+        try (MySCMSourceRequest request = new MySCMSourceContext(criteria, observer, ...)
+                             .withTraits(traits)
+                             .newRequest(this, listener)) {
+            // When you implement event support, if you have events that can be trusted
+            // you may want to use the payloads of those events to avoid extra network
+            // calls for identifying the observed heads
+            Iterable<...> candidates = null;
+            Set<SCMHead> includes = observer.getIncludes();
+            if (includes != null) {
+                // at least optimize for the case where the includes is one and only one
+                if (includes.size() == 1 && includes.iterator().next() instanceof MySCMHead) {
+                    candidates = getSpecificCandidateFromSourceControl();
                 }
-                observer.observe(head, revision);
-            } else {
-                // null criteria means that all branches match.
-                observer.observe(head, revision);
+            }
+            if (candidates == null) {
+                candidates = getAllCandiatesFromSourceControl();
+            }
+            for (candidate : candidates) {
+                // there are other signatures for the process method depending on whether you need another
+                // round-trip call to the source control server in order to instantiate the MySCMRevision
+                // object. This example assumes that the revision can be instantiated without requiring
+                // an additional round-trip.
+                if (request.process(
+                        new MySCMHead(...),
+                        (RevisionLambda) (head) -> { return new MySCMRevision(head, ...) },
+                        (head, revision) -> { return createProbe(head, revision) }
+                    )) {
+                    // the retrieve was only looking for some of the heads and has found enough
+                    // do not waste further time looking at the other heads
+                    return;
+                }
             }
         }
     }
@@ -617,9 +635,7 @@ public class MySCMSource extends SCMSource {
     @NonNull
     @Override
     public SCM build(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {
-        MySCM result = new MySCM(this);
-        result.setHead(head, revision);
-        return result;
+        return new MySCMBuilder(this, head, revision).withTraits(traits).build();
     }
 
 
@@ -711,8 +727,97 @@ public class MySCMSource extends SCMSource {
                     TagSCMHeadCategory.DEFAULT
             };
         }
+
+        // need to implement this as the default filtering of form binding will not be specific enough
+        public List<SCMSourceTraitDescriptor> getTraitsDescriptors() {
+            return SCMSourceTrait._for(this, MySCMSourceContext.class, MySCMBuilder.class);
+        }
+
+        public List<SCMSourceTrait> getTraitsDefaults() {
+            return Collections.<SCMSourceTrait>singletonList(new MySCMDiscoverChangeRequests());
+        }
     }
 }
+
+// we need a context because we are using traits
+public class MySCMSouceContext extends SCMSourceContext<MySCMSourceContext, MySCMSourceRequest> {
+
+    // store configuration that can be modified by traits
+    // for example, there may be different types of SCMHead instances that can be discovered
+    // in which case you would define discovery traits for the different types
+    // then those discovery traits would decorate this context to turn on the discovery.
+
+    // exmaple: we have a discovery trait that will ignore branches that have been filed as a change request
+    // because they will also be discovered as the change request and there is no point discovering
+    // them twice
+    private boolean needsChangeRequests;
+
+    // can include additional mandatory parameters
+    public MySCMSourceContext(SCMSourceCriteria criteria, SCMHeadObserver observer) {
+        super(criteria, observer);
+    }
+
+    // follow the builder pattern for "getters" and "setters" and use final liberally
+    // i.e. getter methods are *just the field name*
+    //      setter methods return this for method chaining and are named to be readable;
+
+    public final boolean needsChangeRequests() { return needsChangeRequests; }
+
+    // in some cases your "setters" logic may be inclusive, in this example, once one trait
+    // declares that it needs to know the details of all the change requests, we have to get
+    // those details, even if the other traits do not need the information. Hence this
+    // "setter" uses inclusive OR logic.
+    @NonNull
+    public final MySCMSouceContext wantChangeRequests() { needsChangeRequests = true; return this; }
+
+    @NonNull
+    @Override
+    public MySCMSourceRequest newRequest(@NonNull SCMSource source, @CheckForNull TaskListener listener) {
+        return new MySCMSourceRequest(source, this, listener);
+    }
+}
+
+// we need a request because we are using traits
+// the request provides utility methods that make processing easier and less error prone
+public class MySCMSourceRequest extends SCMSourceRequest {
+    private final boolean fetchChangeRequests;
+
+    MockSCMSourceRequest(SCMSource source, MySCMSourceContext context, TaskListener listener) {
+        super(source, context, listener);
+        // copy the relevant details from the context into the request
+        this.fetchChangeRequests = context.needsChangeRequests();
+    }
+
+    public boolean isFetchChangeRequests() {
+        return fetchChangeRequests;
+    }
+}
+
+// we need a SCMBuilder because we are using traits
+public class MySCMBuilder extends SCMBuilder<MySCMBuilder,MySCM> {
+
+    // include any fields needed by traits to decorate the resulting MySCM
+    private final MySCMSource source;
+
+    public MySCMBuilder(@NonNull MySCMSource source, @NonNull SCMHead head,
+                        @CheckForNull SCMRevision revision) {
+        super(MySCM.class, head, revision);
+        this.source = source;
+    }
+
+    // provide builder-style getters and setters for fields
+
+    @NonNull
+    @Override
+    public MySCM build() {
+        MySCM result = new MySCM(this);
+        result.setHead(head(), revision());
+        // apply the decorations from the fields
+        return result;
+    }
+
+}
+
 ----
 
 [NOTE]
@@ -970,6 +1075,14 @@ public class MySCMNavigator extends SCMNavigator {
      * non-mandatory fields should be non-final
      */
 
+    /**
+     * Using traits is not required but it does make your implementation easier for others to extend.
+     * Using traits also reduces duplicate configuration between your SCMSource and your SCMNavigator
+     * as you can provide the required traits
+     */
+    @NonNull
+    private final List<SCMTrait<?>> traits;
+
     @DataBoundConstructor
     public MySCMNavigator(/*mandatory configuration*/) {
         // ...
@@ -991,37 +1104,53 @@ public class MySCMNavigator extends SCMNavigator {
 
     // Getters for all the configuration fields
 
+    @NonNull
+    public List<SCMTrait<?>> getTraits() {
+        return new ArrayList<>(traits);
+    }
+
+    @DataBoundSetter
+    public void setTraits(@CheckForNull List<SCMTrait<?>> traits) {
+        this.traits = new ArrayList<>(Util.fixNull(traits));
+    }
+
     // use @DataBoundSetter to inject the non-mandatory configuration elements
     // as this will simplify the usage from pipeline
 
     @Override
     public void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException {
-        Iterable<...> candidates = null;
-        Set<String> includes = observer.getIncludes();
-        if (includes != null) {
-            // at least optimize for the case where the includes is one and only one
-            if (includes.size() == 1 && includes.iterator().next() instanceof MySCMHead) {
-                candidates = getSpecificCandidateFromSourceControl();
+        try (MySCMNavigatorRequest request = new MySCMNavigatorContext()
+                .withTraits(traits)
+                .newRequest(this, observer)) {
+            Iterable<...> candidates = null;
+            Set<String> includes = observer.getIncludes();
+            if (includes != null) {
+                // at least optimize for the case where the includes is one and only one
+                if (includes.size() == 1 && includes.iterator().next() instanceof MySCMHead) {
+                    candidates = getSpecificCandidateFromSourceControl();
+                }
             }
-        }
-        if (candidates == null) {
-            candidates = getAllCandiatesFromSourceControl();
-        }
-        for (String name : candidates) {
-            checkInterrupt(); // important to call this periodically
-            SCMSourceObserver.ProjectObserver po = observer.observe(name);
-            // it is *critical* that we assign each observed SCMSource a reproducible id.
-            // the id will be used to correlate the SCMHead back with the SCMSource from which
-            // it came. If we do not use a reproducible ID then repeated observations of the
-            // same navigator will return "different" sources and consequently the SCMHead
-            // instances discovered previously will be picked up as orphans that have been
-            // taken over by a new source... which could end up triggering a new build.
-            //
-            // At a minimum you could use the name as the ID, but better is at least to include
-            // the URL of the server that the navigator is navigating
-            String id = "... some stuff based on configuration of navigator ..." + name;
-            po.addSource(new MySCMSource(id, this, name));
-            po.complete();
+            if (candidates == null) {
+                candidates = getAllCandiatesFromSourceControl();
+            }
+            for (String name : candidates) {
+                if (request.process(name, (SourceLambda) (name) -> {
+                    // it is *critical* that we assign each observed SCMSource a reproducible id.
+                    // the id will be used to correlate the SCMHead back with the SCMSource from which
+                    // it came. If we do not use a reproducible ID then repeated observations of the
+                    // same navigator will return "different" sources and consequently the SCMHead
+                    // instances discovered previously will be picked up as orphans that have been
+                    // taken over by a new source... which could end up triggering a new build.
+                    //
+                    // At a minimum you could use the name as the ID, but better is at least to include
+                    // the URL of the server that the navigator is navigating
+                    String id = "... some stuff based on configuration of navigator ..." + name;
+                    return new MySCMSourceBuilder(name).withId(id).withRequest(request).build();
+                }, (AttributeLambda) null)) {
+                    // the observer has seen enough and doesn't want to see any more
+                    return;
+                }
+            }
         }
     }
 
@@ -1103,6 +1232,32 @@ public class MySCMNavigator extends SCMNavigator {
                             Icon.ICON_XLARGE_STYLE));
         }
     }
+}
+
+// we need a source builder because we are using traits
+public class MySCMSourceBuilder extends SCMSourceBuilder<MySCMSourceBuilder, MySCMSource> {
+
+    private String id;
+    // store the required configuration here
+
+    // there may be other mandatory parameters that you may want to capture here
+    // such as the SCM server URL
+    public MySCMSourceBuilder(String name) {
+        super(MockSCMSource.class, name);
+    }
+
+    @NonNull
+    public MySCMSourceBuilder withId(String id) {
+        this.id = id;
+        return this;
+    }
+
+    @NonNull
+    @Override
+    public MySCMSource build() {
+        return new MySCMSource(id, ...);
+    }
+
 }
 ----
 
@@ -1361,7 +1516,17 @@ public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
         if (!(src.getRepository().equals(getPayload().path("repository").asString()))) {
             return Collections.emptyMap();
         }
+        MySCMSourceContext context = new MySCMSourceContext(null, SCMHeadObserver.none(), ...)
+            .withTraits(src.getTraits();
+        if (/*some condition dependent determined by traits*/) {
+            // the configured traits are saying this event is ignored for this source
+            return Collections.emptyMap();
+        }
         MySCMHead head = new MySCMHead(getPayload().path("branch").asString(), false);
+        // the configuration of the context may also modify how we return the heads
+        // for example there could be traits to control whether to build the
+        // merge commit of a change request or the head commit of a change request (or even both)
+        // so the returned value may need to be customized based on the context
         return Collections.<SCMHead, SCMRevision>singletonMap(
                 head, new MySCMRevision(head, revision)
         );
@@ -1370,7 +1535,7 @@ public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
     @Override
     public boolean isMatch(@NonNull SCM scm) {
         if (scm instanceof MySCM) {
-            MySCM mySCM = (MockSCM) scm;
+            MySCM mySCM = (MySCM) scm;
             return mySCM.getServer().equals(getPayload().path("server").asString())
                 && mySCM.getTeam().equals(getPayload().path("team").asString())
                     && mySCM.getRepository().equals(getPayload().path("repository").asString())
