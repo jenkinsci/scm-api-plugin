@@ -74,7 +74,6 @@ public class SingleSCMSourceTest {
         try {
             c.createRepository("foo");
             SingleSCMSource source = new SingleSCMSource(
-                    "the-id",
                     "the-name",
                     new MockSCM(
                             c,
@@ -83,9 +82,9 @@ public class SingleSCMSourceTest {
                             null
                     )
             );
+            source.setId("the-id");
             SCMSourceBuilder builder = new SCMSourceBuilder(source);
-            r.assertEqualDataBoundBeans(new SCMSourceBuilder(new SingleSCMSource(
-                    "the-id",
+            SingleSCMSource expected = new SingleSCMSource(
                     "the-name",
                     new MockSCM(
                             c,
@@ -93,7 +92,11 @@ public class SingleSCMSourceTest {
                             new MockSCMHead("master"),
                             null
                     )
-            )), r.configRoundtrip(builder));
+            );
+            expected.setId("the-id");
+            SCMSource actual = r.configRoundtrip(builder).scm;
+            System.out.printf("expected=%s%nactual=%s%n", expected, actual);
+            r.assertEqualDataBoundBeans(expected, actual);
         } finally {
             c.close();
         }

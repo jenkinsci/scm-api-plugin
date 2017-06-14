@@ -86,7 +86,7 @@ public class SymbolAnnotationsTest {
         MockSCMController c = MockSCMController.create();
         try {
             c.createRepository("test");
-            MockSCMSource instance = new MockSCMSource(null, c, "test", new MockSCMDiscoverBranches(),
+            MockSCMSource instance = new MockSCMSource(c, "test", new MockSCMDiscoverBranches(),
                     new MockSCMDiscoverChangeRequests(), new MockSCMDiscoverTags(),
                     new WildcardSCMHeadFilterTrait("*", "ignore"), new RegexSCMHeadFilterTrait("i.*"));
             assertThat(DescribableModel.uninstantiate2_(instance).toString(), allOf(
@@ -156,7 +156,7 @@ public class SymbolAnnotationsTest {
         try {
             c.createRepository("test");
             SingleSCMNavigator instance = new SingleSCMNavigator("foo",
-                    Collections.<SCMSource>singletonList(new MockSCMSource(null, c, "test"))
+                    Collections.<SCMSource>singletonList(new MockSCMSource(c, "test"))
             );
             assertThat(DescribableModel.uninstantiate2_(instance).toString(), allOf(
                     startsWith("@"),

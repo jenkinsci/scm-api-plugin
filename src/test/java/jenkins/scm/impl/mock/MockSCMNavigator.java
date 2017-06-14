@@ -114,7 +114,8 @@ public class MockSCMNavigator extends SCMNavigator {
                         @NonNull
                         @Override
                         public SCMSource create(@NonNull String name) {
-                            return new MockSCMSourceBuilder(getId() + "::" + name, controller, name)
+                            return new MockSCMSourceBuilder(controller, name)
+                                    .withId(getId() + "::" + name)
                                     .withRequest(request)
                                     .build();
                         }
