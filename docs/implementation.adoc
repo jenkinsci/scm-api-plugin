@@ -570,7 +570,7 @@ public class MySCMSource extends SCMSource {
 
     @NonNull
     public List<SCMSourceTrait> getTraits() {
-        return new ArrayList<>(traits);
+        return Collections.unmodifiableList(traits);
     }
 
     @DataBoundSetter
@@ -1106,7 +1106,7 @@ public class MySCMNavigator extends SCMNavigator {
 
     @NonNull
     public List<SCMTrait<?>> getTraits() {
-        return new ArrayList<>(traits);
+        return Collections.unmodifiableList(traits);
     }
 
     @DataBoundSetter
