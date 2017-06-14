@@ -59,6 +59,7 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.xml.sax.SAXException;
@@ -283,6 +284,7 @@ public class MockSCM extends SCM2 implements Serializable {
         }
     }
 
+    @Symbol("mockScm")
     @Extension
     public static class DescriptorImpl extends SCMDescriptor<MockSCM> {
 
