@@ -2,7 +2,7 @@
 <!--
   ~ The MIT License
   ~
-  ~ Copyright (c) 2016 CloudBees, Inc.
+  ~ Copyright (c) 2016-2017 CloudBees, Inc.
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
   ~ of this software and associated documentation files (the "Software"), to deal
@@ -21,27 +21,17 @@
   ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   ~ THE SOFTWARE.
-  ~
   -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form" xmlns:scm="/jenkins/scm/api/form">
   <f:entry title="${%Controller ID}" field="controllerId">
     <f:select/>
   </f:entry>
   <f:entry title="${%Repository}" field="repository">
     <f:select/>
   </f:entry>
-  <f:entry title="${%Include Branches}" field="includeBranches">
-    <f:checkbox/>
-  </f:entry>
-  <f:entry title="${%Include Tags}" field="includeTags">
-    <f:checkbox/>
-  </f:entry>
-  <f:entry title="${%Include Change Requests}" field="includeChangeRequests">
-    <f:checkbox/>
-  </f:entry>
-  <f:entry title="${%Change Request Checkout Strategies}" field="strategiesStr">
-    <f:textbox/>
+  <f:entry title="${%Behaviours}">
+    <scm:traits field="traits"/>
   </f:entry>
 </j:jelly>

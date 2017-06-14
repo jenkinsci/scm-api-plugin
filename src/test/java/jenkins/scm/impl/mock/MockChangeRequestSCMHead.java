@@ -20,7 +20,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
  */
 
 package jenkins.scm.impl.mock;
@@ -29,7 +28,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Locale;
 import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
 
@@ -45,7 +43,7 @@ public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSC
         this.number = number;
         this.target = target;
         this.origin = origin;
-        this.strategy = ChangeRequestCheckoutStrategy.HEAD;
+        this.strategy = strategy;
     }
 
     public MockChangeRequestSCMHead(Integer number, String target) {

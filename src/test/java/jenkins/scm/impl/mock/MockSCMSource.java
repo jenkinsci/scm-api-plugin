@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2016-2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ package jenkins.scm.impl.mock;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.TaskListener;
@@ -34,8 +35,8 @@ import hudson.scm.SCM;
 import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -54,43 +55,44 @@ import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.api.metadata.ContributorMetadataAction;
 import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
+import jenkins.scm.api.trait.SCMSourceRequest;
+import jenkins.scm.api.trait.SCMSourceTrait;
+import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 public class MockSCMSource extends SCMSource {
     private final String controllerId;
     private final String repository;
-    private final boolean includeBranches;
-    private final boolean includeTags;
-    private final boolean includeChangeRequests;
-    private Set<ChangeRequestCheckoutStrategy> strategies = EnumSet.of(ChangeRequestCheckoutStrategy.HEAD);
+    private final List<SCMSourceTrait> traits;
     private transient MockSCMController controller;
 
     @DataBoundConstructor
-    public MockSCMSource(@CheckForNull String id, String controllerId, String repository, boolean includeBranches,
-                         boolean includeTags, boolean includeChangeRequests) {
+    public MockSCMSource(@CheckForNull String id, String controllerId, String repository, List<SCMSourceTrait> traits) {
         super(id);
         this.controllerId = controllerId;
         this.repository = repository;
-        this.includeBranches = includeBranches;
-        this.includeTags = includeTags;
-        this.includeChangeRequests = includeChangeRequests;
+        this.traits = new ArrayList<SCMSourceTrait>(traits);
     }
 
-    public MockSCMSource(String id, MockSCMController controller, String repository, boolean includeBranches,
-                         boolean includeTags, boolean includeChangeRequests) {
+    public MockSCMSource(@CheckForNull String id, String controllerId, String repository, SCMSourceTrait... traits) {
+        this(id, controllerId, repository, Arrays.asList(traits));
+    }
+
+    public MockSCMSource(String id, MockSCMController controller, String repository, List<SCMSourceTrait> traits) {
         super(id);
         this.controllerId = controller.getId();
         this.controller = controller;
         this.repository = repository;
-        this.includeBranches = includeBranches;
-        this.includeTags = includeTags;
-        this.includeChangeRequests = includeChangeRequests;
+        this.traits = new ArrayList<SCMSourceTrait>(traits);
+    }
+
+    public MockSCMSource(String id, MockSCMController controller, String repository, SCMSourceTrait... traits) {
+        this(id, controller, repository, Arrays.asList(traits));
     }
 
     public String getControllerId() {
@@ -104,122 +106,137 @@ public class MockSCMSource extends SCMSource {
         return controller;
     }
 
-    public String getStrategiesStr() {
-        StringBuilder r = new StringBuilder();
-        for (ChangeRequestCheckoutStrategy s: strategies) {
-            r.append(s.name()).append(", ");
-        }
-        return r.toString();
-    }
-
-    @DataBoundSetter
-    public void setStrategiesStr(String strategiesStr) {
-        Set<ChangeRequestCheckoutStrategy> strategies = EnumSet.noneOf(ChangeRequestCheckoutStrategy.class);
-        for (String s : StringUtils.split(strategiesStr, ", ")) {
-            try {
-                strategies.add(ChangeRequestCheckoutStrategy.valueOf(s.trim()));
-            } catch (IllegalArgumentException e) {
-                // ignore
-            }
-        }
-        setStrategies(strategies);
+    public List<SCMSourceTrait> getTraits() {
+        return Collections.unmodifiableList(traits);
     }
 
     public String getRepository() {
         return repository;
     }
 
-    public boolean isIncludeBranches() {
-        return includeBranches;
-    }
-
-    public boolean isIncludeTags() {
-        return includeTags;
-    }
-
-    public boolean isIncludeChangeRequests() {
-        return includeChangeRequests;
-    }
-
     @Override
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
                             @CheckForNull SCMHeadEvent<?> event, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        controller().applyLatency();
-        controller().checkFaults(repository, null, null, false);
-        Set<SCMHead> includes = observer.getIncludes();
-        if (includeBranches) {
-            for (final String branch : controller().listBranches(repository)) {
-                checkInterrupt();
-                String revision = controller().getRevision(repository, branch);
-                MockSCMHead head = new MockSCMHead(branch);
-                if (includes != null && !includes.contains(head)) {
-                    continue;
-                }
-                controller().applyLatency();
-                controller().checkFaults(repository, head.getName(), null, false);
-                if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
-                    controller().applyLatency();
-                    controller().checkFaults(repository, head.getName(), revision, false);
-                    observer.observe(head, new MockSCMRevision(head, revision));
-                }
-            }
-        }
-        if (includeTags) {
-            for (final String tag : controller().listTags(repository)) {
-                checkInterrupt();
-                String revision = controller().getRevision(repository, tag);
-                MockSCMHead head = new MockTagSCMHead(tag, controller().getTagTimestamp(repository, tag));
-                if (includes != null && !includes.contains(head)) {
-                    continue;
-                }
-                controller().applyLatency();
-                controller().checkFaults(repository, head.getName(), null, false);
-                if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
-                    controller().applyLatency();
-                    controller().checkFaults(repository, head.getName(), revision, false);
-                    observer.observe(head, new MockSCMRevision(head, revision));
-                }
-            }
-        }
-        if (includeChangeRequests) {
-            for (final Integer number : controller().listChangeRequests(repository)) {
-                checkInterrupt();
-                Set<MockRepositoryFlags> repoFlags = controller().getFlags(repository);
-                String revision = controller().getRevision(repository, "change-request/" + number);
-                String target = controller().getTarget(repository, number);
-                String targetRevision = controller().getRevision(repository, target);
-                Set<MockChangeRequestFlags> crFlags = controller.getFlags(repository, number);
-                boolean singleStrategy = strategies.size() == 1;
-                for (ChangeRequestCheckoutStrategy strategy : strategies) {
-                    MockChangeRequestSCMHead head = new MockChangeRequestSCMHead(
-                                crFlags.contains(MockChangeRequestFlags.FORK)
-                                        ? new SCMHeadOrigin.Fork("fork")
-                                        : null,
-                                number, target, strategy, singleStrategy);
-                    if (includes != null && !includes.contains(head)) {
-                        continue;
-                    }
-                    controller().applyLatency();
-                    controller().checkFaults(repository, head.getName(), null, false);
-                    if (criteria == null || criteria.isHead(new MockSCMProbe(head, revision), listener)) {
-                        controller().applyLatency();
-                        controller().checkFaults(repository, head.getName(), revision, false);
-                        observer.observe(head, new MockChangeRequestSCMRevision(head,
-                                new MockSCMRevision(head.getTarget(), targetRevision), revision));
+
+        MockSCMSourceRequest request = new MockSCMSourceContext(this, criteria, observer)
+                .withTraits(traits)
+                .newRequest(this, listener);
+        try {
+            controller().applyLatency();
+            controller().checkFaults(repository, null, null, false);
+            if (request.isFetchBranches()) {
+                for (final String branch : controller().listBranches(repository)) {
+                    if (request.process(new MockSCMHead(branch),
+                            new SCMSourceRequest.RevisionLambda<MockSCMHead, MockSCMRevision>() {
+                                @NonNull
+                                @Override
+                                public MockSCMRevision create(@NonNull MockSCMHead head)
+                                        throws IOException, InterruptedException {
+                                    controller().applyLatency();
+                                    controller().checkFaults(repository, head.getName(), null, false);
+                                    return new MockSCMRevision(head, controller().getRevision(repository, branch));
+                                }
+                            }, new SCMSourceRequest.ProbeLambda<MockSCMHead, MockSCMRevision>() {
+                                @NonNull
+                                @Override
+                                public SCMSourceCriteria.Probe create(@NonNull MockSCMHead head, @Nullable
+                                        MockSCMRevision revisionInfo) throws IOException, InterruptedException {
+                                    controller().applyLatency();
+                                    controller().checkFaults(repository, head.getName(), revisionInfo.getHash(), false);
+                                    return new MockSCMProbe(head, revisionInfo.getHash());
+                                }
+                            })) {
+                        return;
                     }
                 }
             }
+            if (request.isFetchTags()) {
+                for (final String tag : controller().listTags(repository)) {
+                    if (request.process(new MockTagSCMHead(tag, controller().getTagTimestamp(repository, tag)),
+                            new SCMSourceRequest.RevisionLambda<MockTagSCMHead, MockSCMRevision>() {
+                                @NonNull
+                                @Override
+                                public MockSCMRevision create(@NonNull MockTagSCMHead head)
+                                        throws IOException, InterruptedException {
+                                    controller().applyLatency();
+                                    controller().checkFaults(repository, head.getName(), null, false);
+                                    return new MockSCMRevision(head, controller().getRevision(repository, tag));
+                                }
+                            }, new SCMSourceRequest.ProbeLambda<MockTagSCMHead, MockSCMRevision>() {
+                                @NonNull
+                                @Override
+                                public SCMSourceCriteria.Probe create(@NonNull MockTagSCMHead head, @Nullable
+                                        MockSCMRevision revisionInfo)
+                                        throws IOException, InterruptedException {
+                                    controller().applyLatency();
+                                    controller().checkFaults(repository, head.getName(), revisionInfo.getHash(), false);
+                                    return new MockSCMProbe(head, revisionInfo.getHash());
+                                }
+                            })) {
+                        return;
+                    }
+                }
+            }
+            if (request.isFetchChangeRequests()) {
+                for (final Integer number : controller().listChangeRequests(repository)) {
+                    checkInterrupt();
+                    String target = controller().getTarget(repository, number);
+                    Set<MockChangeRequestFlags> crFlags = controller.getFlags(repository, number);
+                    Set<ChangeRequestCheckoutStrategy> strategies = request.getCheckoutStrategies();
+                    boolean singleStrategy = strategies.size() == 1;
+                    for (ChangeRequestCheckoutStrategy strategy : strategies) {
+                        if (request.process(new MockChangeRequestSCMHead(
+                                        crFlags.contains(MockChangeRequestFlags.FORK)
+                                                ? new SCMHeadOrigin.Fork("fork")
+                                                : null,
+                                        number, target, strategy, singleStrategy),
+                                new SCMSourceRequest.RevisionLambda<MockChangeRequestSCMHead,
+                                        MockChangeRequestSCMRevision>() {
+                                    @NonNull
+                                    @Override
+                                    public MockChangeRequestSCMRevision create(@NonNull MockChangeRequestSCMHead head)
+                                            throws IOException, InterruptedException {
+                                        controller().applyLatency();
+                                        controller().checkFaults(repository, head.getName(), null, false);
+                                        String revision =
+                                                controller().getRevision(repository, "change-request/" + number);
+                                        String targetRevision =
+                                                controller().getRevision(repository, head.getTarget().getName());
+                                        return new MockChangeRequestSCMRevision(head,
+                                                new MockSCMRevision(head.getTarget(), targetRevision), revision);
+                                    }
+                                },
+                                new SCMSourceRequest.ProbeLambda<MockChangeRequestSCMHead,
+                                        MockChangeRequestSCMRevision>() {
+                                    @NonNull
+                                    @Override
+                                    public SCMSourceCriteria.Probe create(@NonNull MockChangeRequestSCMHead head,
+                                                                          @Nullable
+                                                                                  MockChangeRequestSCMRevision revisionInfo)
+                                            throws IOException, InterruptedException {
+                                        controller().applyLatency();
+                                        controller()
+                                                .checkFaults(repository, head.getName(), revisionInfo.getHash(), false);
+                                        return new MockSCMProbe(head, revisionInfo.getHash());
+                                    }
+                                })) {
+                            return;
+                        }
+                    }
+                }
+            }
+        } finally {
+            IOUtils.closeQuietly(request);
         }
     }
 
     @NonNull
     @Override
     public SCM build(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {
-        if (revision instanceof MockSCMRevision || revision instanceof MockChangeRequestSCMRevision) {
-            return new MockSCM(this, head, revision);
-        }
-        return new MockSCM(this, head, null);
+        return new MockSCMBuilder(this, head, revision)
+                .withTraits(traits)
+                .build();
     }
 
 
@@ -251,7 +268,7 @@ public class MockSCMSource extends SCMSource {
                                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         controller().applyLatency();
-        String hash ;
+        String hash;
         if (revision instanceof MockSCMRevision) {
             hash = ((MockSCMRevision) revision).getHash();
         } else if (revision instanceof MockChangeRequestSCMRevision) {
@@ -290,22 +307,12 @@ public class MockSCMSource extends SCMSource {
 
     @Override
     protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
-        if (category instanceof ChangeRequestSCMHeadCategory) {
-            return includeChangeRequests;
+        for (SCMSourceTrait trait: traits) {
+            if (trait.isCategoryEnabled(category)) {
+                return true;
+            }
         }
-        if (category instanceof TagSCMHeadCategory) {
-            return includeTags;
-        }
-        return true;
-    }
-
-    public Set<ChangeRequestCheckoutStrategy> getStrategies() {
-        return Collections.unmodifiableSet(strategies);
-    }
-
-    public void setStrategies(@NonNull Set<ChangeRequestCheckoutStrategy> strategies) {
-        this.strategies = strategies.isEmpty()
-                ? EnumSet.noneOf(ChangeRequestCheckoutStrategy.class) : EnumSet.copyOf(strategies);
+        return false;
     }
 
     @Extension
@@ -343,6 +350,14 @@ public class MockSCMSource extends SCMSource {
                     ChangeRequestSCMHeadCategory.DEFAULT,
                     TagSCMHeadCategory.DEFAULT
             };
+        }
+
+        public List<SCMSourceTraitDescriptor> getTraitsDescriptors() {
+            return SCMSourceTrait._for(this, MockSCMSourceContext.class, MockSCMBuilder.class);
+        }
+
+        public List<SCMSourceTrait> getTraitsDefaults() {
+            return Collections.<SCMSourceTrait>singletonList(new MockSCMDiscoverBranches());
         }
     }
 

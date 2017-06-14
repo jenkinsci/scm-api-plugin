@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2016-2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ package jenkins.scm.impl.mock;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -71,6 +72,7 @@ public class MockSCM extends SCM2 implements Serializable {
 
     @DataBoundConstructor
     public MockSCM(String controllerId, String repository, String head, String revision) {
+        revision = Util.fixEmptyAndTrim(revision);
         this.controllerId = controllerId;
         this.repository = repository;
         // implementations of SCM API need not use the same convention for SCMHead.getName() as their underlying

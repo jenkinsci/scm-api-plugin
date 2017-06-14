@@ -81,9 +81,12 @@ public abstract class SCMSourceObserver {
      *                    {@link Item#getName}
      * @return a secondary callback to customize the project, on which you must call {@link ProjectObserver#complete}
      * @throws IllegalArgumentException if this {@code projectName} has already been encountered
+     * @throws IOException if observing this {@code projectName} could not be completed due to an {@link IOException}.
+     * @throws InterruptedException  if observing this {@code projectName} was interrupted.
      */
     @NonNull
-    public abstract ProjectObserver observe(@NonNull String projectName) throws IllegalArgumentException;
+    public abstract ProjectObserver observe(@NonNull String projectName) throws IllegalArgumentException, IOException,
+            InterruptedException;
 
     /**
      * Adds extra metadata about the overall organization.
@@ -212,7 +215,8 @@ public abstract class SCMSourceObserver {
          */
         @Override
         @NonNull
-        public ProjectObserver observe(@NonNull String projectName) throws IllegalArgumentException {
+        public ProjectObserver observe(@NonNull String projectName)
+                throws IllegalArgumentException, IOException, InterruptedException {
             return delegate.observe(projectName);
         }
 
@@ -280,7 +284,8 @@ public abstract class SCMSourceObserver {
          */
         @NonNull
         @Override
-        public ProjectObserver observe(@NonNull String projectName) throws IllegalArgumentException {
+        public ProjectObserver observe(@NonNull String projectName)
+                throws IllegalArgumentException, IOException, InterruptedException {
             if (remaining.remove(projectName)) {
                 return super.observe(projectName);
             } else {

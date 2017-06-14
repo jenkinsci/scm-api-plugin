@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2016-2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,42 +33,48 @@ import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nonnull;
-import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
 import jenkins.scm.api.SCMNavigatorEvent;
 import jenkins.scm.api.SCMNavigatorOwner;
+import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceObserver;
 import jenkins.scm.api.metadata.ObjectMetadataAction;
+import jenkins.scm.api.trait.SCMNavigatorRequest;
+import jenkins.scm.api.trait.SCMNavigatorTrait;
+import jenkins.scm.api.trait.SCMSourceTrait;
+import jenkins.scm.api.trait.SCMTrait;
+import jenkins.scm.api.trait.SCMTraitDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class MockSCMNavigator extends SCMNavigator {
 
     private final String controllerId;
-    private final boolean includeBranches;
-    private final boolean includeTags;
-    private final boolean includeChangeRequests;
+    private final List<SCMTrait<?>> traits;
     private transient MockSCMController controller;
 
     @DataBoundConstructor
-    public MockSCMNavigator(String controllerId, boolean includeBranches, boolean includeTags,
-                            boolean includeChangeRequests) {
+    public MockSCMNavigator(String controllerId, List<SCMTrait<?>> traits) {
         this.controllerId = controllerId;
-        this.includeBranches = includeBranches;
-        this.includeTags = includeTags;
-        this.includeChangeRequests = includeChangeRequests;
+        this.traits = new ArrayList<SCMTrait<?>>(traits);
     }
 
-    public MockSCMNavigator(MockSCMController controller, boolean includeBranches, boolean includeTags,
-                            boolean includeChangeRequests) {
+    public MockSCMNavigator(String controllerId, SCMTrait<?>... traits) {
+        this(controllerId, Arrays.asList(traits));
+    }
+
+    public MockSCMNavigator(MockSCMController controller, List<SCMTrait<?>> traits) {
         this.controllerId = controller.getId();
         this.controller = controller;
-        this.includeBranches = includeBranches;
-        this.includeTags = includeTags;
-        this.includeChangeRequests = includeChangeRequests;
+        this.traits = new ArrayList<SCMTrait<?>>(traits);
+    }
+
+    public MockSCMNavigator(MockSCMController controller, SCMTrait<?>... traits) {
+        this(controller, Arrays.asList(traits));
     }
 
     public String getControllerId() {
@@ -82,16 +88,8 @@ public class MockSCMNavigator extends SCMNavigator {
         return controller;
     }
 
-    public boolean isIncludeBranches() {
-        return includeBranches;
-    }
-
-    public boolean isIncludeTags() {
-        return includeTags;
-    }
-
-    public boolean isIncludeChangeRequests() {
-        return includeChangeRequests;
+    public List<SCMTrait<?>> getTraits() {
+        return Collections.unmodifiableList(traits);
     }
 
     @Override
@@ -101,23 +99,31 @@ public class MockSCMNavigator extends SCMNavigator {
 
     @Override
     public void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException {
-        controller().applyLatency();
-        controller().checkFaults(null, null, null, false);
-        Set<String> includes = observer.getIncludes();
-        for (String name : controller().listRepositories()) {
-            if (!observer.isObserving()) {
-                return;
-            }
-            checkInterrupt();
-            if (includes != null && !includes.contains(name)) {
-                continue;
-            }
+        final MockSCMNavigatorRequest request = new MockSCMNavigatorContext()
+                .withTraits(traits)
+                .newRequest(this, observer);
+        try {
             controller().applyLatency();
-            controller().checkFaults(name, null, null, false);
-            SCMSourceObserver.ProjectObserver po = observer.observe(name);
-            po.addSource(new MockSCMSource(getId() + "::" + name,
-                    controller, name, includeBranches, includeTags, includeChangeRequests));
-            po.complete();
+            controller().checkFaults(null, null, null, false);
+            for (String name : controller().listRepositories()) {
+                if (!request.isExcluded(name)) { // hack to allow the latency and faults to work
+                    controller().applyLatency();
+                    controller().checkFaults(name, null, null, false);
+                    if (request.process(name, new SCMNavigatorRequest.SourceLambda() {
+                        @NonNull
+                        @Override
+                        public SCMSource create(@NonNull String name) {
+                            return new MockSCMSourceBuilder(getId() + "::" + name, controller, name)
+                                    .withRequest(request)
+                                    .build();
+                        }
+                    }, null)) {
+                        return;
+                    }
+                }
+            }
+        } finally {
+            request.close();
         }
     }
 
@@ -164,6 +170,17 @@ public class MockSCMNavigator extends SCMNavigator {
                 result.add(c.getId());
             }
             return result;
+        }
+
+        public List<SCMTraitDescriptor<?>> getTraitsDescriptors() {
+            List<SCMTraitDescriptor<?>> descriptors = new ArrayList<SCMTraitDescriptor<?>>();
+            descriptors.addAll(SCMNavigatorTrait._for(MockSCMNavigatorContext.class, MockSCMSourceBuilder.class));
+            descriptors.addAll(SCMSourceTrait._for(MockSCMSourceContext.class, MockSCMBuilder.class));
+            return descriptors;
+        }
+
+        public List<SCMTrait<?>> getTraitsDefaults() {
+            return Collections.<SCMTrait<?>>singletonList(new MockSCMDiscoverBranches());
         }
     }
 }

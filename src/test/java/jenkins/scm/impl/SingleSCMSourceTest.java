@@ -28,7 +28,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.plugins.git.GitSCM;
 import hudson.scm.NullSCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -39,9 +38,11 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceOwner;
+import jenkins.scm.impl.mock.MockSCM;
+import jenkins.scm.impl.mock.MockSCMController;
+import jenkins.scm.impl.mock.MockSCMHead;
 import org.hamcrest.Matcher;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -49,10 +50,18 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.mockito.InOrder;
 import org.mockito.Matchers;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class SingleSCMSourceTest {
 
@@ -61,88 +70,141 @@ public class SingleSCMSourceTest {
 
     @Test
     public void configRoundtrip() throws Exception {
-        SingleSCMSource source = new SingleSCMSource("the-id", "the-name", new GitSCM("https://nowhere.net/something.git"));
-        SCMSourceBuilder builder = new SCMSourceBuilder(source);
-        r.assertEqualDataBoundBeans(builder, r.configRoundtrip(builder));
+        MockSCMController c = MockSCMController.create();
+        try {
+            c.createRepository("foo");
+            SingleSCMSource source = new SingleSCMSource(
+                    "the-id",
+                    "the-name",
+                    new MockSCM(
+                            c,
+                            "foo",
+                            new MockSCMHead("master"),
+                            null
+                    )
+            );
+            SCMSourceBuilder builder = new SCMSourceBuilder(source);
+            r.assertEqualDataBoundBeans(new SCMSourceBuilder(new SingleSCMSource(
+                    "the-id",
+                    "the-name",
+                    new MockSCM(
+                            c,
+                            "foo",
+                            new MockSCMHead("master"),
+                            null
+                    )
+            )), r.configRoundtrip(builder));
+        } finally {
+            c.close();
+        }
     }
 
     @Test
     public void given_instance_when_fetch_then_revisionObserved() throws Exception {
-        SCMHeadObserver observer = mock(SCMHeadObserver.class);
-        SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                new GitSCM("https://nowhere.net/something.git"));
-        instance.fetch(null, observer, null);
-        verify(observer).observe(
-                (SCMHead)argThat(
-                        allOf(
-                                instanceOf(SCMHead.class),
-                                hasProperty("name", is("the-name"))
-                        )
-                ),
-                (SCMRevision) argThat(
-                        allOf(
-                                instanceOf(SCMRevision.class),
-                                hasProperty("head", hasProperty("name", is("the-name"))),
-                                hasProperty("deterministic", is(false))
-                        )
-                )
-        );
+        MockSCMController c = MockSCMController.create();
+        try {
+            c.createRepository("foo");
+            SCMHeadObserver observer = mock(SCMHeadObserver.class);
+            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
+                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            instance.fetch(null, observer, null);
+            verify(observer).observe(
+                    (SCMHead) argThat(
+                            allOf(
+                                    instanceOf(SCMHead.class),
+                                    hasProperty("name", is("the-name"))
+                            )
+                    ),
+                    (SCMRevision) argThat(
+                            allOf(
+                                    instanceOf(SCMRevision.class),
+                                    hasProperty("head", hasProperty("name", is("the-name"))),
+                                    hasProperty("deterministic", is(false))
+                            )
+                    )
+            );
+        } finally {
+            c.close();
+        }
     }
 
     @Test
     public void given_instance_when_fetchWithCriterial_then_criteriaIgnoredAndRevisionObserved() throws Exception {
-        SCMHeadObserver observer = mock(SCMHeadObserver.class);
-        SCMSourceCriteria criteria = mock(SCMSourceCriteria.class);
-        InOrder seq = inOrder(observer, criteria);
-        SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                new GitSCM("https://nowhere.net/something.git"));
-        instance.fetch(criteria, observer, null);
-        seq.verify(observer).observe(
-                (SCMHead)argThat(
-                        allOf(
-                                instanceOf(SCMHead.class),
-                                hasProperty("name", is("the-name"))
-                        )
-                ),
-                (SCMRevision) argThat(
-                        allOf(
-                                instanceOf(SCMRevision.class),
-                                hasProperty("head", hasProperty("name", is("the-name"))),
-                                hasProperty("deterministic", is(false))
-                        )
-                )
-        );
-        seq.verifyNoMoreInteractions();
+        MockSCMController c = MockSCMController.create();
+        try {
+            c.createRepository("foo");
+            SCMHeadObserver observer = mock(SCMHeadObserver.class);
+            SCMSourceCriteria criteria = mock(SCMSourceCriteria.class);
+            InOrder seq = inOrder(observer, criteria);
+            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
+                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            instance.fetch(criteria, observer, null);
+            seq.verify(observer).observe(
+                    (SCMHead) argThat(
+                            allOf(
+                                    instanceOf(SCMHead.class),
+                                    hasProperty("name", is("the-name"))
+                            )
+                    ),
+                    (SCMRevision) argThat(
+                            allOf(
+                                    instanceOf(SCMRevision.class),
+                                    hasProperty("head", hasProperty("name", is("the-name"))),
+                                    hasProperty("deterministic", is(false))
+                            )
+                    )
+            );
+            seq.verifyNoMoreInteractions();
+        } finally {
+            c.close();
+        }
     }
 
     @Test
     public void given_instance_when_fetchingObservedHead_then_scmReturned() throws Exception {
-        SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                new GitSCM("https://nowhere.net/something.git"));
-        Map<SCMHead, SCMRevision> result = instance.fetch(SCMHeadObserver.collect(), null).result();
-        assertThat(result.entrySet(), hasSize(1));
-        Map.Entry<SCMHead, SCMRevision> entry = result.entrySet().iterator().next();
-        assertThat(instance.build(entry.getKey(), entry.getValue()), instanceOf(GitSCM.class));
+        MockSCMController c = MockSCMController.create();
+        try {
+            c.createRepository("foo");
+            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
+                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            Map<SCMHead, SCMRevision> result = instance.fetch(SCMHeadObserver.collect(), null).result();
+            assertThat(result.entrySet(), hasSize(1));
+            Map.Entry<SCMHead, SCMRevision> entry = result.entrySet().iterator().next();
+            assertThat(instance.build(entry.getKey(), entry.getValue()), instanceOf(MockSCM.class));
+        } finally {
+            c.close();
+        }
     }
 
     @Test
     public void given_instance_when_fetchingNonObservedHead_then_nullScmReturned() throws Exception {
-        SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                new GitSCM("https://nowhere.net/something.git"));
-        assertThat(instance.build(new SCMHead("foo"), mock(SCMRevision.class)), instanceOf(NullSCM.class));
-
+        MockSCMController c = MockSCMController.create();
+        try {
+            c.createRepository("foo");
+            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
+                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            assertThat(instance.build(new SCMHead("foo"), mock(SCMRevision.class)), instanceOf(NullSCM.class));
+        } finally {
+            c.close();
+        }
     }
 
     @Test
     public void scmRevisionImpl() throws Exception {
-        SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                new GitSCM("https://nowhere.net/something.git"));
-        Map<SCMHead, SCMRevision> result = instance.fetch(SCMHeadObserver.collect(), null).result();
-        SCMRevision revision = result.values().iterator().next();
-        assertThat(revision.isDeterministic(), is(false));
-        assertThat(revision.equals(revision), is(true));
-        assertThat(revision.equals(mock(SCMRevision.class)), is(false));
-        assertThat(revision.hashCode(), is(result.keySet().iterator().next().hashCode()));
+        MockSCMController c = MockSCMController.create();
+        try {
+            c.createRepository("foo");
+            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
+                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            Map<SCMHead, SCMRevision> result = instance.fetch(SCMHeadObserver.collect(), null).result();
+            SCMRevision revision = result.values().iterator().next();
+            assertThat(revision.isDeterministic(), is(false));
+            assertThat(revision.equals(revision), is(true));
+            assertThat(revision.equals(mock(SCMRevision.class)), is(false));
+            assertThat(revision.hashCode(), is(result.keySet().iterator().next().hashCode()));
+        } finally {
+            c.close();
+        }
     }
 
     @Test
@@ -151,11 +213,16 @@ public class SingleSCMSourceTest {
         TopLevelSCMOwner owner = mock(TopLevelSCMOwner.class);
         when(owner.getDescriptor()).thenReturn(descriptor);
         when(descriptor.isApplicable(Matchers.any(Descriptor.class))).thenReturn(true);
-        assertThat((Iterable)SingleSCMSource.DescriptorImpl.getSCMDescriptors(owner), (Matcher)hasItem(instanceOf(GitSCM.DescriptorImpl.class)));
+        assertThat(SingleSCMSource.DescriptorImpl.getSCMDescriptors(owner),
+                (Matcher) hasItem(instanceOf(MockSCM.DescriptorImpl.class)));
     }
 
-    public static interface TopLevelSCMOwner extends TopLevelItem, SCMSourceOwner {}
+    public interface TopLevelSCMOwner extends TopLevelItem, SCMSourceOwner {
+    }
 
+    /**
+     * Helper for {@link #configRoundtrip()}.
+     */
     public static class SCMSourceBuilder extends Builder {
 
         public final SCMSource scm;

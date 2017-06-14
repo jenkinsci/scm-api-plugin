@@ -1,0 +1,43 @@
+DIV.repeated-chunk.trait-section {
+    display: block;
+    text-align: center;
+    margin: 0;
+    padding: 0.1em;
+}
+
+DIV.repeated-chunk.trait-section.trait-section-empty {
+    display: none;
+}
+
+SPAN.trait-section-header {
+    position: relative;
+    overflow: hidden;
+    font-style: italic;
+}
+
+SPAN.trait-section-header SPAN {
+    display: inline-block;
+    vertical-align: baseline;
+    zoom: 1;
+    *display: inline;
+    *vertical-align: auto;
+    position: relative;
+    padding: 0 1em;
+}
+
+SPAN.trait-section-header SPAN:before, SPAN.trait-section-header SPAN:after {
+    content: '';
+    display: block;
+    width: 10em;
+    position: absolute;
+    top: 0.5em;
+    border-top: 1px dotted rgba(0, 0, 0, 0.5);
+}
+
+SPAN.trait-section-header SPAN:before {
+    right: 100%;
+}
+
+SPAN.trait-section-header SPAN:after {
+    left: 100%;
+}

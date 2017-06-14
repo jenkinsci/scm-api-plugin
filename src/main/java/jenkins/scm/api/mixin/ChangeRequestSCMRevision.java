@@ -111,7 +111,10 @@ public abstract class ChangeRequestSCMRevision<H extends SCMHead & ChangeRequest
         if (!equivalent(that)) {
             return false;
         }
-        return !isMerge() || target.equals(that.target);
+        if (isMerge() && that.isMerge()) {
+            return target.equals(that.target);
+        }
+        return isMerge() == that.isMerge();
     }
 
     /**
