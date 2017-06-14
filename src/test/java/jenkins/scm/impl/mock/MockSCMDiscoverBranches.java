@@ -31,6 +31,7 @@ import jenkins.scm.api.trait.SCMBuilder;
 import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class MockSCMDiscoverBranches extends SCMSourceTrait {
@@ -49,6 +50,7 @@ public class MockSCMDiscoverBranches extends SCMSourceTrait {
         return category.isUncategorized();
     }
 
+    @Symbol("discoverBranches")
     @Extension
     public static final class DescriptorImpl extends SCMSourceTraitDescriptor {
 

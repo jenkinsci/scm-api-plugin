@@ -49,6 +49,7 @@ import jenkins.scm.api.trait.SCMNavigatorTrait;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMTrait;
 import jenkins.scm.api.trait.SCMTraitDescriptor;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class MockSCMNavigator extends SCMNavigator {
@@ -150,6 +151,7 @@ public class MockSCMNavigator extends SCMNavigator {
         return result;
     }
 
+    @Symbol("mockScm")
     @Extension
     public static class DescriptorImpl extends SCMNavigatorDescriptor {
 

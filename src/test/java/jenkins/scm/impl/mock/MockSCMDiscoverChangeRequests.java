@@ -38,6 +38,7 @@ import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import org.codehaus.plexus.util.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class MockSCMDiscoverChangeRequests extends SCMSourceTrait {
@@ -91,6 +92,7 @@ public class MockSCMDiscoverChangeRequests extends SCMSourceTrait {
         return category instanceof ChangeRequestSCMHeadCategory;
     }
 
+    @Symbol("discoverChangeRequests")
     @Extension
     public static final class DescriptorImpl extends SCMSourceTraitDescriptor {
 

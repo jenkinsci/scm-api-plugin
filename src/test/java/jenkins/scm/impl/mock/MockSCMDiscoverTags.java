@@ -32,6 +32,7 @@ import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import jenkins.scm.impl.TagSCMHeadCategory;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class MockSCMDiscoverTags extends SCMSourceTrait {
@@ -50,6 +51,7 @@ public class MockSCMDiscoverTags extends SCMSourceTrait {
         return category instanceof TagSCMHeadCategory;
     }
 
+    @Symbol("discoverTags")
     @Extension
     public static final class DescriptorImpl extends SCMSourceTraitDescriptor {
 
