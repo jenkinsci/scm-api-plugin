@@ -151,7 +151,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Note this is a <strong>one-shot</strong> setter. If {@link #getId()} is called first, then its value will stick,
      * otherwise the first call to {@link #setId(String)} will stick.
      *
-     * @param id the ID.
+     * @param id the ID, this is an opaque token expected to be unique within any one {@link SCMSourceOwner}.
      * @see #hasId()
      * @see #getId()
      * @since 2.2.0
@@ -160,6 +160,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     public final synchronized void setId(@CheckForNull String id) {
         if (this.id == null) {
             this.id = id;
+        } else if (!this.id.equals(id)) {
+            throw new IllegalStateException("The ID cannot be changed after it has been set.");
         }
     }
 

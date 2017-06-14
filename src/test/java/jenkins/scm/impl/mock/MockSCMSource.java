@@ -77,7 +77,6 @@ public class MockSCMSource extends SCMSource {
 
     @DataBoundConstructor
     public MockSCMSource(String controllerId, String repository, List<SCMSourceTrait> traits) {
-        super();
         this.controllerId = controllerId;
         this.repository = repository;
         this.traits = new ArrayList<SCMSourceTrait>(traits);
@@ -88,7 +87,6 @@ public class MockSCMSource extends SCMSource {
     }
 
     public MockSCMSource(MockSCMController controller, String repository, List<SCMSourceTrait> traits) {
-        super();
         this.controllerId = controller.getId();
         this.controller = controller;
         this.repository = repository;
