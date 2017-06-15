@@ -87,8 +87,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>1.8-20170614.081136-1</version> <!-- TODO remove SNAPSHOT before release -->
-      <!-- require at least 1.8 as existing implementations that add support for traits will need JENKINS-44864 -->
+      <version>1.8</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
