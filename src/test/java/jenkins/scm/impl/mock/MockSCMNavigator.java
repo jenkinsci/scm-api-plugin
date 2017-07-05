@@ -61,7 +61,7 @@ public class MockSCMNavigator extends SCMNavigator {
     @DataBoundConstructor
     public MockSCMNavigator(String controllerId, List<SCMTrait<?>> traits) {
         this.controllerId = controllerId;
-        this.traits = new ArrayList<SCMTrait<?>>(traits);
+        this.traits = SCMTrait.asSetList(traits);
     }
 
     public MockSCMNavigator(String controllerId, SCMTrait<?>... traits) {
@@ -71,7 +71,7 @@ public class MockSCMNavigator extends SCMNavigator {
     public MockSCMNavigator(MockSCMController controller, List<SCMTrait<?>> traits) {
         this.controllerId = controller.getId();
         this.controller = controller;
-        this.traits = new ArrayList<SCMTrait<?>>(traits);
+        this.traits = SCMTrait.asSetList(traits);
     }
 
     public MockSCMNavigator(MockSCMController controller, SCMTrait<?>... traits) {

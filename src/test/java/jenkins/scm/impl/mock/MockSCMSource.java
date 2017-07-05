@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
-import hudson.RestrictedSince;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
@@ -59,13 +58,12 @@ import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
+import jenkins.scm.api.trait.SCMTrait;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -79,7 +77,7 @@ public class MockSCMSource extends SCMSource {
     public MockSCMSource(String controllerId, String repository, List<SCMSourceTrait> traits) {
         this.controllerId = controllerId;
         this.repository = repository;
-        this.traits = new ArrayList<SCMSourceTrait>(traits);
+        this.traits = SCMTrait.asSetList(traits);
     }
 
     public MockSCMSource(String controllerId, String repository, SCMSourceTrait... traits) {
@@ -90,7 +88,7 @@ public class MockSCMSource extends SCMSource {
         this.controllerId = controller.getId();
         this.controller = controller;
         this.repository = repository;
-        this.traits = new ArrayList<SCMSourceTrait>(traits);
+        this.traits = SCMTrait.asSetList(traits);
     }
 
     public MockSCMSource(MockSCMController controller, String repository, SCMSourceTrait... traits) {
