@@ -92,6 +92,7 @@ public class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribableImpl<T> 
      * Converts the supplied instance and list of {@link SCMTrait} instances into a list where there is at most one
      * instance of each trait.
      *
+     * @param first an entry to prepend to the list (will displace any duplicates in the list)
      * @param list the list to apply the constraint to.
      * @param <T>  type of {@link SCMTrait}.
      * @return a new list that contains the first instance of any type of trait in the supplied list.
