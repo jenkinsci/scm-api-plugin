@@ -39,7 +39,7 @@ import jenkins.scm.api.SCMSourceObserver;
  *
  * @since 2.2.0
  */
-public class SCMNavigatorTrait extends SCMTrait<SCMNavigatorTrait> {
+public abstract class SCMNavigatorTrait extends SCMTrait<SCMNavigatorTrait> {
 
     /**
      * Applies this trait to the {@link SCMNavigatorContext}.

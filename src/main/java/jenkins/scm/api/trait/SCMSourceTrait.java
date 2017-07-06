@@ -39,7 +39,7 @@ import jenkins.scm.api.SCMSourceDescriptor;
  *
  * @since 2.2.0
  */
-public class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
+public abstract class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
 
     /**
      * Applies this trait to the {@link SCMSourceContext}.
