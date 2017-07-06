@@ -39,7 +39,7 @@ import jenkins.model.Jenkins;
  *
  * @param <T> the type of {@link SCMTrait} specialization.
  */
-public class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribableImpl<T> {
+public abstract class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribableImpl<T> {
     /**
      * {@inheritDoc}
      */
