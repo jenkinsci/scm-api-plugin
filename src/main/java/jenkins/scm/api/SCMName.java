@@ -51,10 +51,12 @@ public final class SCMName {
 
     /**
      * Makes best effort to guess a "sensible" display name from the hostname in the URL.
+     * For example {@code SCMName.fromUrl("https://github.example.com", "github.")} should return {@code "example"}.
      *
      * @param url the URL.
      * @return the display name or {@code null}
      */
+    @CheckForNull
     public static String fromUrl(@NonNull String url, @CheckForNull String... ignoredPrefixes) {
         try {
             return innerFromUrl(url, ignoredPrefixes.length == 0 ? null : Arrays.asList(ignoredPrefixes));
@@ -65,10 +67,13 @@ public final class SCMName {
 
     /**
      * Makes best effort to guess a "sensible" display name from the hostname in the URL.
+     * For example {@code SCMName.fromUrl("https://github.example.com", Arrays.asList("github."))} should return
+     * {@code "example"}.
      *
      * @param url the URL.
      * @return the display name or {@code null}
      */
+    @CheckForNull
     public static String fromUrl(@NonNull String url, @CheckForNull List<String> ignoredPrefixes) {
         try {
             return innerFromUrl(url, ignoredPrefixes);
@@ -85,44 +90,45 @@ public final class SCMName {
      * @throws LinkageError if Guava changes their API that we have depended on.
      */
     @CheckForNull
-    private static String innerFromUrl(@NonNull String url, List<String> ignoredPrefixes) throws LinkageError {
+    private static String innerFromUrl(@NonNull String url, @CheckForNull List<String> ignoredPrefixes)
+            throws LinkageError {
         String hostName;
         try {
             URL serverUri = new URL(url);
             hostName = serverUri.getHost();
-            if (StringUtils.isBlank(hostName)) {
-                return null;
-            }
-            // let's see if we can make this more "friendly"
-            InternetDomainName host = InternetDomainName.from(IDN.toASCII(hostName));
-            if (host.hasPublicSuffix()) {
-                String publicName = host.publicSuffix().name();
-                hostName = StringUtils.removeEnd(StringUtils.removeEnd(host.name(), publicName), ".")
-                        .toLowerCase(Locale.ENGLISH);
-            } else {
-                hostName = StringUtils.removeEnd(host.name(), ".").toLowerCase(Locale.ENGLISH);
-            }
-            if (ignoredPrefixes != null) {
-                for (String prefix : ignoredPrefixes) {
-                    if (prefix.endsWith(".")) {
-                        if (hostName.startsWith(prefix)) {
-                            hostName = hostName.substring(prefix.length());
-                            break;
-                        }
-                    } else {
-                        if (hostName.startsWith(prefix + ".")) {
-                            hostName = hostName.substring(prefix.length() + 1);
-                            break;
-                        }
-                    }
-                }
-            }
-            if (StringUtils.isNotBlank(hostName)) {
-                hostName = IDN.toUnicode(hostName).replace('.', ' ').replace('-', ' ');
-            }
         } catch (MalformedURLException e) {
             // ignore, best effort
             hostName = null;
+        }
+        if (StringUtils.isBlank(hostName)) {
+            return null;
+        }
+        // let's see if we can make this more "friendly"
+        InternetDomainName host = InternetDomainName.from(IDN.toASCII(hostName));
+        if (host.hasPublicSuffix()) {
+            String publicName = host.publicSuffix().name();
+            hostName = StringUtils.removeEnd(StringUtils.removeEnd(host.name(), publicName), ".")
+                    .toLowerCase(Locale.ENGLISH);
+        } else {
+            hostName = StringUtils.removeEnd(host.name(), ".").toLowerCase(Locale.ENGLISH);
+        }
+        if (ignoredPrefixes != null) {
+            for (String prefix : ignoredPrefixes) {
+                if (prefix.endsWith(".")) {
+                    if (hostName.startsWith(prefix)) {
+                        hostName = hostName.substring(prefix.length());
+                        break;
+                    }
+                } else {
+                    if (hostName.startsWith(prefix + ".")) {
+                        hostName = hostName.substring(prefix.length() + 1);
+                        break;
+                    }
+                }
+            }
+        }
+        if (StringUtils.isNotBlank(hostName)) {
+            hostName = IDN.toUnicode(hostName).replace('.', ' ').replace('-', ' ');
         }
         return hostName;
     }
