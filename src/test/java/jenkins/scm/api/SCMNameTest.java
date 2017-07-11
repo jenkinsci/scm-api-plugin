@@ -53,7 +53,8 @@ public class SCMNameTest {
 
     @Test
     public void given__url_with_punycode__when__naming__then__hostname_is_decoded() throws Exception {
-        assertThat(SCMName.fromUrl("http://xn--e1afmkfd.xn--p1ai/"), is("пример"));
+        assertThat(SCMName.fromUrl("http://xn--e1afmkfd.xn--p1ai/"),
+                is("\u043F\u0440\u0438\u043C\u0435\u0440" /*пример*/));
     }
 
     @Test
