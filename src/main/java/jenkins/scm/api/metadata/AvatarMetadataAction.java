@@ -39,6 +39,7 @@ import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -47,8 +48,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <p>
  * For example:
  * <ul>
- *     <li>A {@link SCMNavigator} implementation that corresponds to a GitHub Team could use the
- *     {@link #getAvatarImageOf(String)} to return the GitHub Team logo</li>
+ * <li>A {@link SCMNavigator} implementation that corresponds to a GitHub Team could use the
+ * {@link #getAvatarImageOf(String)} to return the GitHub Team logo</li>
  * </ul>
  *
  * @since 2.0
@@ -66,6 +67,7 @@ public abstract class AvatarMetadataAction extends InvisibleAction implements Se
      *
      * @return the {@link Icon} class specification or {@code null} to check {@link #getAvatarImageOf(String)}.
      * @see IconSpec#getIconClassName()
+     * @throws IllegalStateException if called outside of a request handling thread.
      */
     @CheckForNull
     public String getAvatarIconClassName() {
@@ -76,6 +78,7 @@ public abstract class AvatarMetadataAction extends InvisibleAction implements Se
      * Returns the description to use for the tool tip of the avatar of this object.
      *
      * @return the avatar description or {@code null}
+     * @throws IllegalStateException if called outside of a request handling thread.
      */
     @CheckForNull
     public String getAvatarDescription() {
@@ -88,8 +91,9 @@ public abstract class AvatarMetadataAction extends InvisibleAction implements Se
      * the avatar is hosted on an external server this method can be used to retrieve the avatar image.
      *
      * @param size the size, the following sizes must be supported: {@code 16x16}, {@code 24x24}, {@code 32x32} and
-     * {@code 48x48}.
+     *             {@code 48x48}.
      * @return the url or {@code null}
+     * @throws IllegalStateException if called outside of a request handling thread.
      */
     @CheckForNull
     public String getAvatarImageOf(@NonNull String size) {
@@ -102,6 +106,7 @@ public abstract class AvatarMetadataAction extends InvisibleAction implements Se
      * @param iconClassName the icon class name.
      * @param size          the size string, e.g. {@code 16x16}, {@code 24x24}, etc.
      * @return the icon image url or {@code null}
+     * @throws IllegalStateException if called outside of a request handling thread.
      */
     @CheckForNull
     protected final String avatarIconClassNameImageOf(@CheckForNull String iconClassName, @NonNull String size) {
@@ -120,7 +125,13 @@ public abstract class AvatarMetadataAction extends InvisibleAction implements Se
                 Icon icon = IconSet.icons.getIconByClassSpec(iconClassName + " " + spec);
                 if (icon != null) {
                     JellyContext ctx = new JellyContext();
-                    ctx.setVariable("resURL", Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH);
+                    StaplerRequest currentRequest = Stapler.getCurrentRequest();
+                    if (currentRequest == null) {
+                        throw new IllegalStateException(
+                                "cannot call avatarIconClassNameImageOf from outside a request handling thread"
+                        );
+                    }
+                    ctx.setVariable("resURL", currentRequest.getContextPath() + Jenkins.RESOURCE_PATH);
                     return icon.getQualifiedUrl(ctx);
                 }
             }
