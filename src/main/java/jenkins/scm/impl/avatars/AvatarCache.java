@@ -115,12 +115,18 @@ public class AvatarCache implements UnprotectedRootAction {
      * The iterator that searches for unused entries. The search is amortized over every access.
      */
     private Iterator<Map.Entry<String, CacheEntry>> iterator = null;
+    /**
+     * The time this service was started (used as the last modified for generated avatars.
+     */
+    private final long startedTime;
 
     /**
      * Constructor.
      */
     public AvatarCache() {
         service.allowCoreThreadTimeOut(true);
+        // Remove any milliseconds from the started time to the nearest second
+        startedTime = System.currentTimeMillis() / 1000L * 1000L;
     }
 
     /**
@@ -333,12 +339,12 @@ public class AvatarCache implements UnprotectedRootAction {
         final CacheEntry avatar = getCacheEntry(key, null);
         final long since = req.getDateHeader("If-Modified-Since");
         if (avatar == null || !(avatar.url.startsWith("http://") || avatar.url.startsWith("https://"))) {
-            if (avatar != null && avatar.lastModified <= since) {
+            if (startedTime <= since) {
                 return new HttpResponse() {
                     @Override
                     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node)
                             throws IOException, ServletException {
-                        rsp.addDateHeader("Last-Modified", avatar.lastModified);
+                        rsp.addDateHeader("Last-Modified", startedTime);
                         rsp.addHeader("Cache-control", "max-age=365000000, immutable, public");
                         rsp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
                     }
@@ -349,7 +355,7 @@ public class AvatarCache implements UnprotectedRootAction {
             return new ImageResponse(
                     generateAvatar(avatar == null ? "" : avatar.url, targetSize),
                     true,
-                    System.currentTimeMillis(),
+                    startedTime,
                     "max-age=365000000, immutable, public"
             );
         }

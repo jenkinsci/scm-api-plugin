@@ -161,6 +161,7 @@ public class AvatarCacheTest {
             c.disconnect();
         }
 
+        System.out.println(lastModified);
         // now check the If-Last-Modified behaviour
         c = (HttpURLConnection) new URL(url).openConnection();
         try {
