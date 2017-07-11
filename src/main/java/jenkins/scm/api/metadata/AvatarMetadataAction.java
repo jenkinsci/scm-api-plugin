@@ -33,6 +33,7 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
+import jenkins.scm.impl.avatars.AvatarCache;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
@@ -137,6 +138,23 @@ public abstract class AvatarMetadataAction extends InvisibleAction implements Se
             }
         }
         return null;
+    }
+
+    /**
+     * Helper method to resolve an external image, cache it and resize it to the specified size. If the external URL
+     * cannot be retrieved by Jenkins, then a randomly generated avatar will be generated using the external URL as
+     * a seed (so that the generated avatar image for any given external URL will be consistent across both Jenkins
+     * instances and restarts).
+     *
+     * @param url  the URL of the image to cache.
+     * @param size the size string, e.g. {@code 16x16}, {@code 24x24}, etc.
+     * @return the icon image url.
+     * @throws IllegalStateException if called outside of a request handling thread.
+     * @since 2.2.0
+     */
+    @NonNull
+    protected final String cachedResizedImageOf(@NonNull String url, @NonNull String size) {
+        return AvatarCache.buildUrl(url, size);
     }
 
     /**
