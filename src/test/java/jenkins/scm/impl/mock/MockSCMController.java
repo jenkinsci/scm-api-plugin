@@ -25,6 +25,7 @@
 
 package jenkins.scm.impl.mock;
 
+import com.sun.javafx.collections.UnmodifiableListSet;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -38,6 +39,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -463,7 +465,7 @@ public class MockSCMController implements Closeable {
         State state = resolve(repository, identifier);
         List<LogEntry> result = new ArrayList<LogEntry>();
         while (state != null) {
-            result.add(new LogEntry(state.getHash(), state.timestamp, state.message));
+            result.add(new LogEntry(state.getHash(), state.timestamp, state.message, state.files.keySet()));
             state = state.parent;
         }
         return result;
@@ -590,11 +592,13 @@ public class MockSCMController implements Closeable {
         private final String hash;
         private final long timestamp;
         private final String message;
+        private final Set<String> files;
 
-        private LogEntry(String hash, long timestamp, String message) {
+        private LogEntry(String hash, long timestamp, String message, Set<String> files) {
             this.hash = hash;
             this.timestamp = timestamp;
             this.message = message;
+            this.files = new UnmodifiableListSet<String>(new ArrayList<String>(files));
         }
 
         public String getHash() {
@@ -607,6 +611,10 @@ public class MockSCMController implements Closeable {
 
         public String getMessage() {
             return message;
+        }
+
+        public Set<String> getFiles() {
+            return files;
         }
 
         @Override
