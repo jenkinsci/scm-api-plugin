@@ -25,7 +25,6 @@
 
 package jenkins.scm.impl.mock;
 
-import com.sun.javafx.collections.UnmodifiableListSet;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -598,7 +597,7 @@ public class MockSCMController implements Closeable {
             this.hash = hash;
             this.timestamp = timestamp;
             this.message = message;
-            this.files = new UnmodifiableListSet<String>(new ArrayList<String>(files));
+            this.files = Collections.unmodifiableSet(files);
         }
 
         public String getHash() {
