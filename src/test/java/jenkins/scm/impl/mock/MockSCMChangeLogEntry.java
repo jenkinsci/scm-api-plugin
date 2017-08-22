@@ -64,6 +64,6 @@ public class MockSCMChangeLogEntry extends ChangeLogSet.Entry {
 
     @Override
     public Collection<String> getAffectedPaths() {
-        return Collections.emptySet();
+        return delegate.getFiles();
     }
 }
