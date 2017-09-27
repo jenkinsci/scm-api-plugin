@@ -59,6 +59,26 @@ public class WildcardSCMHeadFilterTrait extends SCMSourceTrait {
     private final String excludes;
 
     /**
+     * Include pull requests destined for branches matched by this filter.
+     */
+    @NonNull
+    private final boolean includePRDestinationBranch;
+
+    /**
+     * Stapler constructor.
+     *
+     * @param includes the include rules.
+     * @param excludes the exclude rules.
+     * @param includePRDestinationBranch include pull requests destined for branches matched by this filter.
+     */
+    @DataBoundConstructor
+    public WildcardSCMHeadFilterTrait(@CheckForNull String includes, String excludes, boolean includePRDestinationBranch) {
+        this.includes = StringUtils.defaultIfBlank(includes, "*");
+        this.excludes = StringUtils.defaultIfBlank(excludes, "");
+        this.includePRDestinationBranch = includePRDestinationBranch;
+    }
+
+    /**
      * Stapler constructor.
      *
      * @param includes the include rules.
@@ -66,8 +86,7 @@ public class WildcardSCMHeadFilterTrait extends SCMSourceTrait {
      */
     @DataBoundConstructor
     public WildcardSCMHeadFilterTrait(@CheckForNull String includes, String excludes) {
-        this.includes = StringUtils.defaultIfBlank(includes, "*");
-        this.excludes = StringUtils.defaultIfBlank(excludes, "");
+        WildcardSCMHeadFilterTrait(includes, excludes, false);
     }
 
     /**
@@ -96,6 +115,10 @@ public class WildcardSCMHeadFilterTrait extends SCMSourceTrait {
         context.withPrefilter(new SCMHeadPrefilter() {
             @Override
             public boolean isExcluded(@NonNull SCMSource request, @NonNull SCMHead head) {
+                if (includePRDestinationBranch && head instanceof ChangeRequestSCMHead) {
+                    head = ((ChangeRequestSCMHead)head).getTarget();
+                }
+
                 return !Pattern.matches(getPattern(getIncludes()), head.getName())
                         || (Pattern.matches(getPattern(getExcludes()), head.getName()));
             }

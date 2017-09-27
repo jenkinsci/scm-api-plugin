@@ -26,4 +26,7 @@
   <f:entry title="${%Regular expression}" field="regex">
     <f:textbox default=".*"/>
   </f:entry>
+  <f:entry title="${%Include Pull Requests destined for branches which match this filter.}" field="includePRDestinationBranch">
+    <f:checkbox default="false"/>
+  </f:entry>
 </j:jelly>
