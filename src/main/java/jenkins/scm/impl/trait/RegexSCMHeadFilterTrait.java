@@ -60,6 +60,24 @@ public class RegexSCMHeadFilterTrait extends SCMSourceTrait {
      */
     @CheckForNull
     private transient Pattern pattern;
+    /**
+     * Include pull requests destined for branches matched by this filter.
+     */
+    @NonNull
+    private final boolean includePRDestinationBranch;
+
+    /**
+     * Stapler constructor.
+     *
+     * @param regex the regular expression.
+     * @param includePRDestinationBranch include pull requests destined for branches matched by this filter.
+     */
+    @DataBoundConstructor
+    public RegexSCMHeadFilterTrait(@NonNull String regex, boolean includePRDestinationBranch) {
+        pattern = Pattern.compile(regex);
+        this.regex = regex;
+        this.includePRDestinationBranch = includePRDestinationBranch;
+    }
 
     /**
      * Stapler constructor.
@@ -68,8 +86,7 @@ public class RegexSCMHeadFilterTrait extends SCMSourceTrait {
      */
     @DataBoundConstructor
     public RegexSCMHeadFilterTrait(@NonNull String regex) {
-        pattern = Pattern.compile(regex);
-        this.regex = regex;
+        RegexSCMHeadFilterTrait(regex, false);
     }
 
     /**
@@ -104,6 +121,10 @@ public class RegexSCMHeadFilterTrait extends SCMSourceTrait {
         context.withPrefilter(new SCMHeadPrefilter() {
             @Override
             public boolean isExcluded(@NonNull SCMSource source, @NonNull SCMHead head) {
+                if (includePRDestinationBranch && head instanceof ChangeRequestSCMHead) {
+                    head = ((ChangeRequestSCMHead)head).getTarget();
+                }
+
                 return !getPattern().matcher(head.getName()).matches();
             }
         });
