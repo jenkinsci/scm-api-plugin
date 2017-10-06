@@ -54,6 +54,7 @@ public final class SCMName {
      * For example {@code SCMName.fromUrl("https://github.example.com", "github.")} should return {@code "example"}.
      *
      * @param url the URL.
+     * @param ignoredPrefixes the prefixes that should be ignored.
      * @return the display name or {@code null}
      */
     @CheckForNull
@@ -71,6 +72,7 @@ public final class SCMName {
      * {@code "example"}.
      *
      * @param url the URL.
+     * @param ignoredPrefixes the prefixes that should be ignored.
      * @return the display name or {@code null}
      */
     @CheckForNull
