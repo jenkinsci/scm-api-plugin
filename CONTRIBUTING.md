@@ -1,3 +1,22 @@
+# Add to Core or Create Extension Plugin
+
+We do not want the SCM API plugin to become a grab-bag of many different implementations with multiple options being presented to every user.
+
+We want people to be able to scratch their own itch, by writing an extension plugin that supports their desired behaviour.
+
+* Extension plugins can be small and easy to test, especially if they just add one or two `SCMTrait` implementations.
+    * Reduces risk of upgrade of the extension plugin (as there is less changes to assess)
+    * Reduces risk to release the more core plugins (as there is less functionality exposed by default to users)
+    
+In this regard, for SCM API we will:
+
+* Reject Pull Requests that add new `SCMTrait` implementations unless an exceedingly strong case can be made for their inclusion (i.e. these must be essential for 99.9% of users). 
+*Note:* the `jenkins.scm.impl.trait.*FilterTrait` implementations would not pass this test now. The long term goal is to move these to a separate plugin, they were only added here because a filter was needed for the test harness.
+
+* Approve Pull Requests that enable extension plugins to be written, subject to presenting a coherent design within the overall principles of the SCM API.
+
+If you are writing an extension plugin, plees consult the [recommendations on naming extension plugins](docs/implementation.adoc#naming-your-plugin)
+
 # Development Ideology
 
 Truths which we believe to be self-evident (adapted from [TextSecure's](https://github.com/WhisperSystems/TextSecure/blob/master/contributing.md))

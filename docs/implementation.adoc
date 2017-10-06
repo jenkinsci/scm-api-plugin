@@ -8,6 +8,39 @@ This document is structured as follows:
 
 * The subsequent sections consider each of the API extension points in turn, in the recommended order of implementation. If you stop at the end of any one section, you should have something that works, but may not be optimal.
 
+=== Naming your plugin
+
+In order to assist users to discover plugins correctly, please try and stick to the following naming guidelines:
+
+* If your plugin provides an implementation of `SCMSource`, `SCMNavigator` or `SCM` this is considered an "scm" plugin.
+Use an `artifactId` that reflects the SCM system you are providing for, e.g. `git`, `subversion`, `mercurial`, etc.
+In the event that there is already an existing plugin with that name, the preference is to append `-scm` to the `artifactId`.
++
+Similarly the name should be `Git`, `Subversion`, `Mercurial`, etc. in the event that there is a name conflict with an existing plugin, the preference is to append ` SCM` to the name.
++
+[NOTE]
+====
+Sadly this practice was not followed for some plugins and consequently we now have `github-branch-source` (should have been `github-scm`) and `bitbucket-branch-source` (should have been `bitbucket-scm`) because of the previously existing `github` and `bitbucket` plugins respectively.
+====
+
+* If your plugin provides implementations of `SCM___Trait` that behave like a filter (i.e. you are annotating it with `@Selection`) this is considered an "scm-filter" plugin.
+** If the filter is generic (all the best filter implementations are generic) then use an `artifactId` that starts with `scm-filter-`.
+The name should end with ` SCM Filter`.
++
+For example, a filter that selects tags based on their age might use the `artifactId` of `scm-filter-tag-age` and a plugin name of `Tag Age SCM Filter`.
+** If the filter is specific to a particular "scm" plugin, then use an `artifactId` that starts with that plugin name followed by `-scm-filter`, obviously without a double `-scm-scm-` and ignoring cases where the "scm" plugin has been made mistakes in its naming.
+The name should start with the SCM name and end with ` SCM Filter`.
++
+For example, a filter that selects GitHub pull requests based on their PR labels might use the `artifactId` of `github-scm-filter-pr-labels` and a plugin name of `GitHub PR Label SCM Filter`.
+
+* If your plugin provides implementations of `SCM___Trait` that do not behave like a filter or provides a mix of filters and non-filters this is considered an "scm-trait" plugin.
+** If the trait is generic (all the best trait implementations are generic) then use an `artifactId` that starts with `scm-trait-`.
+The name should end with ` SCM Behaviour`.
+** If the filter is specific to a particular "scm" plugin, then use an `artifactId` that starts with that plugin name followed by `-scm-trait`, obviously without a double `-scm-scm-` and ignoring cases where the "scm" plugin has been made mistakes in its naming.
+The name should start with the SCM name and end with ` SCM Behaviour`.
+
+If your consumer plugin does not fit the above criteria, please file a PR against this text to initiate a discussion on the best way to name your particular use-case.
+
 === Overview
 
 The SCM API consists of a number of extension points:
