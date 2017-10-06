@@ -15,7 +15,7 @@ In this regard, for SCM API we will:
 
 * Approve Pull Requests that enable extension plugins to be written, subject to presenting a coherent design within the overall principles of the SCM API.
 
-If you are writing an extension plugin, plees consult the [recommendations on naming extension plugins](docs/implementation.adoc#naming-your-plugin)
+If you are writing an extension plugin, please consult the [recommendations on naming extension plugins](docs/implementation.adoc#naming-your-plugin)
 
 # Development Ideology
 
