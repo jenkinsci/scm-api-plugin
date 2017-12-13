@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2016-2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,7 @@ import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.scm.api.SCMFile;
+import jenkins.scm.api.SCMNavigatorOwner;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -62,6 +63,8 @@ public class MockSCMController implements Closeable {
 
     private Map<String, Repository> repositories = new TreeMap<String, Repository>();
     private List<MockFailure> faults = new ArrayList<MockFailure>();
+    private List<MockSCMNavigatorSaveListener> navigatorSaveListeners = new ArrayList<MockSCMNavigatorSaveListener>();
+    private List<MockSCMSourceSaveListener> sourceSaveListeners = new ArrayList<MockSCMSourceSaveListener>();
     @NonNull
     private MockLatency latency = MockLatency.none();
     private String displayName;
@@ -88,6 +91,16 @@ public class MockSCMController implements Closeable {
 
     public MockSCMController withLatency(@NonNull MockLatency latency) {
         this.latency = latency;
+        return this;
+    }
+
+    public MockSCMController withSaveListener(MockSCMNavigatorSaveListener listener) {
+        this.navigatorSaveListeners.add(listener);
+        return this;
+    }
+
+    public MockSCMController withSaveListener(MockSCMSourceSaveListener listener) {
+        this.sourceSaveListeners.add(listener);
         return this;
     }
 
@@ -508,6 +521,18 @@ public class MockSCMController implements Closeable {
             throw new IOException("Unknown tag: " + tag + " in repository " + repository);
         }
         return date;
+    }
+
+    public void afterSave(MockSCMSource source) {
+        for (MockSCMSourceSaveListener listener: sourceSaveListeners) {
+            listener.afterSave(source);
+        }
+    }
+
+    public void afterSave(MockSCMNavigator navigator, SCMNavigatorOwner owner) {
+        for (MockSCMNavigatorSaveListener listener: navigatorSaveListeners) {
+            listener.afterSave(navigator, owner);
+        }
     }
 
     private static class Repository {

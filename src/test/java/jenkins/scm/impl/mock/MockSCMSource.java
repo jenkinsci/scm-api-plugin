@@ -306,6 +306,11 @@ public class MockSCMSource extends SCMSource {
     }
 
     @Override
+    public void afterSave() {
+        controller().afterSave(this);
+    }
+
+    @Override
     protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
         for (SCMSourceTrait trait: traits) {
             if (trait.isCategoryEnabled(category)) {

@@ -152,6 +152,11 @@ public class MockSCMNavigator extends SCMNavigator {
         return result;
     }
 
+    @Override
+    public void afterSave(@NonNull SCMNavigatorOwner owner) {
+        controller().afterSave(this, owner);
+    }
+
     @Symbol("mockScm")
     @Extension
     public static class DescriptorImpl extends SCMNavigatorDescriptor {
