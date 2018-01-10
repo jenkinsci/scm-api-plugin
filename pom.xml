@@ -65,8 +65,8 @@
   </scm>
 
   <properties>
-    <jenkins.version>1.609.3</jenkins.version>
-    <java.level>6</java.level>
+    <jenkins.version>1.642.3</jenkins.version>
+    <java.level>7</java.level>
     <no-test-jar>false</no-test-jar>
   </properties>
 
@@ -105,6 +105,12 @@
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
       <version>1.6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-multibranch</artifactId>
+      <version>2.16</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
