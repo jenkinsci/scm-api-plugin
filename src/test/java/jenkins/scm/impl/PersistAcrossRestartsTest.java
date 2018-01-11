@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -38,6 +39,8 @@ import static org.junit.Assert.assertNotNull;
 public class PersistAcrossRestartsTest {
     @Rule
     public RestartableJenkinsRule story = new RestartableJenkinsRule();
+
+    private final AtomicReference<String> uuid = new AtomicReference<String>();
 
     @Issue("JENKINS-48571")
     @Test
@@ -48,9 +51,7 @@ public class PersistAcrossRestartsTest {
                 BogusSCMSource source = new BogusSCMSource();
                 SCMItem p = story.j.jenkins.createProject(SCMItem.class, "test-with-source");
                 p.setSource(source);
-                // TODO: Find a better way to persist this for testing across restart.
-                FreeStyleProject p2 = story.j.createFreeStyleProject("test-without-source");
-                p2.setDescription(source.getId());
+                uuid.set(source.getId());
             }
         });
 
@@ -58,10 +59,8 @@ public class PersistAcrossRestartsTest {
             @Override
             public void evaluate() throws Throwable {
                 SCMItem p = (SCMItem) story.j.jenkins.getItem("test-with-source");
-                FreeStyleProject p2 = (FreeStyleProject)story.j.jenkins.getItem("test-without-source");
                 assertNotNull(p);
-                assertNotNull(p2);
-                SCMSource source = p.getSCMSource(p2.getDescription());
+                SCMSource source = p.getSCMSource(uuid.get());
                 assertNotNull(source);
                 assertFalse(source instanceof NullSCMSource);
             }
@@ -121,7 +120,7 @@ public class PersistAcrossRestartsTest {
 
         @Override
         protected SortedMap<Integer, ? extends SCMRun> _getRuns() {
-            return new TreeMap<>();
+            return new TreeMap<Integer,SCMRun>();
         }
 
         @Override
@@ -159,6 +158,10 @@ public class PersistAcrossRestartsTest {
 
         @TestExtension
         public static final class DescriptorImpl extends TopLevelItemDescriptor {
+
+            @Override public String getDisplayName() {
+                return "";
+            }
 
             @Override public TopLevelItem newInstance(ItemGroup parent, String name) {
                 return new SCMItem(parent, name);
