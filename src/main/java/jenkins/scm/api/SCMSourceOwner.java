@@ -30,7 +30,9 @@ import hudson.model.TaskListener;
 import java.util.List;
 
 /**
- * An {@link Item} that owns {@link SCMSource} instances.
+ * An {@link Item} that owns {@link SCMSource} instances. Any {@link SCMSource} instances accessed through a
+ * {@link SCMSourceOwner} will have had {@link SCMSource#setOwner(SCMSourceOwner)} called with a non-null
+ * owner before being exposed through either {@link #getSCMSources()} or {@link #getSCMSource(String)}.
  */
 public interface SCMSourceOwner extends Item {
     /**
