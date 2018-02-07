@@ -75,6 +75,8 @@ import org.kohsuke.stapler.DataBoundSetter;
 public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
         implements ExtensionPoint {
 
+    private static final Logger LOGGER = Logger.getLogger(SCMSource.class.getName());
+
     /**
      * Replaceable pronoun of that points to a {@link SCMSource}. Defaults to {@code null} depending on the context.
      * @since 2.0
@@ -197,10 +199,17 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @NonNull
     public final synchronized String getId() {
-        if (id == null) {
-            id = UUID.randomUUID().toString();
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString();
+            if (owner != null) {
+                try {
+                    owner.save();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Could not save owner of SCMSource: " + e, e);
+                }
+            }
         }
-        return id;
+        return this.id;
     }
 
     /**
