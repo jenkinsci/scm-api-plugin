@@ -368,7 +368,13 @@ public class AccurevSCMSource extends SCMSource {
 public class AccurevSCMHead extends SCMHead {
     // ...
     public String getPronoun() {
-        return getAction(TagAction.class) == null ? "Stream" : "Snapshot"; //: Better with localization
+        return "Stream"; //: Better with localization
+    }
+ }
+public class AccurevSnapshotSCMHead extends SCMHead implements TagSCMHead {
+    // ...
+    public String getPronoun() {
+        return "Snapshot"; //: Better with localization
     }
  }
 ----
