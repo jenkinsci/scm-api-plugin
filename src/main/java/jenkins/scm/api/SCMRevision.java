@@ -26,12 +26,15 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.io.Serializable;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Base class that represents a specific (or not so specific) revision of a {@link SCMHead}.
  *
  * @author Stephen Connolly
  */
+@ExportedBean
 public abstract class SCMRevision implements Serializable {
 
     /**
@@ -78,6 +81,7 @@ public abstract class SCMRevision implements Serializable {
      *
      * @return {@code true} if and only if this revision is deterministic.
      */
+    @Exported
     public boolean isDeterministic() {
         return true;
     }
@@ -87,6 +91,7 @@ public abstract class SCMRevision implements Serializable {
      *
      * @return the {@link SCMHead} that this {@link SCMRevision} belongs to.
      */
+    @Exported
     @NonNull
     public final SCMHead getHead() {
         return head;
