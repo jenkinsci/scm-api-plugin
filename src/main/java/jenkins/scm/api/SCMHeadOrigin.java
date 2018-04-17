@@ -27,6 +27,8 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents the origin of a {@link SCMHead}.
@@ -43,6 +45,7 @@ import java.io.Serializable;
  *
  * @since 2.2.0
  */
+@ExportedBean
 public abstract class SCMHeadOrigin implements Serializable {
 
     /**
@@ -173,6 +176,7 @@ public abstract class SCMHeadOrigin implements Serializable {
          *
          * @return the name of this fork.
          */
+        @Exported
         @NonNull
         public String getName() {
             return name;

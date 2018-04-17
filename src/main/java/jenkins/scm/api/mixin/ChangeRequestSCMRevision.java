@@ -73,6 +73,7 @@ public abstract class ChangeRequestSCMRevision<H extends SCMHead & ChangeRequest
      * revision {@code false} if the effective revision ignores the {@link #getTarget()}.
      * @see ChangeRequestSCMHead2
      */
+    @Exported
     public final boolean isMerge() {
         SCMHead head = getHead();
         return !(head instanceof ChangeRequestSCMHead2)
