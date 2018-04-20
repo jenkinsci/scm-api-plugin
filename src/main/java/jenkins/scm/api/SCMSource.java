@@ -55,6 +55,7 @@ import jenkins.model.TransientActionFactory;
 import net.jcip.annotations.GuardedBy;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * A {@link SCMSource} is responsible for fetching {@link SCMHead} and corresponding {@link SCMRevision} instances from
@@ -72,6 +73,7 @@ import org.kohsuke.stapler.DataBoundSetter;
  * {@link #fetch(SCMHead, hudson.model.TaskListener)} must
  * involve at least one network round trip to validate any cached information.
  */
+@ExportedBean
 public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
         implements ExtensionPoint {
 
