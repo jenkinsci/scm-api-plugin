@@ -357,6 +357,18 @@ public class AccurevSCMSource extends SCMSource {
                     new NonLocalizable("Streams")
                     // Better: Messages._AccurevSCMSource_StreamHeadCategory()
                 ),
+                new UncategorizedSCMSourceCategory(
+                    new NonLocalizable("Gated Streams")
+                    // Better: Messages._AccurevSCMSource_GatedStreamHeadCategory()
+                ),
+                new ChangeRequestSCMHeadCategory(
+                    new NonLocalizable("Staging Streams")
+                    // Better: Messages._AccurevSCMSource_StagingStreamHeadCategory()
+                )
+                new ChangeRequestSCMHeadCategory(
+                    new NonLocalizable("Workspaces")
+                    // Better: Messages._AccurevSCMSource_WorkSpaceHeadCategory()
+                ),
                 new TagSCMHeadCategory(
                     new NonLocalizable("Snapshots")
                     // Better: Messages._AccurevSCMSource_SnapshotHeadCategory()
