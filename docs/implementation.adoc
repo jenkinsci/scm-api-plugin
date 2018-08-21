@@ -607,11 +607,13 @@ public class MySCMSource extends SCMSource {
 
     // Getters for all the configuration fields
 
+    @Override
     @NonNull
     public List<SCMSourceTrait> getTraits() {
         return Collections.unmodifiableList(traits);
     }
 
+    @Override
     @DataBoundSetter
     public void setTraits(@CheckForNull List<SCMSourceTrait> traits) {
         this.traits = new ArrayList<>(Util.fixNull(traits));
@@ -772,6 +774,8 @@ public class MySCMSource extends SCMSource {
             return SCMSourceTrait._for(this, MySCMSourceContext.class, MySCMBuilder.class);
         }
 
+        @Override
+        @NonNull
         public List<SCMSourceTrait> getTraitsDefaults() {
             return Collections.<SCMSourceTrait>singletonList(new MySCMDiscoverChangeRequests());
         }

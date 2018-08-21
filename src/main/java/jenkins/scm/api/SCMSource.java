@@ -214,6 +214,15 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
+     * Gets the traits for this source.
+     * @return traits the list of traits, empty by default.
+     */
+    @CheckForNull
+    public List<SCMSourceTrait> getTraits() {
+        return Collections.emptyList();
+    }
+
+    /**
      * The owner of this source, used as a context for looking up things such as credentials.
      */
     @GuardedBy("this")

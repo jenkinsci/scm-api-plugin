@@ -106,8 +106,15 @@ public class MockSCMSource extends SCMSource {
         return controller;
     }
 
+    @Override
     public List<SCMSourceTrait> getTraits() {
         return Collections.unmodifiableList(traits);
+    }
+
+    @Override
+    public void setTraits(@CheckForNull List<SCMSourceTrait> traits) {
+        this.traits.clear();
+        this.traits.addAll(SCMTrait.asSetList(traits));
     }
 
     public String getRepository() {
@@ -362,6 +369,8 @@ public class MockSCMSource extends SCMSource {
             return SCMSourceTrait._for(this, MockSCMSourceContext.class, MockSCMBuilder.class);
         }
 
+        @Override
+        @Nonnull
         public List<SCMSourceTrait> getTraitsDefaults() {
             return Collections.<SCMSourceTrait>singletonList(new MockSCMDiscoverBranches());
         }

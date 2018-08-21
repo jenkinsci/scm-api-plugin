@@ -97,6 +97,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
      *
      * @return An empty list if not overridden.
      */
+    @NonNull
     public List<SCMSourceTrait> getTraitsDefaults() {
         return Collections.emptyList();
     }
