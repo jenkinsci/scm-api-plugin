@@ -30,6 +30,8 @@ import hudson.model.Descriptor;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import net.jcip.annotations.GuardedBy;
 import org.jenkins.ui.icon.IconSpec;
@@ -87,6 +89,16 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
     @Restricted(NoExternalUse.class)
     public boolean isUserInstantiable() {
         return true;
+    }
+
+
+    /**
+     * Returns the default traits for this {@link SCMSource}.
+     *
+     * @return An empty list if not overridden.
+     */
+    public List<SCMSourceTrait> getTraitsDefaults() {
+        return Collections.emptyList();
     }
 
     /**

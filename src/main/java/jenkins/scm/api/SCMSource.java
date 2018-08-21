@@ -52,6 +52,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.TransientActionFactory;
+import jenkins.scm.api.trait.SCMSourceTrait;
 import net.jcip.annotations.GuardedBy;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -203,6 +204,13 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             id = UUID.randomUUID().toString();
         }
         return id;
+    }
+
+    /**
+     * Sets the traits for this source. No-op by default.
+     * @param traits the list of traits
+     */
+    public void setTraits(@CheckForNull List<SCMSourceTrait> traits) {
     }
 
     /**
