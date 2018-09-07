@@ -1147,11 +1147,13 @@ public class MySCMNavigator extends SCMNavigator {
 
     // Getters for all the configuration fields
 
+    @Override
     @NonNull
     public List<SCMTrait<?>> getTraits() {
         return Collections.unmodifiableList(traits);
     }
 
+    @Override
     @DataBoundSetter
     public void setTraits(@CheckForNull List<SCMTrait<?>> traits) {
         this.traits = new ArrayList<>(Util.fixNull(traits));

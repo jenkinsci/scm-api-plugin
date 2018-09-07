@@ -31,12 +31,6 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import javax.annotation.Nonnull;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
 import jenkins.scm.api.SCMNavigatorEvent;
@@ -51,6 +45,13 @@ import jenkins.scm.api.trait.SCMTrait;
 import jenkins.scm.api.trait.SCMTraitDescriptor;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class MockSCMNavigator extends SCMNavigator {
 
@@ -89,8 +90,15 @@ public class MockSCMNavigator extends SCMNavigator {
         return controller;
     }
 
+    @Override
     public List<SCMTrait<?>> getTraits() {
         return Collections.unmodifiableList(traits);
+    }
+
+    @Override
+    public void setTraits(@CheckForNull List<SCMTrait<?>> traits) {
+        this.traits.clear();
+        this.traits.addAll(SCMTrait.asSetList(traits));
     }
 
     @Override
@@ -187,6 +195,8 @@ public class MockSCMNavigator extends SCMNavigator {
             return descriptors;
         }
 
+        @Override
+        @Nonnull
         public List<SCMTrait<?>> getTraitsDefaults() {
             return Collections.<SCMTrait<?>>singletonList(new MockSCMDiscoverBranches());
         }
