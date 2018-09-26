@@ -27,15 +27,14 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor;
-import jenkins.scm.api.trait.SCMTrait;
-import jenkins.scm.impl.UncategorizedSCMSourceCategory;
-import net.jcip.annotations.GuardedBy;
-import org.jenkins.ui.icon.IconSpec;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import jenkins.scm.api.trait.SCMTrait;
+import jenkins.scm.impl.UncategorizedSCMSourceCategory;
+import net.jcip.annotations.GuardedBy;
+import org.jenkins.ui.icon.IconSpec;
 
 /**
  * Definition of a kind of {@link SCMNavigator}.

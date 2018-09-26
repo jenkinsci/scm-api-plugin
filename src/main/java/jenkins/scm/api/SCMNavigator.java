@@ -37,10 +37,6 @@ import hudson.model.Items;
 import hudson.model.TaskListener;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.LogTaskListener;
-import jenkins.model.TransientActionFactory;
-import jenkins.scm.api.trait.SCMTrait;
-import org.kohsuke.stapler.DataBoundSetter;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -49,6 +45,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.TransientActionFactory;
+import jenkins.scm.api.trait.SCMTrait;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * An API for discovering new and navigating already discovered {@link SCMSource}s within an organization.

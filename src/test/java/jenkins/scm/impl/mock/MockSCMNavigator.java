@@ -31,6 +31,11 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
 import jenkins.scm.api.SCMNavigatorEvent;
@@ -45,13 +50,6 @@ import jenkins.scm.api.trait.SCMTrait;
 import jenkins.scm.api.trait.SCMTraitDescriptor;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class MockSCMNavigator extends SCMNavigator {
 
@@ -169,7 +167,7 @@ public class MockSCMNavigator extends SCMNavigator {
     @Extension
     public static class DescriptorImpl extends SCMNavigatorDescriptor {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Mock SCM";
@@ -196,7 +194,7 @@ public class MockSCMNavigator extends SCMNavigator {
         }
 
         @Override
-        @Nonnull
+        @NonNull
         public List<SCMTrait<?>> getTraitsDefaults() {
             return Collections.<SCMTrait<?>>singletonList(new MockSCMDiscoverBranches());
         }
