@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.TransientActionFactory;
+import jenkins.scm.api.trait.SCMTrait;
 import org.kohsuke.stapler.DataBoundSetter;
 
 /**
@@ -157,6 +158,22 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      */
     @NonNull
     protected abstract String id();
+
+    /**
+     * Sets the traits for this navigator. No-op by default.
+     * @param traits the list of traits
+     */
+    public void setTraits(@CheckForNull List<SCMTrait<? extends SCMTrait<?>>> traits) {
+    }
+
+    /**
+     * Gets the traits for this navigator.
+     * @return traits the list of traits, empty by default.
+     */
+    @NonNull
+    public List<SCMTrait<? extends SCMTrait<?>>> getTraits() {
+        return Collections.emptyList();
+    }
 
     /**
      * Looks for SCM sources in a configured place.

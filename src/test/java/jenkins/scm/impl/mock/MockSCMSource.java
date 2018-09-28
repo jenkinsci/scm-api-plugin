@@ -39,7 +39,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMHeadEvent;
@@ -106,8 +105,15 @@ public class MockSCMSource extends SCMSource {
         return controller;
     }
 
+    @Override
     public List<SCMSourceTrait> getTraits() {
         return Collections.unmodifiableList(traits);
+    }
+
+    @Override
+    public void setTraits(@CheckForNull List<SCMSourceTrait> traits) {
+        this.traits.clear();
+        this.traits.addAll(SCMTrait.asSetList(traits));
     }
 
     public String getRepository() {
@@ -323,7 +329,7 @@ public class MockSCMSource extends SCMSource {
     @Symbol("mockScm")
     @Extension
     public static class DescriptorImpl extends SCMSourceDescriptor {
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Mock SCM";
@@ -362,6 +368,8 @@ public class MockSCMSource extends SCMSource {
             return SCMSourceTrait._for(this, MockSCMSourceContext.class, MockSCMBuilder.class);
         }
 
+        @Override
+        @NonNull
         public List<SCMSourceTrait> getTraitsDefaults() {
             return Collections.<SCMSourceTrait>singletonList(new MockSCMDiscoverBranches());
         }
