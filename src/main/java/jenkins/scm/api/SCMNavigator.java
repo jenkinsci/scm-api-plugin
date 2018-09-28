@@ -170,7 +170,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * Gets the traits for this navigator.
      * @return traits the list of traits, empty by default.
      */
-    @CheckForNull
+    @NonNull
     public List<SCMTrait<? extends SCMTrait<?>>> getTraits() {
         return Collections.emptyList();
     }
