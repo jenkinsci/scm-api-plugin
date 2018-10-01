@@ -148,6 +148,15 @@ public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCM
     }
 
     /**
+     * Checks if the authority is configured to allow discovery of untrusted {@link SCMHead}s.
+     *
+     * @return true by default for compatibility. Override in an implementation to change this.
+     */
+    public boolean isDiscoverUntrusted() {
+        return true;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -199,6 +199,13 @@ public abstract class SCMSourceRequest implements Closeable {
                 return true;
             }
         }
+        if (!authorities.isEmpty()) {
+            for (SCMHeadAuthority authority : authorities) {
+                if (!authority.isTrusted(this, head) && !authority.isDiscoverUntrusted()) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
