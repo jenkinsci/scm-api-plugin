@@ -29,6 +29,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -417,13 +418,30 @@ public abstract class SCMFileSystem implements Closeable {
          * Checks if this {@link Builder} supports the supplied {@link SCMSourceDescriptor}.
          *
          * @param descriptor the {@link SCMSourceDescriptor}
+         * @return the return value of {@link #supportsDescriptor(SCMSourceDescriptor)} if implemented, otherwise, it
+         * will return true if one of the following is true: the {@link SCMSource} for the descriptor is the enclosing
+         * class of this builder class, the builder and {@link SCMSource} are in the same package, or the builder is in
+         * a child package of the {@link SCMSource}.
+         */
+        public final boolean supports(SCMSourceDescriptor descriptor) {
+            if (Util.isOverridden(SCMFileSystem.Builder.class, getClass(), "supportsDescriptor", SCMSourceDescriptor.class)) {
+                return supportsDescriptor(descriptor);
+            } else {
+                return descriptor.clazz.isAssignableFrom((getClass().getEnclosingClass())) ||
+                        getClass().getPackage().equals(descriptor.clazz.getPackage()) ||
+                        getClass().getPackage().getName().startsWith(descriptor.clazz.getPackage().getName());
+            }
+        }
+
+        /**
+         * Checks if this {@link Builder} supports the supplied {@link SCMSourceDescriptor}.
+         *
+         * @param descriptor the {@link SCMSourceDescriptor}
          * @return {@code true} if and only if the supplied {@link SCMSourceDescriptor}'s {@link SCMSource} class is
          * supported by this {@link Builder}, {@code false} if {@link #build(SCMSource, SCMHead, SCMRevision)} will
          * <strong>always</strong> return {@code null}, and {@code false} by default for compatibility.
          */
-        public boolean supports(SCMSourceDescriptor descriptor) {
-            return false;
-        }
+        protected abstract boolean supportsDescriptor(SCMSourceDescriptor descriptor);
 
         /**
          * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that
