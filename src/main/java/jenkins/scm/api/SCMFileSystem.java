@@ -34,6 +34,7 @@ import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMRevisionState;
 import java.io.Closeable;
 import java.io.File;
@@ -365,6 +366,31 @@ public abstract class SCMFileSystem implements Closeable {
     }
 
     /**
+     * Given a {@link SCMDescriptor} this method will check if there is at least one {@link SCMFileSystem} provider
+     * capable of being instantiated from the descriptor's {@link SCMSource}. Returning {@code true} does not mean that
+     * {@link #of(Item, SCM, SCMRevision)} will be able to instantiate a {@link SCMFileSystem} for any specific
+     * {@link Item} or {@link SCMRevision}, rather returning {@code false} indicates that there is absolutely no point
+     * in calling {@link #of(Item, SCM, SCMRevision)} as it will always return {@code null}.
+     *
+     * @param descriptor the {@link SCMDescriptor}.
+     * @return {@code true} if {@link #of(Item, SCM, SCMRevision)} could return a {@link SCMFileSystem} implementation,
+     * {@code false} if {@link #of(Item, SCM, SCMRevision)} will always return {@code null} for the supplied {@link SCM}.
+     * @since 2.3.0
+     */
+    public static boolean supports(@NonNull SCMDescriptor descriptor) {
+        descriptor.getClass(); // throw NPE if null
+        if (descriptor.clazz == null) {
+            throw new NullPointerException();
+        }
+        for (Builder b : ExtensionList.lookup(Builder.class)) {
+            if (b.supports(descriptor)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Given a {@link SCMSourceDescriptor} this method will check if there is at least one {@link SCMFileSystem} provider
      * capable of being instantiated from the descriptor's {@link SCMSource}. Returning {@code true} does not mean that
      * {@link #of(SCMSource, SCMHead, SCMRevision)} will be able to instantiate a {@link SCMFileSystem} for any specific
@@ -375,7 +401,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @return {@code true} if {@link #of(SCMSource, SCMHead)} / {@link #of(SCMSource, SCMHead, SCMRevision)} could
      * return a {@link SCMFileSystem} implementation, {@code false} if {@link #of(SCMSource, SCMHead)} /
      * {@link #of(SCMSource, SCMHead, SCMRevision)} will always return {@code null} for the supplied {@link SCMSource}.
-     * @since 2.0
+     * @since 2.3.0
      */
     public static boolean supports(@NonNull SCMSourceDescriptor descriptor) {
         descriptor.getClass(); // throw NPE if null
@@ -389,6 +415,7 @@ public abstract class SCMFileSystem implements Closeable {
         }
         return false;
     }
+
     /**
      * Extension point that allows different plugins to implement {@link SCMFileSystem} classes for the same {@link SCM}
      * or {@link SCMSource} and let Jenkins pick the most capable for any specific {@link SCM} implementation.
@@ -415,6 +442,36 @@ public abstract class SCMFileSystem implements Closeable {
         public abstract boolean supports(SCMSource source);
 
         /**
+         * Checks if this {@link Builder} supports the supplied {@link SCMDescriptor}.
+         *
+         * @param descriptor the {@link SCMDescriptor}
+         * @return the return value of {@link #supportsDescriptor(SCMDescriptor)} if implemented, otherwise, it
+         * will return true if one of the following is true: the {@link SCM} for the descriptor is the enclosing
+         * class of this builder class, the builder and {@link SCM} are in the same package, or the builder is in
+         * a child package of the {@link SCM}.
+         * @since 2.3.0
+         */
+        public final boolean supports(SCMDescriptor<?> descriptor) {
+            if (Util.isOverridden(SCMFileSystem.Builder.class, getClass(), "supportsDescriptor", SCMDescriptor.class)) {
+                return supportsDescriptor(descriptor);
+            } else {
+                return descriptor.clazz.isAssignableFrom((getClass().getEnclosingClass())) ||
+                        getClass().getPackage().equals(descriptor.clazz.getPackage()) ||
+                        getClass().getPackage().getName().startsWith(descriptor.clazz.getPackage().getName());
+            }
+        }
+
+        /**
+         * Checks if this {@link Builder} supports the supplied {@link SCMDescriptor}.
+         *
+         * @param descriptor the {@link SCMDescriptor}
+         * @return {@code true} if and only if the supplied {@link SCMSourceDescriptor}'s {@link SCMDescriptor} class is
+         * supported by this {@link Builder}.
+         * @since 2.3.0
+         */
+        protected abstract boolean supportsDescriptor(SCMDescriptor descriptor);
+
+        /**
          * Checks if this {@link Builder} supports the supplied {@link SCMSourceDescriptor}.
          *
          * @param descriptor the {@link SCMSourceDescriptor}
@@ -422,6 +479,7 @@ public abstract class SCMFileSystem implements Closeable {
          * will return true if one of the following is true: the {@link SCMSource} for the descriptor is the enclosing
          * class of this builder class, the builder and {@link SCMSource} are in the same package, or the builder is in
          * a child package of the {@link SCMSource}.
+         * @since 2.3.0
          */
         public final boolean supports(SCMSourceDescriptor descriptor) {
             if (Util.isOverridden(SCMFileSystem.Builder.class, getClass(), "supportsDescriptor", SCMSourceDescriptor.class)) {
@@ -440,6 +498,7 @@ public abstract class SCMFileSystem implements Closeable {
          * @return {@code true} if and only if the supplied {@link SCMSourceDescriptor}'s {@link SCMSource} class is
          * supported by this {@link Builder}, {@code false} if {@link #build(SCMSource, SCMHead, SCMRevision)} will
          * <strong>always</strong> return {@code null}, and {@code false} by default for compatibility.
+         * @since 2.3.0
          */
         protected abstract boolean supportsDescriptor(SCMSourceDescriptor descriptor);
 
