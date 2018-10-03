@@ -364,6 +364,31 @@ public abstract class SCMFileSystem implements Closeable {
     }
 
     /**
+     * Given a {@link SCMSourceDescriptor} this method will check if there is at least one {@link SCMFileSystem} provider
+     * capable of being instantiated from the descriptor's {@link SCMSource}. Returning {@code true} does not mean that
+     * {@link #of(SCMSource, SCMHead, SCMRevision)} will be able to instantiate a {@link SCMFileSystem} for any specific
+     * {@link SCMHead} or {@link SCMRevision}, rather returning {@code false} indicates that there is absolutely no point
+     * in calling {@link #of(SCMSource, SCMHead, SCMRevision)} as it will always return {@code null}.
+     *
+     * @param descriptor the {@link SCMSourceDescriptor}.
+     * @return {@code true} if {@link #of(SCMSource, SCMHead)} / {@link #of(SCMSource, SCMHead, SCMRevision)} could
+     * return a {@link SCMFileSystem} implementation, {@code false} if {@link #of(SCMSource, SCMHead)} /
+     * {@link #of(SCMSource, SCMHead, SCMRevision)} will always return {@code null} for the supplied {@link SCMSource}.
+     * @since 2.0
+     */
+    public static boolean supports(@NonNull SCMSourceDescriptor descriptor) {
+        descriptor.getClass(); // throw NPE if null
+        if (descriptor.clazz == null) {
+            throw new NullPointerException();
+        }
+        for (Builder b : ExtensionList.lookup(Builder.class)) {
+            if (b.supports(descriptor)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
      * Extension point that allows different plugins to implement {@link SCMFileSystem} classes for the same {@link SCM}
      * or {@link SCMSource} and let Jenkins pick the most capable for any specific {@link SCM} implementation.
      */
@@ -387,6 +412,18 @@ public abstract class SCMFileSystem implements Closeable {
          * {@code null}.
          */
         public abstract boolean supports(SCMSource source);
+
+        /**
+         * Checks if this {@link Builder} supports the supplied {@link SCMSourceDescriptor}.
+         *
+         * @param descriptor the {@link SCMSourceDescriptor}
+         * @return {@code true} if and only if the supplied {@link SCMSourceDescriptor}'s {@link SCMSource} class is
+         * supported by this {@link Builder}, {@code false} if {@link #build(SCMSource, SCMHead, SCMRevision)} will
+         * <strong>always</strong> return {@code null}, and {@code false} by default for compatibility.
+         */
+        public boolean supports(SCMSourceDescriptor descriptor) {
+            return false;
+        }
 
         /**
          * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that

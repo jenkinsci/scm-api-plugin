@@ -32,11 +32,13 @@ import hudson.scm.NullSCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.util.Map;
+import jenkins.scm.api.SCMFileSystem;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
+import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import jenkins.scm.impl.mock.MockSCM;
 import jenkins.scm.impl.mock.MockSCMController;
@@ -44,6 +46,7 @@ import jenkins.scm.impl.mock.MockSCMHead;
 import org.hamcrest.Matcher;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -56,6 +59,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
@@ -218,6 +222,14 @@ public class SingleSCMSourceTest {
         when(descriptor.isApplicable(Matchers.any(Descriptor.class))).thenReturn(true);
         assertThat(SingleSCMSource.DescriptorImpl.getSCMDescriptors(owner),
                 (Matcher) hasItem(instanceOf(MockSCM.DescriptorImpl.class)));
+    }
+
+    @Issue("JENKINS-52964")
+    @Test
+    public void filesystem_supports_false_by_default_for_descriptor() {
+        SCMSourceDescriptor descriptor = r.jenkins.getDescriptorByType(SingleSCMSource.DescriptorImpl.class);
+
+        assertFalse(SCMFileSystem.supports(descriptor));
     }
 
     public interface TopLevelSCMOwner extends TopLevelItem, SCMSourceOwner {
