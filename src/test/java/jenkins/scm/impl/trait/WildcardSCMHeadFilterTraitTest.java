@@ -46,8 +46,7 @@ public class WildcardSCMHeadFilterTraitTest {
 
     @Test
     public void given_sourceWithIncludeWildcardRule_when_scanning_then_ruleApplied() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             c.createBranch("foo", "fork");
             c.createBranch("foo", "alt");
@@ -58,15 +57,12 @@ public class WildcardSCMHeadFilterTraitTest {
                 names.add(h.getName());
             }
             assertThat(names, containsInAnyOrder("master", "fork"));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given_sourceWithExcludeWildcardRule_when_scanning_then_ruleApplied() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             c.createBranch("foo", "fork");
             c.createBranch("foo", "alt");
@@ -77,14 +73,11 @@ public class WildcardSCMHeadFilterTraitTest {
                 names.add(h.getName());
             }
             assertThat(names, containsInAnyOrder("master", "alt"));
-        } finally {
-            c.close();
         }
     }
     @Test
     public void given_sourceWithIncludeExcludeWildcardRule_when_scanning_then_ruleApplied() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             c.createBranch("foo", "fork");
             c.createBranch("foo", "foo");
@@ -96,8 +89,6 @@ public class WildcardSCMHeadFilterTraitTest {
                 names.add(h.getName());
             }
             assertThat(names, containsInAnyOrder("master", "fork"));
-        } finally {
-            c.close();
         }
     }
 }

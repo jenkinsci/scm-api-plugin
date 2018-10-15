@@ -14,22 +14,18 @@ import static org.junit.Assert.*;
 public class SCMRevisionActionTest {
     @Test
     public void given__legacyData__when__gettingRevision__then__legacyReturned() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             MockSCMSource source = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
             SCMRevision revision = new MockSCMRevision(new MockSCMHead("head"), "hash");
             Actionable a = new ActionableImpl();
             a.addAction(new SCMRevisionAction(revision, null));
             assertThat(SCMRevisionAction.getRevision(source, a), is(revision));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given__mixedData__when__gettingRevision__then__legacyReturnedForUnmatched() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             MockSCMSource source1 = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
             source1.setId("foo");
             MockSCMSource source2 = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
@@ -46,15 +42,12 @@ public class SCMRevisionActionTest {
             assertThat(SCMRevisionAction.getRevision(source1, a), is(revision1));
             assertThat(SCMRevisionAction.getRevision(source2, a), is(revision2));
             assertThat(SCMRevisionAction.getRevision(source3, a), is(revision3));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given__mixedData__when__gettingRevision__then__firstlegacyReturnedForUnmatched() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             MockSCMSource source1 = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
             source1.setId("foo");
             MockSCMSource source2 = new MockSCMSource(c, "test", new MockSCMDiscoverBranches());
@@ -71,8 +64,6 @@ public class SCMRevisionActionTest {
             assertThat(SCMRevisionAction.getRevision(source1, a), is(revision1));
             assertThat(SCMRevisionAction.getRevision(source2, a), is(revision2));
             assertThat("Cannot distinguish legacy", SCMRevisionAction.getRevision(source3, a), is(revision2));
-        } finally {
-            c.close();
         }
     }
 
