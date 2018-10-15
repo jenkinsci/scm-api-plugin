@@ -227,7 +227,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
             return new ConstantEquality();
         }
         if (forceReflection) {
-            return new ReflectiveEquality(properties.values().toArray(new Method[properties.size()]));
+            return new ReflectiveEquality(properties.values().toArray(new Method[0]));
         }
         // now we define the class
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -250,7 +250,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
         } catch (IllegalAccessException e) {
             // fallback to reflection
         }
-        return new ReflectiveEquality(properties.values().toArray(new Method[properties.size()]));
+        return new ReflectiveEquality(properties.values().toArray(new Method[0]));
 
     }
 

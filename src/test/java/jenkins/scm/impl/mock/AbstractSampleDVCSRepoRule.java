@@ -82,7 +82,7 @@ public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule 
         List<String> args = new ArrayList<String>();
         args.add(tool);
         args.addAll(Arrays.asList(cmds));
-        run(false, sampleRepo, args.toArray(new String[args.size()]));
+        run(false, sampleRepo, args.toArray(new String[0]));
     }
 
     /**
