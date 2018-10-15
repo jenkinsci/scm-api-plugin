@@ -195,7 +195,7 @@ public abstract class SCMNavigatorRequest implements Closeable {
      * @return {@code true} if and only if the request is completed, {@code false} if the request can process
      * additional named projects.
      * @throws IllegalArgumentException if the attribute factory provides attribute names that are unrecognized, or
-     *                                  repeats already added attribues.
+     *                                  repeats already added attributes.
      * @throws IOException              if there is an I/O error.
      * @throws InterruptedException     if the operation was interrupted.
      */
@@ -221,7 +221,7 @@ public abstract class SCMNavigatorRequest implements Closeable {
      * @return {@code true} if and only if the request is completed, {@code false} if the request can process
      * additional named projects.
      * @throws IllegalArgumentException if an attribute factory provides attribute names that are unrecognized, or
-     *                                  repeats already added attribues.
+     *                                  repeats already added attributes.
      * @throws IOException              if there is an I/O error.
      * @throws InterruptedException     if the operation was interrupted.
      */

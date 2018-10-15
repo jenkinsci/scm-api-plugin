@@ -56,7 +56,7 @@ public abstract class SCMHeadAuthorityDescriptor extends Descriptor<SCMHeadAutho
     private final Class<? extends SCMRevision> revisionClass;
 
     /**
-     * Constructor to use when type inferrence using {@link #SCMHeadAuthorityDescriptor()} does not work.
+     * Constructor to use when type inference using {@link #SCMHeadAuthorityDescriptor()} does not work.
      *
      * @param clazz         Pass in the type of {@link SCMHeadAuthority}
      * @param requestClass  the type of {@link SCMSourceRequest}.

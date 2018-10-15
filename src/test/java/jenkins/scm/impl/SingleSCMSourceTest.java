@@ -132,7 +132,7 @@ public class SingleSCMSourceTest {
     }
 
     @Test
-    public void given_instance_when_fetchWithCriterial_then_criteriaIgnoredAndRevisionObserved() throws Exception {
+    public void given_instance_when_fetchWithCriteria_then_criteriaIgnoredAndRevisionObserved() throws Exception {
         MockSCMController c = MockSCMController.create();
         try {
             c.createRepository("foo");

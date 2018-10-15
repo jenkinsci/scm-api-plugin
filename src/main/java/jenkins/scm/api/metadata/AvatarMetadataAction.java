@@ -44,7 +44,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Holds metadata about an avatar to be assoicated with a {@link SCMSource} or {@link SCMNavigator} (also valid for
+ * Holds metadata about an avatar to be associated with a {@link SCMSource} or {@link SCMNavigator} (also valid for
  * {@link SCMRevision} and {@link SCMHead}, but would be considered unusual).
  * <p>
  * For example:

@@ -81,7 +81,7 @@ Each branch specific sub-job has:
 Other benefits include:
 
 * Developers can create feature branches and get the CI benefits for that feature branch automatically without needing to worry about requesting creation of corresponding feature branch jobs.
-* The Jenkins administator does not need to worry about having to clean up old feature branch jobs that are no longer required.
+* The Jenkins administrator does not need to worry about having to clean up old feature branch jobs that are no longer required.
 
 There still remain other issues that the Branch API plugin cannot solve on its own:
 
@@ -91,7 +91,7 @@ If different branches need different job configuration -- which may be highly li
 
 * For inter-project dependencies, it can be unclear how to establish branch relationships.
 +
-Should branch `feature-23` of project A be using the artifacts from branch `master` of project B or from branch `sustainging-1.x`.
+Should branch `feature-23` of project A be using the artifacts from branch `master` of project B or from branch `sustaining-1.x`.
 
 Efforts to solve these issues are a responsibility of the plugins that implement multi-branch project types.
 
@@ -136,7 +136,7 @@ The SCM API exposes four main extension points for consumers:
 
 Consumers will likely be interested in implementing the following extension points:
 
-* The `jenkins.scm.api.SCMEventListener` extension point is designed to solve the use case of recieving notification of events from the source control systems.
+* The `jenkins.scm.api.SCMEventListener` extension point is designed to solve the use case of receiving notification of events from the source control systems.
 
 Consumers will be required to implement the following contract interfaces depending on their use of the extension points of the SCM API:
 
@@ -275,7 +275,7 @@ The listener will need to update the required `SCMNavigatorOwner` instances on t
 NOTE: `SCMSourceEvent` and `SCMHeadEvent` events can transition a project from non-interesting to interesting, so a `SCMNavigatorOwner` will need to listen out for these events also.
 For example, an Organization Folder for Workflow jobs would need to see if any SCMHeadEvent for a
 project name that has not been created yet leads to a verification as to whether the named head actually contains a `Jenkinsfile`.
-If a `Jenkinsfile` were present then the project woudl need to be created in order to enable the branch specific grandchild job to be created.
+If a `Jenkinsfile` were present then the project would need to be created in order to enable the branch specific grandchild job to be created.
 
 * Persist the results of `SCMNavigator.fetchActions(_owner_, _listener_)` as part of each index and on receipt of any `SCMNavigatorEvent` events of type `UPDATED`.
 +

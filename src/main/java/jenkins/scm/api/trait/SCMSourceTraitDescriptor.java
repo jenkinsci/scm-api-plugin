@@ -37,7 +37,7 @@ import jenkins.scm.api.SCMSourceDescriptor;
 public abstract class SCMSourceTraitDescriptor extends SCMTraitDescriptor<SCMSourceTrait> {
 
     /**
-     * Constructor to use when type inferrence using {@link #SCMSourceTraitDescriptor()} does not work.
+     * Constructor to use when type inference using {@link #SCMSourceTraitDescriptor()} does not work.
      *
      * @param clazz Pass in the type of {@link SCMTrait}
      */
