@@ -1056,10 +1056,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(getClass().getName());
-        sb.append("{id='").append(id).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return getClass().getName() + "{id='" + id + "'}";
     }
 
     /**
