@@ -1006,9 +1006,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                 public long lastModified() {
                     try {
                         return fileSystem.lastModified();
-                    } catch (IOException e) {
-                        return 0L;
-                    } catch (InterruptedException e) {
+                    } catch (IOException | InterruptedException e) {
                         return 0L;
                     }
                 }

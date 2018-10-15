@@ -245,9 +245,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
 
         try {
             return c.newInstance();
-        } catch (InstantiationException e) {
-            // fallback to reflection
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             // fallback to reflection
         }
         return new ReflectiveEquality(properties.values().toArray(new Method[0]));
@@ -487,10 +485,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
                 Object p2;
                 try {
                     p2 = p.invoke(o2);
-                } catch (IllegalAccessException e) {
-                    // should not happen as these are supposed to be public methods and they worked on o1
-                    return false;
-                } catch (InvocationTargetException e) {
+                } catch (IllegalAccessException | InvocationTargetException e) {
                     // should not happen as these are supposed to be public methods and they worked on o1
                     return false;
                 }

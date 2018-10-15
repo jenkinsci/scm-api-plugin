@@ -204,17 +204,7 @@ public abstract class SCMFileSystem implements Closeable {
                             fallBack = inspector;
                         }
                     }
-                } catch (IOException e) {
-                    if (failure == null) {
-                        failure = e;
-                    }
-                    // TODO else { failure.addSuppressed(e); } // once Java 7
-                } catch (InterruptedException e) {
-                    if (failure == null) {
-                        failure = e;
-                    }
-                    // TODO else { failure.addSuppressed(e); } // once Java 7
-                } catch (RuntimeException e) {
+                } catch (IOException | InterruptedException | RuntimeException e) {
                     if (failure == null) {
                         failure = e;
                     }
@@ -309,17 +299,7 @@ public abstract class SCMFileSystem implements Closeable {
                             fallBack = inspector;
                         }
                     }
-                } catch (IOException e) {
-                    if (failure == null) {
-                        failure = e;
-                    }
-                    // TODO else { failure.addSuppressed(e); } // once Java 7
-                } catch (InterruptedException e) {
-                    if (failure == null) {
-                        failure = e;
-                    }
-                    // TODO else { failure.addSuppressed(e); } // once Java 7
-                } catch (RuntimeException e) {
+                } catch (IOException | InterruptedException | RuntimeException e) {
                     if (failure == null) {
                         failure = e;
                     }

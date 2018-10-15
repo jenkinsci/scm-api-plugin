@@ -408,11 +408,7 @@ public abstract class SCMSourceRequest implements Closeable {
                     try {
                         Method addSuppressed = Throwable.class.getMethod("addSuppressed", Throwable.class);
                         addSuppressed.invoke(ioe, e);
-                    } catch (NoSuchMethodException e1) {
-                        // ignore, best effort
-                    } catch (IllegalAccessException e1) {
-                        // ignore, best effort
-                    } catch (InvocationTargetException e1) {
+                    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e1) {
                         // ignore, best effort
                     }
                 }

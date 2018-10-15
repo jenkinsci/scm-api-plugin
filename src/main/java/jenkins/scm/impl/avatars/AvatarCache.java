@@ -511,9 +511,7 @@ public class AvatarCache implements UnprotectedRootAction {
                     lastModified = pending.lastModified;
                     future = null;
                     return false;
-                } catch (InterruptedException e) {
-                    // ignore
-                } catch (ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     // ignore
                 }
 
