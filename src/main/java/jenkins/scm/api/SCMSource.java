@@ -54,7 +54,6 @@ import java.util.logging.Logger;
 import jenkins.model.TransientActionFactory;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import net.jcip.annotations.GuardedBy;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.export.ExportedBean;
 

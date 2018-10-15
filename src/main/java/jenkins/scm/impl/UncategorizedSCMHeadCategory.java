@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.SCMSourceDescriptor;
 import org.jvnet.localizer.Localizable;
 
 /**

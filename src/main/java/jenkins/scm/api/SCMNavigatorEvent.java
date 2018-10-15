@@ -27,12 +27,11 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ExtensionList;
+
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.jvnet.localizer.Localizable;
 
 /**
  * Base class for events relating to {@link SCMNavigator} instances.

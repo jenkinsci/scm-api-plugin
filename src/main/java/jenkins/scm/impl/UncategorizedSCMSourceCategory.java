@@ -26,8 +26,6 @@ package jenkins.scm.impl;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCategory;

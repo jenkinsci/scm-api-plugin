@@ -40,7 +40,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import jenkins.scm.impl.SCMTriggerListener;
-import org.jvnet.localizer.Localizable;
 
 /**
  * Base class for events relating to {@link SCMHead} instances.
