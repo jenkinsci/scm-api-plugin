@@ -28,8 +28,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -281,13 +279,7 @@ public abstract class SCMNavigatorRequest implements Closeable {
                 if (ioe == null) {
                     ioe = e;
                 } else {
-                    // TODO replace with direct call to addSuppressed once baseline Java is 1.7
-                    try {
-                        Method addSuppressed = Throwable.class.getMethod("addSuppressed", Throwable.class);
-                        addSuppressed.invoke(ioe, e);
-                    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e1) {
-                        // ignore, best effort
-                    }
+                    ioe.addSuppressed(e);
                 }
             }
         }

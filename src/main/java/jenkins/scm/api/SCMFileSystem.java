@@ -207,8 +207,9 @@ public abstract class SCMFileSystem implements Closeable {
                 } catch (IOException | InterruptedException | RuntimeException e) {
                     if (failure == null) {
                         failure = e;
+                    } else {
+                        failure.addSuppressed(e);
                     }
-                    // TODO else { failure.addSuppressed(e); } // once Java 7
                 }
             }
         }
@@ -302,8 +303,9 @@ public abstract class SCMFileSystem implements Closeable {
                 } catch (IOException | InterruptedException | RuntimeException e) {
                     if (failure == null) {
                         failure = e;
+                    } else {
+                        failure.addSuppressed(e);
                     }
-                    // TODO else { failure.addSuppressed(e); } // once Java 7
                 }
             }
         }
