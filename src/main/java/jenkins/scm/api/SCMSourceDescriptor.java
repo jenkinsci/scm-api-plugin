@@ -155,8 +155,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
     public static List<SCMSourceDescriptor> forOwner(Class<? extends SCMSourceOwner> clazz,
                                                      boolean onlyUserInstantiable) {
         List<SCMSourceDescriptor> result = new ArrayList<SCMSourceDescriptor>();
-        for (SCMSourceDescriptor d : ExtensionList.lookup(SCMSourceDescriptor.class)) {
-            SCMSourceDescriptor descriptor = (SCMSourceDescriptor) d;
+        for (SCMSourceDescriptor descriptor : ExtensionList.lookup(SCMSourceDescriptor.class)) {
             if (descriptor.isApplicable(clazz) && (!onlyUserInstantiable || descriptor.isUserInstantiable())) {
                 result.add(descriptor);
             }
