@@ -154,9 +154,7 @@ public class AvatarCache implements UnprotectedRootAction {
                     + ".png?size="
                     + URLEncoder.encode(size, UTF_8);
         } catch (UnsupportedEncodingException e) {
-            AssertionError error = new AssertionError("JLS specification mandates support for UTF-8 encoding");
-            error.initCause(e);
-            throw error;
+            throw new AssertionError("JLS specification mandates support for UTF-8 encoding", e);
         }
     }
 
@@ -247,13 +245,9 @@ public class AvatarCache implements UnprotectedRootAction {
             MessageDigest d = MessageDigest.getInstance("MD5");
             bytes = d.digest(seed.getBytes(UTF_8));
         } catch (NoSuchAlgorithmException e) {
-            AssertionError error = new AssertionError("JLS specification mandates support for MD5 message digest");
-            error.initCause(e);
-            throw error;
+            throw new AssertionError("JLS specification mandates support for MD5 message digest", e);
         } catch (UnsupportedEncodingException e) {
-            AssertionError error = new AssertionError("JLS specification mandates support for UTF-8 encoding");
-            error.initCause(e);
-            throw error;
+            throw new AssertionError("JLS specification mandates support for UTF-8 encoding", e);
         }
         BufferedImage canvas = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = canvas.createGraphics();
