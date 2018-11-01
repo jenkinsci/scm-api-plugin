@@ -382,7 +382,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             }
         } else if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
                 SCMHeadObserver.class, TaskListener.class)){
-            // oh dear, realy old legacy implementation
+            // oh dear, really old legacy implementation
             SCMSourceCriteria hopefullyNull = compatibilityHack.get();
             compatibilityHack.set(criteria == null ? nullSCMSourceCriteria : criteria);
             try {

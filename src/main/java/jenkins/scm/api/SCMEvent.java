@@ -273,7 +273,7 @@ public abstract class SCMEvent<P> {
      * <strong>The {@link Cause} instances should probably be new instances each time, see
      * {@link Cause#onAddedTo(Run)}.</strong>
      *
-     * @return the {@link Cause} instances to add to any builds triggerd by this event.
+     * @return the {@link Cause} instances to add to any builds triggered by this event.
      */
     @NonNull
     public Cause[] asCauses() {
@@ -406,7 +406,7 @@ public abstract class SCMEvent<P> {
          * <ul>
          * <li>An existing {@link SCMNavigator} getting a new {@link SCMSource} would trigger a
          * {@link SCMSourceEvent}</li>
-         * <li>An existing {@link SCMSource} gettings a new {@link SCMHead} would trigger a {@link SCMHeadEvent}</li>
+         * <li>An existing {@link SCMSource} getting a new {@link SCMHead} would trigger a {@link SCMHeadEvent}</li>
          * </ul>
          */
         CREATED,

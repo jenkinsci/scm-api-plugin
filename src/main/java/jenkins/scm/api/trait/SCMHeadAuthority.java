@@ -39,7 +39,7 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.mixin.SCMHeadMixin;
 
 /**
- * Abstraction to allow plugable definitions of trust for {@link SCMHead} and {@link SCMRevision} instances in the
+ * Abstraction to allow pluggable definitions of trust for {@link SCMHead} and {@link SCMRevision} instances in the
  * context of a specific {@link SCMSourceRequest}.
  * <p>
  * Note: there can be multiple authorities for the same types of head / revision active in the context of any one
@@ -78,7 +78,7 @@ public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCM
      * Checks if this authority is relevant to the supplied {@link SCMSourceRequest}.
      *
      * @param request the supplied {@link SCMSourceRequest}.
-     * @return {@code true} if and only if this authority can provide trust information for the supplied requesy.
+     * @return {@code true} if and only if this authority can provide trust information for the supplied request.
      */
     public final boolean isApplicableTo(@NonNull SCMSourceRequest request) {
         return getDescriptor().isApplicableToRequest(request);
@@ -166,7 +166,7 @@ public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCM
     }
 
     /**
-     * Retursn the subset of {@link SCMHeadAuthorityDescriptor} instances applicable to the supplied criteria.
+     * Returns the subset of {@link SCMHeadAuthorityDescriptor} instances applicable to the supplied criteria.
      *
      * @param requestClass  the {@link SCMSourceRequest} class (or {@code null} to match any).
      * @param headClass     the {@link SCMHeadMixin} class (or {@code null} to match any).

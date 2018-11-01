@@ -39,7 +39,7 @@ import jenkins.scm.api.SCMSourceDescriptor;
 public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCMNavigatorTrait> {
 
     /**
-     * Constructor to use when type inferrence using {@link #SCMNavigatorTraitDescriptor()} does not work.
+     * Constructor to use when type inference using {@link #SCMNavigatorTraitDescriptor()} does not work.
      *
      * @param clazz Pass in the type of {@link SCMNavigatorTrait}
      */

@@ -82,7 +82,7 @@ The `SCMRevision` of a GitHub pull request would actually be a composite revisio
 Another example of a collection of Git repositories could be a GitHub organization.
 
 * Subversion can have a fairly direct mapping of concepts analogous to the Git mapping above.
-Alternatively some oganizations will use a single Subversion repository to hold multiple projects under which each project would have the familiar `trunk/branches/tags` structure. If we consider this style of Subversion use then:
+Alternatively some organizations will use a single Subversion repository to hold multiple projects under which each project would have the familiar `trunk/branches/tags` structure. If we consider this style of Subversion use then:
 
 ** `jenkins.scm.api.SCMHead` would be mapped against a specific project and be one of: `trunk`, `branches/_name_` or `tags/_name_`.
 
@@ -260,7 +260,7 @@ Each `jenkins.scm.api.SCMSourceDescriptor` should provide the concrete instances
 Then each `jenkins.scm.api.SCMSource` instance can filter down that list to the actual categories that may be returned by that specific source.
 For example, a GitHub source may return "Branches", "Pull Requests" and "Tags" but the user may have configured their specific source for a specific project to only build "Branches" and "Tags".
 
-In an analgous way, the `jenkins.scm.api.SCMSource` instances themselves may have different terminology for each of the different source control systems:
+In an analogous way, the `jenkins.scm.api.SCMSource` instances themselves may have different terminology for each of the different source control systems:
 
 * GitHub uses the term "Repository" to refer to primary repositories
 * GitHub uses the term "Fork" to refer to forks of the primary repositories
@@ -1102,7 +1102,7 @@ public class MyChangeRequestSCMRevision extends ChangeRequestSCMRevision<MySCMHe
 ----
 
 To enable consumers to establish the relationship between revisions and heads, you should implement the `SCMSource.parentRevisions(_head_,_revision_,_listener_)` and `SCMSource.parentHeads(_head_,_listener_)` methods.
-These two methods are not strictly _required_, but when implemented they enable consumers to identify relationships between different branches, e.g. if the consumer wants to build a more complete changelong history tracking through the different branches.
+These two methods are not strictly _required_, but when implemented they enable consumers to identify relationships between different branches, e.g. if the consumer wants to build a more complete changelog history tracking through the different branches.
 
 === Implementing `jenkins.scm.api.SCMNavigator`
 
@@ -1522,7 +1522,7 @@ if ("branch-create".equals(event)) {
 } // else etc
 ----
 
-Because each event from the source control system has a 1:1 correspondance with the events in the SCM API the implementation of each event can be fairly straightforward:
+Because each event from the source control system has a 1:1 correspondence with the events in the SCM API the implementation of each event can be fairly straightforward:
 
 [source,java]
 ----

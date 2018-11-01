@@ -478,7 +478,7 @@ public abstract class SCMSourceRequest implements Closeable {
      * and {@link SCMRevision} instances.
      * <p>
      * Some {@link SCMRevision} instances may be expensive to instantiate, for example a {@link ChangeRequestSCMHead2}
-     * may need to get the effective merge revision in order to comply with the equality and "offline" requirememt
+     * may need to get the effective merge revision in order to comply with the equality and "offline" requirement
      * of a {@link SCMRevision} which could require either asking the remote server or performing a local trial merge.
      * As this type of operation is only required if the {@link SCMHead} actually meets the {@link SCMSourceCriteria}
      * it may be preferred to delay instantiation of the {@link SCMRevision} and instead create the
