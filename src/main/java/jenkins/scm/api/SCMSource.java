@@ -367,11 +367,11 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                            @CheckForNull SCMHeadEvent<?> event,
                            @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
-        if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
+        if (Util.isOverridden(SCMSource.class, getClass(), "retrieve",
                 SCMSourceCriteria.class, SCMHeadObserver.class, SCMHeadEvent.class, TaskListener.class)) {
             // w00t this is a new implementation
             retrieve(criteria, observer, event, defaultListener(listener));
-        } else if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
+        } else if (Util.isOverridden(SCMSource.class, getClass(), "retrieve",
                 SCMSourceCriteria.class, SCMHeadObserver.class, TaskListener.class)) {
             // a modern but still pre-2.0 implementation
             if (event == null) {
@@ -379,7 +379,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             } else if (event.isMatch(this)) {
                 retrieve(criteria, event.filter(this, observer), defaultListener(listener));
             }
-        } else if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
+        } else if (Util.isOverridden(SCMSource.class, getClass(), "retrieve",
                 SCMHeadObserver.class, TaskListener.class)){
             // oh dear, really old legacy implementation
             SCMSourceCriteria hopefullyNull = compatibilityHack.get();
@@ -417,7 +417,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @Deprecated
     protected void retrieve(@NonNull SCMHeadObserver observer, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
+        if (Util.isOverridden(SCMSource.class, getClass(), "retrieve",
                 SCMSourceCriteria.class, SCMHeadObserver.class, TaskListener.class)) {
             retrieve(getCriteria(), observer, listener);
         } else {
@@ -905,7 +905,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @since 2.0
      */
     public boolean canProbe() {
-        return MethodUtils.isOverridden(SCMSource.class, getClass(), "createProbe", SCMHead.class, SCMRevision.class);
+        return Util.isOverridden(SCMSource.class, getClass(), "createProbe", SCMHead.class, SCMRevision.class);
     }
 
     /**
@@ -1087,7 +1087,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     public final Set<? extends SCMHeadCategory> getCategories() {
         Set<? extends SCMHeadCategory> result = getDescriptor().getCategories();
         if (result.size() > 1
-                && MethodUtils.isOverridden(SCMSource.class, getClass(), "isCategoryEnabled", SCMHeadCategory.class)) {
+                && Util.isOverridden(SCMSource.class, getClass(), "isCategoryEnabled", SCMHeadCategory.class)) {
             // if result has only one entry then it must be the default, so will never be filtered
             // if we didn't override the category enabled check, then none will be disabled
             result = new LinkedHashSet<SCMHeadCategory>(result);

@@ -248,7 +248,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     public final Set<? extends SCMSourceCategory> getCategories() {
         Set<? extends SCMSourceCategory> result = getDescriptor().getCategories();
         if (result.size() > 1
-                && MethodUtils.isOverridden(SCMNavigator.class,
+                && Util.isOverridden(SCMNavigator.class,
                 getClass(),
                 "isCategoryEnabled",
                 SCMSourceCategory.class)
