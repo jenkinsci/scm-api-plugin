@@ -258,7 +258,7 @@ public abstract class SCMEvent<P> {
      * Return a description of the event.
      *
      * @return the description or {@code null} if no description can be provided.
-     * @since TODO
+     * @since 2.1.1
      */
     @CheckForNull
     public String description() {

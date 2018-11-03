@@ -96,7 +96,7 @@ public abstract class SCMSourceEvent<P> extends SCMEvent<P> {
      *
      * @param navigator the {@link SCMNavigator}, the navigator must be {@link #isMatch(SCMNavigator)}.
      * @return the description or {@code null} if no description can be provided.
-     * @since TODO
+     * @since 2.1.1
      */
     @CheckForNull
     public String descriptionFor(SCMNavigator navigator) {
@@ -117,7 +117,7 @@ public abstract class SCMSourceEvent<P> extends SCMEvent<P> {
      *
      * @param source the {@link SCMSource}.
      * @return the description or {@code null} if no description can be provided.
-     * @since TODO
+     * @since 2.1.1
      */
     @CheckForNull
     public String descriptionFor(SCMSource source) {
