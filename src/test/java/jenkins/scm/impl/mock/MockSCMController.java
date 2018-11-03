@@ -33,7 +33,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -584,12 +584,11 @@ public class MockSCMController implements Closeable {
         public String getHash() {
             if (hash == null) {
                 try {
-                    Charset utf8 = Charset.forName("UTF-8");
                     MessageDigest sha = MessageDigest.getInstance("SHA-1");
                     if (parent != null) {
                         sha.update(new BigInteger(parent.getHash(), 16).toByteArray());
                     }
-                    sha.update(StringUtils.defaultString(message).getBytes(utf8));
+                    sha.update(StringUtils.defaultString(message).getBytes(StandardCharsets.UTF_8));
                     sha.update((byte) (timestamp & 0xff));
                     sha.update((byte) ((timestamp >> 8) & 0xff));
                     sha.update((byte) ((timestamp >> 16) & 0xff));
@@ -599,7 +598,7 @@ public class MockSCMController implements Closeable {
                     sha.update((byte) ((timestamp >> 48) & 0xff));
                     sha.update((byte) ((timestamp >> 56) & 0xff));
                     for (Map.Entry<String, byte[]> e : files.entrySet()) {
-                        sha.update(e.getKey().getBytes(utf8));
+                        sha.update(e.getKey().getBytes(StandardCharsets.UTF_8));
                         sha.update(e.getValue());
                     }
                     hash = javax.xml.bind.DatatypeConverter.printHexBinary(sha.digest()).toLowerCase();

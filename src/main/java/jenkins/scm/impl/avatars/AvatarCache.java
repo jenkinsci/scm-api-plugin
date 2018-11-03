@@ -44,6 +44,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
@@ -86,10 +87,6 @@ public class AvatarCache implements UnprotectedRootAction {
      * Our logger.
      */
     private static final Logger LOGGER = Logger.getLogger(AvatarCache.class.getName());
-    /*
-     * TODO replace with StandardCharsets once Java 7 baseline
-     */
-    private static final String UTF_8 = "UTF-8";
     /**
      * Maximum concurrent requests to fetch images.
      */
@@ -150,7 +147,7 @@ public class AvatarCache implements UnprotectedRootAction {
                     + "/"
                     + Util.rawEncode(key)
                     + ".png?size="
-                    + URLEncoder.encode(size, UTF_8);
+                    + URLEncoder.encode(size, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError("JLS specification mandates support for UTF-8 encoding", e);
         }
@@ -241,11 +238,9 @@ public class AvatarCache implements UnprotectedRootAction {
             // we want a consistent image across reboots, so just take a hash of the seed
             // if the seed changes we get a new hash and a new image!
             MessageDigest d = MessageDigest.getInstance("MD5");
-            bytes = d.digest(seed.getBytes(UTF_8));
+            bytes = d.digest(seed.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError("JLS specification mandates support for MD5 message digest", e);
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError("JLS specification mandates support for UTF-8 encoding", e);
         }
         BufferedImage canvas = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = canvas.createGraphics();

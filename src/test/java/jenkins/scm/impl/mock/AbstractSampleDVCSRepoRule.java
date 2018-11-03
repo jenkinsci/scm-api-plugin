@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -89,7 +90,7 @@ public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule 
      * Like {@link #fileUrl} but expressed only as a path, not a URL with protocol.
      */
     public final String bareUrl() throws UnsupportedEncodingException {
-        return URLEncoder.encode(toString(), "UTF-8");
+        return URLEncoder.encode(toString(), StandardCharsets.UTF_8.name());
     }
 
     /**
