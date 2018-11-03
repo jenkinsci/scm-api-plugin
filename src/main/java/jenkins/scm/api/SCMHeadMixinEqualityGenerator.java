@@ -233,8 +233,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         String name = SCMHeadMixin.class.getPackage().getName() + ".internal." + type.getName();
 
-        // TODO Move to 1.7 opcodes once baseline 1.612+
-        cw.visit(Opcodes.V1_6, ACC_PUBLIC, name.replace('.', '/'), null, Type
+        cw.visit(Opcodes.V1_7, ACC_PUBLIC, name.replace('.', '/'), null, Type
                 .getInternalName(Object.class), new String[]{Type.getInternalName(SCMHeadMixin.Equality.class)});
         generateDefaultConstructor(cw);
         generateEquals(cw, properties.values());
