@@ -34,20 +34,21 @@ import hudson.model.TaskListener;
 import hudson.security.ACL;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.servlet.http.HttpServletRequest;
-import jenkins.util.Timer;
+
+import hudson.util.DaemonThreadFactory;
+import hudson.util.NamingThreadFactory;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
-import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Base class for all events from a SCM system.
@@ -129,6 +130,11 @@ public abstract class SCMEvent<P> {
     private final String origin;
 
     /**
+     * The scheduled executor thread pool. This is initialized lazily since it may be never needed.
+     */
+    private static ScheduledExecutorService executorService;
+
+    /**
      * Constructor to use when the timestamp is available from the external SCM.
      *
      * @param type      the type of event.
@@ -200,10 +206,13 @@ public abstract class SCMEvent<P> {
      * @return a {@link ScheduledExecutorService}.
      */
     @NonNull
-    protected static ScheduledExecutorService executorService() {
-        // Future-proofing, if we find out that events are drowning Timer then we may need to move them to their
-        // own dedicated ScheduledExecutorService thread pool
-        return Timer.get();
+    protected static synchronized ScheduledExecutorService executorService() {
+        if (executorService == null) {
+            // corePoolSize is set to 10, but will only be created if needed.
+            // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
+            executorService =  new ScheduledThreadPoolExecutor(10, new NamingThreadFactory(new DaemonThreadFactory(), "SCMEvent"));
+        }
+        return executorService;
     }
 
     /**
