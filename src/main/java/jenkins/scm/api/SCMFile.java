@@ -337,7 +337,7 @@ public abstract class SCMFile {
     public String contentAsString() throws IOException, InterruptedException {
         final InputStream is = content();
         try {
-            return IOUtils.toString(is, contentEncoding());
+            return IOUtils.toString(is, contentEncoding()).trim();
         } finally {
             IOUtils.closeQuietly(is);
         }
