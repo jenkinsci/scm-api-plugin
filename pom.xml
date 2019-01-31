@@ -41,7 +41,7 @@
   <description>
     This plugin provides a new enhanced API for interacting with SCM systems.
   </description>
-  <url>http://wiki.jenkins-ci.org/display/JENKINS/SCM+API+Plugin</url>
+  <url>https://wiki.jenkins.io/display/JENKINS/SCM+API+Plugin</url>
   <licenses>
     <license>
       <name>The MIT license</name>

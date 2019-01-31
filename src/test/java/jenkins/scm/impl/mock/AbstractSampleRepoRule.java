@@ -41,7 +41,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Basis for {@link Rule} classes which run a concrete SCM tool on a sample repository, for integration testing.
- * @since FIXME
+ *
+ * @since 2.0.8
  */
 public abstract class AbstractSampleRepoRule extends ExternalResource {
 

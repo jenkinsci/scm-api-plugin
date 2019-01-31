@@ -227,14 +227,13 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
             return new ConstantEquality();
         }
         if (forceReflection) {
-            return new ReflectiveEquality(properties.values().toArray(new Method[properties.size()]));
+            return new ReflectiveEquality(properties.values().toArray(new Method[0]));
         }
         // now we define the class
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         String name = SCMHeadMixin.class.getPackage().getName() + ".internal." + type.getName();
 
-        // TODO Move to 1.7 opcodes once baseline 1.612+
-        cw.visit(Opcodes.V1_6, ACC_PUBLIC, name.replace('.', '/'), null, Type
+        cw.visit(Opcodes.V1_7, ACC_PUBLIC, name.replace('.', '/'), null, Type
                 .getInternalName(Object.class), new String[]{Type.getInternalName(SCMHeadMixin.Equality.class)});
         generateDefaultConstructor(cw);
         generateEquals(cw, properties.values());
@@ -245,12 +244,10 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
 
         try {
             return c.newInstance();
-        } catch (InstantiationException e) {
-            // fallback to reflection
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             // fallback to reflection
         }
-        return new ReflectiveEquality(properties.values().toArray(new Method[properties.size()]));
+        return new ReflectiveEquality(properties.values().toArray(new Method[0]));
 
     }
 
@@ -487,10 +484,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
                 Object p2;
                 try {
                     p2 = p.invoke(o2);
-                } catch (IllegalAccessException e) {
-                    // should not happen as these are supposed to be public methods and they worked on o1
-                    return false;
-                } catch (InvocationTargetException e) {
+                } catch (IllegalAccessException | InvocationTargetException e) {
                     // should not happen as these are supposed to be public methods and they worked on o1
                     return false;
                 }

@@ -26,7 +26,6 @@ package jenkins.scm.api.trait;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.DescriptorExtensionList;
 import hudson.model.AbstractDescribableImpl;
 import java.util.ArrayList;

@@ -28,11 +28,9 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.mixin.SCMHeadMixin;
 import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
-import jenkins.scm.impl.mock.MockSCMHead;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 

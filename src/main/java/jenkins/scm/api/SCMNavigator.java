@@ -68,7 +68,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
 
     /**
      * Cache of the ID of this {@link SCMNavigator}.
-     * @since FIXME
+     * @since 2.0.1
      */
     private transient String id;
 
@@ -94,7 +94,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * {@link List#equals(Object)}.
      *
      * @return the ID of the thing being navigated by this navigator.
-     * @since FIXME
+     * @since 2.0.1
      * @see #id()
      */
     @NonNull
@@ -128,7 +128,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * If implementations are using {@link DataBoundSetter} on fields that affect the {@link #id()} calculation then
      * those fields must call {@link #resetId()} if they may have invalidated the cached {@link #getId()}.
      *
-     * @since FIXME
+     * @since 2.0.1
      */
     protected final void resetId() {
         id = null;
@@ -152,7 +152,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * If the results could be non-equal for navigators with the same ID then more detail needs to be encoded in the ID.
      *
      * @return the ID of the thing being navigated by this navigator.
-     * @since FIXME
+     * @since 2.0.1
      * @see #resetId()
      * @see #getId()
      */
@@ -248,7 +248,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
     public final Set<? extends SCMSourceCategory> getCategories() {
         Set<? extends SCMSourceCategory> result = getDescriptor().getCategories();
         if (result.size() > 1
-                && MethodUtils.isOverridden(SCMNavigator.class,
+                && Util.isOverridden(SCMNavigator.class,
                 getClass(),
                 "isCategoryEnabled",
                 SCMSourceCategory.class)

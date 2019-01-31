@@ -30,6 +30,7 @@ import hudson.util.HttpResponses;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -213,7 +214,7 @@ public class AvatarCacheTest {
                     (HttpURLConnection) new URL(r.getURL().toString() + a.getUrlName() + "/").openConnection();
             try {
                 c.connect();
-                return IOUtils.toString(c.getInputStream(), "UTF-8").trim();
+                return IOUtils.toString(c.getInputStream(), StandardCharsets.UTF_8).trim();
             } finally {
                 c.disconnect();
             }

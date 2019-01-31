@@ -27,12 +27,11 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ExtensionList;
+
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.jvnet.localizer.Localizable;
 
 /**
  * Base class for events relating to {@link SCMNavigator} instances.
@@ -97,7 +96,7 @@ public abstract class SCMNavigatorEvent<P> extends SCMEvent<P> {
      *
      * @param navigator the {@link SCMNavigator}, the navigator must be {@link #isMatch(SCMNavigator)}.
      * @return the description or {@code null} if no description can be provided.
-     * @since TODO
+     * @since 2.1.1
      */
     @CheckForNull
     public String descriptionFor(SCMNavigator navigator) {
