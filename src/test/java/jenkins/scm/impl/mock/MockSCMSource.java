@@ -311,6 +311,26 @@ public class MockSCMSource extends SCMSource {
         return result;
     }
 
+    @NonNull
+    @Override
+    public SCMRevision getTrustedRevision(@NonNull SCMRevision revision, @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        // only apply the latency if we need to check trust
+        if (controller().getFlags(repository).contains(MockRepositoryFlags.TRUST_AWARE)
+                && revision instanceof MockChangeRequestSCMRevision) {
+            controller().applyLatency();
+            MockChangeRequestSCMRevision crRevision = (MockChangeRequestSCMRevision) revision;
+            MockChangeRequestSCMHead crHead = (MockChangeRequestSCMHead) (crRevision.getHead());
+            controller().checkFaults(repository, crHead.getName(), crRevision.getHash(), false);
+            return controller().getFlags(repository, crHead.getNumber())
+                    .contains(MockChangeRequestFlags.UNTRUSTED)
+                    ? crRevision.getTarget()
+                    : crRevision;
+        } else {
+            return revision;
+        }
+    }
+
     @Override
     public void afterSave() {
         controller().afterSave(this);

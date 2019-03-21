@@ -32,5 +32,10 @@ public enum MockRepositoryFlags {
     /**
      * Enables marking change requests as {@link MockChangeRequestFlags#FORK}.
      */
-    FORKABLE;
+    FORKABLE,
+    /**
+     * The repository has the concept of trust for change requests and will report change requests marked {@link
+     * MockChangeRequestFlags#UNTRUSTED} as untrusted.
+     */
+    TRUST_AWARE;
 }
