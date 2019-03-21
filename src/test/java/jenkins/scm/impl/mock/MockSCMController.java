@@ -50,6 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.scm.api.SCMFile;
 import jenkins.scm.api.SCMNavigatorOwner;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -601,13 +602,17 @@ public class MockSCMController implements Closeable {
                         sha.update(e.getKey().getBytes(StandardCharsets.UTF_8));
                         sha.update(e.getValue());
                     }
-                    hash = javax.xml.bind.DatatypeConverter.printHexBinary(sha.digest()).toLowerCase();
+                    this.hash = toHexBinary(sha.digest());
                 } catch (NoSuchAlgorithmException e) {
                     throw new IllegalStateException("SHA-1 message digest mandated by JLS");
                 }
             }
             return hash;
         }
+    }
+
+    static String toHexBinary(byte[] bytes) {
+        return new String(Hex.encodeHex(bytes));
     }
 
     public static final class LogEntry {

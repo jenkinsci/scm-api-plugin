@@ -26,6 +26,8 @@ package jenkins.scm.impl.form;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +40,8 @@ import java.util.List;
  *
  * @param <E> the type of element.
  */
+@SuppressFBWarnings(value = "EQ_DOESNT_OVERRIDE_EQUALS",
+        justification = "On purpose ignoring 'name' field, not changing current behavior present since ~2 years")
 public class NamedArrayList<E> extends ArrayList<E> {
     /**
      * The associated name.

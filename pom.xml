@@ -29,7 +29,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.24</version>
+    <version>3.40</version>
     <relativePath />
   </parent>
 
@@ -65,10 +65,10 @@
   </scm>
 
   <properties>
-    <revision>2.3.3</revision>
+    <revision>2.4.0</revision>
     <changelist>-SNAPSHOT</changelist>
-    <jenkins.version>2.7.3</jenkins.version>
-    <java.level>7</java.level>
+    <jenkins.version>2.60.3</jenkins.version>
+    <java.level>8</java.level>
     <no-test-jar>false</no-test-jar>
   </properties>
 
