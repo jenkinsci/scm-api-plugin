@@ -54,6 +54,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import javax.xml.bind.DatatypeConverter;
+
 public class MockSCMController implements Closeable {
 
     private static Map<String, MockSCMController> instances = new WeakHashMap<String, MockSCMController>();
@@ -601,13 +603,17 @@ public class MockSCMController implements Closeable {
                         sha.update(e.getKey().getBytes(StandardCharsets.UTF_8));
                         sha.update(e.getValue());
                     }
-                    hash = javax.xml.bind.DatatypeConverter.printHexBinary(sha.digest()).toLowerCase();
+                    this.hash = toHexBinary(sha.digest());
                 } catch (NoSuchAlgorithmException e) {
                     throw new IllegalStateException("SHA-1 message digest mandated by JLS");
                 }
             }
             return hash;
         }
+    }
+
+    static String toHexBinary(byte[] bytes) {
+        return DatatypeConverter.printHexBinary(bytes).toLowerCase();
     }
 
     public static final class LogEntry {
