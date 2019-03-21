@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.Validate;
 
@@ -46,6 +47,20 @@ class MethodUtils {
     static boolean isAbstract(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
         Method m = getMethodImpl(clazz, methodName, parameterTypes);
         return m == null || Modifier.isAbstract(m.getModifiers());
+    }
+
+    /**
+     * Checks if the  method defined on the base type with the given arguments
+     * are overridden in the given derived type.
+     */
+    // TODO replace with core utility method once JENKINS-30002 is available in base version of Jenkins
+    static boolean isOverridden(@Nonnull Class base, @Nonnull Class derived, @Nonnull String methodName,
+                                       @Nonnull Class... types) {
+        Method baseMethod = getMethodImpl(base, methodName, types);
+        Method derivedMethod = getMethodImpl(derived, methodName, types);
+        return baseMethod == null ?
+                derivedMethod != null && !Modifier.isAbstract(derivedMethod.getModifiers())
+                : !baseMethod.equals(derivedMethod);
     }
 
     /**
