@@ -50,11 +50,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.scm.api.SCMFile;
 import jenkins.scm.api.SCMNavigatorOwner;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import javax.xml.bind.DatatypeConverter;
 
 public class MockSCMController implements Closeable {
 
@@ -613,7 +612,7 @@ public class MockSCMController implements Closeable {
     }
 
     static String toHexBinary(byte[] bytes) {
-        return DatatypeConverter.printHexBinary(bytes).toLowerCase();
+        return new String(Hex.encodeHex(bytes));
     }
 
     public static final class LogEntry {
