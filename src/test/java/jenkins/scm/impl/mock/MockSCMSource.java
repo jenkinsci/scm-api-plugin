@@ -53,6 +53,7 @@ import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.api.metadata.ContributorMetadataAction;
 import jenkins.scm.api.metadata.ObjectMetadataAction;
+import jenkins.scm.api.metadata.PrimaryInstanceMetadataAction;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
@@ -306,6 +307,10 @@ public class MockSCMSource extends SCMSource {
                     null,
                     "http://changes.example.com/" + ((MockChangeRequestSCMHead) head).getId()
             ));
+        } else if (head instanceof MockSCMHead && !(head instanceof MockTagSCMHead)) {
+            if (controller().isPrimaryBranch(repository, head.getName())) {
+                result.add(new PrimaryInstanceMetadataAction());
+            }
         }
         result.add(new MockSCMLink("branch"));
         return result;

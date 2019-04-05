@@ -277,6 +277,22 @@ public class MockSCMController implements Closeable {
         resolve(repository).heads.remove(branch);
     }
 
+    public synchronized void setPrimaryBranch(String repository, @CheckForNull String branch) throws IOException {
+        Repository repo = resolve(repository);
+        repo.primaryBranch = branch;
+    }
+
+    public synchronized boolean isPrimaryBranch(String repository, @CheckForNull String branch) throws IOException {
+        Repository repo = resolve(repository);
+        return StringUtils.equals(repo.primaryBranch, branch);
+    }
+
+    @CheckForNull
+    public synchronized String getPrimaryBranch(String repository) throws IOException {
+        Repository repo = resolve(repository);
+        return repo.primaryBranch;
+    }
+
     public synchronized long createTag(String repository, String branch, String tag) throws IOException {
         Repository repo = resolve(repository);
         long timestamp = System.currentTimeMillis();
@@ -547,6 +563,7 @@ public class MockSCMController implements Closeable {
         private String description;
         private String displayName;
         private String url;
+        private String primaryBranch;
         private Set<MockRepositoryFlags> flags;
 
         private Repository(MockRepositoryFlags... flags) {
