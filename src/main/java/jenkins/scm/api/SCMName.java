@@ -105,15 +105,13 @@ public final class SCMName {
         if (StringUtils.isBlank(hostName)) {
             return null;
         }
-        // let's see if we can make this more "friendly"
-        InternetDomainName host = InternetDomainName.from(IDN.toASCII(hostName));
-        if (host.hasPublicSuffix()) {
-            String publicName = host.publicSuffix().name();
-            hostName = StringUtils.removeEnd(StringUtils.removeEnd(host.name(), publicName), ".")
-                    .toLowerCase(Locale.ENGLISH);
-        } else {
-            hostName = StringUtils.removeEnd(host.name(), ".").toLowerCase(Locale.ENGLISH);
+
+        hostName = resolveInternetDomainName(hostName);
+        if (hostName == null) {
+            return null;
         }
+
+        // let's see if we can make this more "friendly"
         if (ignoredPrefixes != null) {
             for (String prefix : ignoredPrefixes) {
                 if (prefix.endsWith(".")) {
@@ -133,5 +131,21 @@ public final class SCMName {
             hostName = IDN.toUnicode(hostName).replace('.', ' ').replace('-', ' ');
         }
         return hostName;
+    }
+
+    private static String resolveInternetDomainName(String hostName) {
+        final InternetDomainName host;
+        try {
+            host = InternetDomainName.from(IDN.toASCII(hostName));
+        } catch (IllegalArgumentException notADomainName) {
+            return null;
+        }
+
+        if (host.hasPublicSuffix()) {
+            final String publicName = host.publicSuffix().name();
+            return StringUtils.removeEnd(StringUtils.removeEnd(host.name(), publicName), ".").toLowerCase(Locale.ENGLISH);
+        }
+
+        return StringUtils.removeEnd(host.name(), ".").toLowerCase(Locale.ENGLISH);
     }
 }
