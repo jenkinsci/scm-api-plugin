@@ -29,6 +29,7 @@ import hudson.Extension;
 import hudson.RestrictedSince;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.scm.NullSCM;
@@ -116,7 +117,8 @@ public class SingleSCMSource extends SCMSource {
 
     @Override
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
-                            @CheckForNull SCMHeadEvent<?> event, @NonNull TaskListener listener)
+                            @CheckForNull SCMHeadEvent<?> event, @CheckForNull Item context,
+                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         if (head == null) {
             head = new SCMHead(name);

@@ -25,6 +25,7 @@ package jenkins.scm.impl;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
@@ -62,7 +63,8 @@ public class NullSCMSource extends SCMSource {
      */
     @Override
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
-                            @CheckForNull SCMHeadEvent<?> event,  @NonNull TaskListener listener)
+                            @CheckForNull SCMHeadEvent<?> event, @CheckForNull Item context,
+                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
 
     }

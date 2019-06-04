@@ -34,6 +34,7 @@ import hudson.model.TaskListener;
 import hudson.util.AlternativeUiTextProvider;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import jenkins.scm.api.actions.ChangeRequestAction;
 import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import jenkins.scm.api.mixin.SCMHeadMixin;
@@ -96,7 +97,7 @@ public class SCMHead implements SCMHeadMixin {
      * @param name the name.
      */
     public SCMHead(@NonNull String name) {
-        name.getClass(); // throw NPE if null
+        Objects.requireNonNull(name);
         this.name = name;
     }
 

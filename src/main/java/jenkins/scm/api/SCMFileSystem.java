@@ -40,6 +40,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 
 /**
  * A virtual file system for a specific {@link SCM} potentially pinned to a specific {@link SCMRevision}. In contrast
@@ -189,7 +190,7 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
             throws IOException, InterruptedException {
-        scm.getClass(); // throw NPE if null
+        Objects.requireNonNull(scm);
         SCMFileSystem fallBack = null;
         Throwable failure = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
@@ -243,7 +244,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.0
      */
     public static boolean supports(@NonNull SCM scm) {
-        scm.getClass(); // throw NPE if null
+        Objects.requireNonNull(scm);
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(scm)) {
                 return true;
@@ -266,7 +267,8 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@NonNull SCMSource source, @NonNull SCMHead head)
             throws IOException, InterruptedException {
-        return of(source, head, null);
+        Objects.requireNonNull(source);
+        return of(source.getOwner(), source, head, null);
     }
 
     /**
@@ -285,13 +287,52 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@NonNull SCMSource source, @NonNull SCMHead head,
                                    @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
-        source.getClass(); // throw NPE if null
+        Objects.requireNonNull(source);
+        return of(source.getOwner(), source, head, rev);
+    }
+
+    /**
+     * Given a {@link SCMSource} and a {@link SCMHead} this method will try to retrieve a corresponding
+     * {@link SCMFileSystem} instance that reflects the content of the specified {@link SCMHead}.
+     *
+     * @param source the {@link SCMSource}.
+     * @param head   the specified {@link SCMHead}.
+     * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
+     */
+    @CheckForNull
+    public static SCMFileSystem of(@CheckForNull Item context, @NonNull SCMSource source, @NonNull SCMHead head)
+            throws IOException, InterruptedException {
+        Objects.requireNonNull(source);
+        return of(context, source, head, null);
+    }
+
+    /**
+     * Given a {@link SCMSource}, a {@link SCMHead} and a {@link SCMRevision} this method will try to retrieve a
+     * corresponding {@link SCMFileSystem} instance that reflects the content of the specified {@link SCMHead} at the
+     * specified {@link SCMRevision}.
+     *
+     * @param source the {@link SCMSource}.
+     * @param head   the specified {@link SCMHead}.
+     * @param rev    the specified {@link SCMRevision}.
+     * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
+     */
+    @CheckForNull
+    public static SCMFileSystem of(@CheckForNull Item context, @NonNull SCMSource source, @NonNull SCMHead head,
+                                   @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
+        Objects.requireNonNull(source);
+        Objects.requireNonNull(head);
         SCMFileSystem fallBack = null;
         Throwable failure = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(source)) {
                 try {
-                    SCMFileSystem inspector = b.build(source, head, rev);
+                    SCMFileSystem inspector = b.build(context, source, head, rev);
                     if (inspector != null) {
                         if (inspector.isFixedRevision()) {
                             return inspector;
@@ -338,7 +379,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.0
      */
     public static boolean supports(@NonNull SCMSource source) {
-        source.getClass(); // throw NPE if null
+        Objects.requireNonNull(source);
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(source)) {
                 return true;
@@ -360,7 +401,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.3.0
      */
     public static boolean supports(@NonNull SCMDescriptor descriptor) {
-        descriptor.getClass(); // throw NPE if null
+        Objects.requireNonNull(descriptor);
         if (descriptor.clazz == null) {
             throw new NullPointerException();
         }
@@ -386,7 +427,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.3.0
      */
     public static boolean supports(@NonNull SCMSourceDescriptor descriptor) {
-        descriptor.getClass(); // throw NPE if null
+        Objects.requireNonNull(descriptor);
         if (descriptor.clazz == null) {
             throw new NullPointerException();
         }
@@ -524,6 +565,39 @@ public abstract class SCMFileSystem implements Closeable {
             SCMSourceOwner owner = source.getOwner();
             if (owner == null) {
                 throw new IOException("Cannot instantiate a SCMFileSystem from an SCM without an owner");
+            }
+            return build(owner, source.build(head, rev), rev);
+        }
+
+        /**
+         * Given a {@link SCMSource}, a {@link SCMHead} and a {@link SCMRevision} this method should try to build a
+         * corresponding {@link SCMFileSystem} instance that reflects the content of the specified {@link SCMHead} at
+         * the specified {@link SCMRevision}. If the {@link SCMSource} is supported but not for a fixed revision,
+         * best effort is acceptable as the most capable {@link SCMFileSystem} will be returned
+         * to the caller.
+         *
+         * @param context the context within which the file system should be accessed. Normally this will be the same
+         *         as {@link SCMSource#getOwner()} but there may be cases where it is different. The context is to be
+         *         preferred over the source's owner for looking up credentials.
+         * @param source the {@link SCMSource}.
+         * @param head   the specified {@link SCMHead}.
+         * @param rev    the specified {@link SCMRevision}.
+         * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+         * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+         *                              (such as the remote system being unavailable)
+         * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
+         */
+        @CheckForNull
+        public SCMFileSystem build(@CheckForNull Item context, @NonNull SCMSource source, @NonNull SCMHead head,
+                                   @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
+            Item owner;
+            if (context == null) {
+                owner = source.getOwner();
+                if (owner == null) {
+                    throw new IOException("Cannot instantiate a SCMFileSystem from an SCM without an owner");
+                }
+            } else {
+                owner = context;
             }
             return build(owner, source.build(head, rev), rev);
         }

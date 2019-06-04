@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.model.Action;
+import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.ListBoxModel;
@@ -123,7 +124,8 @@ public class MockSCMSource extends SCMSource {
 
     @Override
     protected void retrieve(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer,
-                            @CheckForNull SCMHeadEvent<?> event, @NonNull TaskListener listener)
+                            @CheckForNull SCMHeadEvent<?> event, @CheckForNull Item context,
+                            @NonNull TaskListener listener)
             throws IOException, InterruptedException {
 
         MockSCMSourceRequest request = new MockSCMSourceContext(this, criteria, observer)
