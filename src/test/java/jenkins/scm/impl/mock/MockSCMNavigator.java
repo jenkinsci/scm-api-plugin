@@ -106,10 +106,9 @@ public class MockSCMNavigator extends SCMNavigator {
 
     @Override
     public void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException {
-        final MockSCMNavigatorRequest request = new MockSCMNavigatorContext()
+        try (MockSCMNavigatorRequest request = new MockSCMNavigatorContext()
                 .withTraits(traits)
-                .newRequest(this, observer);
-        try {
+                .newRequest(this, observer)) {
             controller().applyLatency();
             controller().checkFaults(null, null, null, false);
             for (String name : controller().listRepositories()) {
@@ -130,8 +129,6 @@ public class MockSCMNavigator extends SCMNavigator {
                     }
                 }
             }
-        } finally {
-            request.close();
         }
     }
 

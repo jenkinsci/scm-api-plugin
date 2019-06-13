@@ -53,6 +53,7 @@ import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.api.metadata.ContributorMetadataAction;
 import jenkins.scm.api.metadata.ObjectMetadataAction;
+import jenkins.scm.api.metadata.PrimaryInstanceMetadataAction;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
@@ -306,9 +307,33 @@ public class MockSCMSource extends SCMSource {
                     null,
                     "http://changes.example.com/" + ((MockChangeRequestSCMHead) head).getId()
             ));
+        } else if (head instanceof MockSCMHead && !(head instanceof MockTagSCMHead)) {
+            if (controller().isPrimaryBranch(repository, head.getName())) {
+                result.add(new PrimaryInstanceMetadataAction());
+            }
         }
         result.add(new MockSCMLink("branch"));
         return result;
+    }
+
+    @NonNull
+    @Override
+    public SCMRevision getTrustedRevision(@NonNull SCMRevision revision, @NonNull TaskListener listener)
+            throws IOException, InterruptedException {
+        // only apply the latency if we need to check trust
+        if (controller().getFlags(repository).contains(MockRepositoryFlags.TRUST_AWARE)
+                && revision instanceof MockChangeRequestSCMRevision) {
+            controller().applyLatency();
+            MockChangeRequestSCMRevision crRevision = (MockChangeRequestSCMRevision) revision;
+            MockChangeRequestSCMHead crHead = (MockChangeRequestSCMHead) (crRevision.getHead());
+            controller().checkFaults(repository, crHead.getName(), crRevision.getHash(), false);
+            return controller().getFlags(repository, crHead.getNumber())
+                    .contains(MockChangeRequestFlags.UNTRUSTED)
+                    ? crRevision.getTarget()
+                    : crRevision;
+        } else {
+            return revision;
+        }
     }
 
     @Override

@@ -51,8 +51,7 @@ public class RegexSCMSourceFilterTraitTest {
 
     @Test
     public void given_navigatorWithIncludeRegexRule_when_scanning_then_ruleApplied() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             c.createRepository("bar");
             c.createRepository("manchu");
@@ -60,8 +59,6 @@ public class RegexSCMSourceFilterTraitTest {
             SimpleSCMSourceObserver observer = new SimpleSCMSourceObserver();
             src.visitSources(observer);
             assertThat(observer.getNames(), containsInAnyOrder("foo", "bar"));
-        } finally {
-            c.close();
         }
     }
 

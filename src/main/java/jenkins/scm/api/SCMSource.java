@@ -54,7 +54,6 @@ import java.util.logging.Logger;
 import jenkins.model.TransientActionFactory;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import net.jcip.annotations.GuardedBy;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -1007,9 +1006,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                 public long lastModified() {
                     try {
                         return fileSystem.lastModified();
-                    } catch (IOException e) {
-                        return 0L;
-                    } catch (InterruptedException e) {
+                    } catch (IOException | InterruptedException e) {
                         return 0L;
                     }
                 }
@@ -1057,10 +1054,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(getClass().getName());
-        sb.append("{id='").append(id).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return getClass().getName() + "{id='" + id + "'}";
     }
 
     /**

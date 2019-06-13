@@ -35,6 +35,12 @@ public enum MockChangeRequestFlags {
         public boolean isApplicable(Set<MockRepositoryFlags> flags) {
             return flags.contains(MockRepositoryFlags.FORKABLE);
         }
+    },
+    UNTRUSTED {
+        @Override
+        public boolean isApplicable(Set<MockRepositoryFlags> flags) {
+            return flags.contains(MockRepositoryFlags.TRUST_AWARE);
+        }
     };
 
     public abstract boolean isApplicable(Set<MockRepositoryFlags> flags);

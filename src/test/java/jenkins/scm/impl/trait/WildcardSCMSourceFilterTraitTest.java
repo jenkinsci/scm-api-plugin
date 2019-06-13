@@ -51,8 +51,7 @@ public class WildcardSCMSourceFilterTraitTest {
 
     @Test
     public void given_navigatorWithIncludeWildcardRule_when_scanning_then_ruleApplied() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             c.createRepository("bar");
             c.createRepository("manchu");
@@ -60,15 +59,12 @@ public class WildcardSCMSourceFilterTraitTest {
             SimpleSCMSourceObserver observer = new SimpleSCMSourceObserver();
             src.visitSources(observer);
             assertThat(observer.getNames(), containsInAnyOrder("foo", "bar"));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given_navigatorWithExcludeWildcardRule_when_scanning_then_ruleApplied() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             c.createRepository("bar");
             c.createRepository("manchu");
@@ -76,14 +72,11 @@ public class WildcardSCMSourceFilterTraitTest {
             SimpleSCMSourceObserver observer = new SimpleSCMSourceObserver();
             src.visitSources(observer);
             assertThat(observer.getNames(), containsInAnyOrder("bar", "manchu"));
-        } finally {
-            c.close();
         }
     }
     @Test
     public void given_navigatorWithIncludeExcludeWildcardRule_when_scanning_then_ruleApplied() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             c.createRepository("fu");
             c.createRepository("bar");
@@ -92,8 +85,6 @@ public class WildcardSCMSourceFilterTraitTest {
             SimpleSCMSourceObserver observer = new SimpleSCMSourceObserver();
             src.visitSources(observer);
             assertThat(observer.getNames(), containsInAnyOrder("bar", "fu"));
-        } finally {
-            c.close();
         }
     }
 

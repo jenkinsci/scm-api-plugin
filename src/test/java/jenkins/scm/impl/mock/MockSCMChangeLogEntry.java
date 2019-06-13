@@ -28,7 +28,6 @@ package jenkins.scm.impl.mock;
 import hudson.model.User;
 import hudson.scm.ChangeLogSet;
 import java.util.Collection;
-import java.util.Collections;
 
 public class MockSCMChangeLogEntry extends ChangeLogSet.Entry {
 

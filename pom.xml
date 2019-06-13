@@ -29,7 +29,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.24</version>
+    <version>3.43</version>
     <relativePath />
   </parent>
 
@@ -41,7 +41,7 @@
   <description>
     This plugin provides a new enhanced API for interacting with SCM systems.
   </description>
-  <url>http://wiki.jenkins-ci.org/display/JENKINS/SCM+API+Plugin</url>
+  <url>https://wiki.jenkins.io/display/JENKINS/SCM+API+Plugin</url>
   <licenses>
     <license>
       <name>The MIT license</name>
@@ -65,10 +65,10 @@
   </scm>
 
   <properties>
-    <revision>2.3.1</revision>
+    <revision>2.4.2</revision>
     <changelist>-SNAPSHOT</changelist>
-    <jenkins.version>2.7.3</jenkins.version>
-    <java.level>7</java.level>
+    <jenkins.version>2.60.3</jenkins.version>
+    <java.level>8</java.level>
     <no-test-jar>false</no-test-jar>
   </properties>
 
