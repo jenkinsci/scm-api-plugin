@@ -41,8 +41,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.servlet.http.HttpServletRequest;
 
+import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
+import jenkins.security.ImpersonatingScheduledExecutorService;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
@@ -210,7 +212,7 @@ public abstract class SCMEvent<P> {
         if (executorService == null) {
             // corePoolSize is set to 10, but will only be created if needed.
             // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
-            executorService =  new ScheduledThreadPoolExecutor(10, new NamingThreadFactory(new DaemonThreadFactory(), "SCMEvent"));
+            executorService = new ImpersonatingScheduledExecutorService(new ScheduledThreadPoolExecutor(10, new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "SCMEvent")), ACL.SYSTEM);
         }
         return executorService;
     }
