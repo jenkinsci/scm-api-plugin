@@ -39,7 +39,7 @@ public abstract class SCMTraitDescriptor<T extends SCMTrait<T>> extends Descript
     // Constructors are package private in order to restrict trait specializations to the ones defined in this plugin
 
     /**
-     * Constructor to use when type inferrence using {@link #SCMTraitDescriptor()} does not work.
+     * Constructor to use when type inference using {@link #SCMTraitDescriptor()} does not work.
      *
      * @param clazz Pass in the type of {@link SCMTrait}
      */

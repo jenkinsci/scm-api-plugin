@@ -216,9 +216,7 @@ public class SCMHead implements SCMHeadMixin {
      */
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SCMHead{'");
-        sb.append(name).append("'}");
-        return sb.toString();
+        return "SCMHead{'" + name + "'}";
     }
 
     /**

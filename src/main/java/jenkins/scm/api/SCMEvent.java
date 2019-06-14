@@ -43,11 +43,9 @@ import jenkins.util.Timer;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
-import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Base class for all events from a SCM system.
@@ -260,7 +258,7 @@ public abstract class SCMEvent<P> {
      * Return a description of the event.
      *
      * @return the description or {@code null} if no description can be provided.
-     * @since TODO
+     * @since 2.1.1
      */
     @CheckForNull
     public String description() {
@@ -273,7 +271,7 @@ public abstract class SCMEvent<P> {
      * <strong>The {@link Cause} instances should probably be new instances each time, see
      * {@link Cause#onAddedTo(Run)}.</strong>
      *
-     * @return the {@link Cause} instances to add to any builds triggerd by this event.
+     * @return the {@link Cause} instances to add to any builds triggered by this event.
      */
     @NonNull
     public Cause[] asCauses() {
@@ -406,7 +404,7 @@ public abstract class SCMEvent<P> {
          * <ul>
          * <li>An existing {@link SCMNavigator} getting a new {@link SCMSource} would trigger a
          * {@link SCMSourceEvent}</li>
-         * <li>An existing {@link SCMSource} gettings a new {@link SCMHead} would trigger a {@link SCMHeadEvent}</li>
+         * <li>An existing {@link SCMSource} getting a new {@link SCMHead} would trigger a {@link SCMHeadEvent}</li>
          * </ul>
          */
         CREATED,

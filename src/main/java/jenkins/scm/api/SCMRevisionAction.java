@@ -32,11 +32,14 @@ import hudson.model.Actionable;
 import hudson.model.InvisibleAction;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * {@link Action} added to {@link AbstractBuild} to remember
  * which revision is built in the given build.
  */
+@ExportedBean
 public class SCMRevisionAction extends InvisibleAction {
     /**
      * The {@link SCMSource#getId()} or {@code null} for legacy instances.
@@ -91,6 +94,7 @@ public class SCMRevisionAction extends InvisibleAction {
      *
      * @return the {@link SCMRevision}.
      */
+    @Exported
     @NonNull
     public SCMRevision getRevision() {
         return revision;

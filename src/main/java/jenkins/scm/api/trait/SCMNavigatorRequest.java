@@ -28,8 +28,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -195,7 +193,7 @@ public abstract class SCMNavigatorRequest implements Closeable {
      * @return {@code true} if and only if the request is completed, {@code false} if the request can process
      * additional named projects.
      * @throws IllegalArgumentException if the attribute factory provides attribute names that are unrecognized, or
-     *                                  repeats already added attribues.
+     *                                  repeats already added attributes.
      * @throws IOException              if there is an I/O error.
      * @throws InterruptedException     if the operation was interrupted.
      */
@@ -221,7 +219,7 @@ public abstract class SCMNavigatorRequest implements Closeable {
      * @return {@code true} if and only if the request is completed, {@code false} if the request can process
      * additional named projects.
      * @throws IllegalArgumentException if an attribute factory provides attribute names that are unrecognized, or
-     *                                  repeats already added attribues.
+     *                                  repeats already added attributes.
      * @throws IOException              if there is an I/O error.
      * @throws InterruptedException     if the operation was interrupted.
      */
@@ -281,17 +279,7 @@ public abstract class SCMNavigatorRequest implements Closeable {
                 if (ioe == null) {
                     ioe = e;
                 } else {
-                    // TODO replace with direct call to addSuppressed once baseline Java is 1.7
-                    try {
-                        Method addSuppressed = Throwable.class.getMethod("addSuppressed", Throwable.class);
-                        addSuppressed.invoke(ioe, e);
-                    } catch (NoSuchMethodException e1) {
-                        // ignore, best effort
-                    } catch (IllegalAccessException e1) {
-                        // ignore, best effort
-                    } catch (InvocationTargetException e1) {
-                        // ignore, best effort
-                    }
+                    ioe.addSuppressed(e);
                 }
             }
         }

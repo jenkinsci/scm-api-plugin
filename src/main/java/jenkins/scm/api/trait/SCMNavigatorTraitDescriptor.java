@@ -32,14 +32,14 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceDescriptor;
 
 /**
- * Abstract base class for {@link Descriptor} of {@link SCMSourceTrait} implementations.
+ * Abstract base class for {@link Descriptor} of {@link SCMNavigatorTrait} implementations.
  *
  * @since 2.2.0
  */
 public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCMNavigatorTrait> {
 
     /**
-     * Constructor to use when type inferrence using {@link #SCMNavigatorTraitDescriptor()} does not work.
+     * Constructor to use when type inference using {@link #SCMNavigatorTraitDescriptor()} does not work.
      *
      * @param clazz Pass in the type of {@link SCMNavigatorTrait}
      */
@@ -76,7 +76,7 @@ public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCM
     }
 
     /**
-     * Checks if the {@link SCMSourceTrait} is relevant to the specified {@link SCMSourceBuilder}.
+     * Checks if the {@link SCMNavigatorTrait} is relevant to the specified {@link SCMSourceBuilder}.
      *
      * @param builder the {@link SCMSourceBuilder}.
      * @return {@code true} if applicable to the specified type of {@link SCMSourceBuilder}.
@@ -97,8 +97,8 @@ public abstract class SCMNavigatorTraitDescriptor extends SCMTraitDescriptor<SCM
     /**
      * Checks if the {@link SCMNavigatorTrait} is relevant to the specified type of {@link SCMNavigatorContext}.
      *
-     * @param contextClass the type of {@link SCMSourceContext}.
-     * @return {@code true} if applicable to the specified type of {@link SCMSourceContext}.
+     * @param contextClass the type of {@link SCMNavigatorContext}.
+     * @return {@code true} if applicable to the specified type of {@link SCMNavigatorContext}.
      */
     public boolean isApplicableToContext(@NonNull Class<? extends SCMNavigatorContext> contextClass) {
         return getContextClass().isAssignableFrom(contextClass);

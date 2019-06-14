@@ -142,7 +142,7 @@ public class SCMCategoryTest {
             public long getTimestamp() {
                 return 0;
             }
-        };
+        }
         SCMHead th = new TagSCMHeadImpl("basic");
         class ChangeRequestSCMHeadImpl extends SCMHead implements ChangeRequestSCMHead {
             public ChangeRequestSCMHeadImpl(@NonNull String name) {

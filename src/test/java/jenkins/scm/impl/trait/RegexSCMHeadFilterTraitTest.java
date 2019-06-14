@@ -46,8 +46,7 @@ public class RegexSCMHeadFilterTraitTest {
 
     @Test
     public void given_sourceWithRegexRule_when_scanning_then_ruleApplied() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             c.createBranch("foo", "fork");
             c.createBranch("foo", "alt");
@@ -58,8 +57,6 @@ public class RegexSCMHeadFilterTraitTest {
                 names.add(h.getName());
             }
             assertThat(names, containsInAnyOrder("master", "fork"));
-        } finally {
-            c.close();
         }
     }
 }

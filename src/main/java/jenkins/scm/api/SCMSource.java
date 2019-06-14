@@ -52,9 +52,10 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.TransientActionFactory;
+import jenkins.scm.api.trait.SCMSourceTrait;
 import net.jcip.annotations.GuardedBy;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * A {@link SCMSource} is responsible for fetching {@link SCMHead} and corresponding {@link SCMRevision} instances from
@@ -72,6 +73,7 @@ import org.kohsuke.stapler.DataBoundSetter;
  * {@link #fetch(SCMHead, hudson.model.TaskListener)} must
  * involve at least one network round trip to validate any cached information.
  */
+@ExportedBean
 public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
         implements ExtensionPoint {
 
@@ -201,6 +203,22 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             id = UUID.randomUUID().toString();
         }
         return id;
+    }
+
+    /**
+     * Sets the traits for this source. No-op by default.
+     * @param traits the list of traits
+     */
+    public void setTraits(@CheckForNull List<SCMSourceTrait> traits) {
+    }
+
+    /**
+     * Gets the traits for this source.
+     * @return traits the list of traits, empty by default.
+     */
+    @CheckForNull
+    public List<SCMSourceTrait> getTraits() {
+        return Collections.emptyList();
     }
 
     /**
@@ -363,7 +381,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             }
         } else if (MethodUtils.isOverridden(SCMSource.class, getClass(), "retrieve",
                 SCMHeadObserver.class, TaskListener.class)){
-            // oh dear, realy old legacy implementation
+            // oh dear, really old legacy implementation
             SCMSourceCriteria hopefullyNull = compatibilityHack.get();
             compatibilityHack.set(criteria == null ? nullSCMSourceCriteria : criteria);
             try {
@@ -988,9 +1006,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                 public long lastModified() {
                     try {
                         return fileSystem.lastModified();
-                    } catch (IOException e) {
-                        return 0L;
-                    } catch (InterruptedException e) {
+                    } catch (IOException | InterruptedException e) {
                         return 0L;
                     }
                 }
@@ -1038,10 +1054,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(getClass().getName());
-        sb.append("{id='").append(id).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return getClass().getName() + "{id='" + id + "'}";
     }
 
     /**

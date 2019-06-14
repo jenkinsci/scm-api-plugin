@@ -10,7 +10,8 @@
 
 The following build environment is required to build this plugin
 
-* `java-1.6` and `maven-3.0.5`
+* Java 8
+* Maven 3.5.0
 
 # Build
 

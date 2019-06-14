@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2018, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,49 +20,50 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
  */
 
 package jenkins.scm.impl.mock;
 
-import hudson.model.User;
-import hudson.scm.ChangeLogSet;
-import java.util.Collection;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.scm.api.SCMFile;
 
-public class MockSCMChangeLogEntry extends ChangeLogSet.Entry {
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
 
-    private final MockSCMController.LogEntry delegate;
-
-    public MockSCMChangeLogEntry(MockSCMController.LogEntry delegate) {
-        this.delegate = delegate;
-    }
-
-    protected void setParent(MockSCMChangeLogSet parent) {
-        super.setParent(parent);
+public class MockSCMFile extends SCMFile {
+    public MockSCMFile() {
+        super();
     }
 
     @Override
-    public String getCommitId() {
-        return delegate.getHash();
+    @NonNull
+    public SCMFile newChild(@NonNull String name, boolean assumeIsDirectory) {
+        return new MockSCMFile();
     }
 
     @Override
-    public long getTimestamp() {
-        return delegate.getTimestamp();
+    @NonNull
+    public Iterable<SCMFile> children() throws IOException, InterruptedException {
+        return Collections.emptyList();
     }
 
     @Override
-    public String getMsg() {
-        return delegate.getMessage();
+    public long lastModified() throws IOException, InterruptedException {
+        return 1;
     }
 
     @Override
-    public User getAuthor() {
-        return User.getUnknown();
+    @NonNull
+    public Type type() throws IOException, InterruptedException {
+        return Type.OTHER;
     }
 
     @Override
-    public Collection<String> getAffectedPaths() {
-        return delegate.getFiles();
+    @NonNull
+    public InputStream content() throws IOException, InterruptedException {
+        return new ByteArrayInputStream("no content".getBytes());
     }
+
 }

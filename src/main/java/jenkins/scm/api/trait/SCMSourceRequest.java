@@ -31,8 +31,6 @@ import hudson.model.TaskListener;
 import hudson.util.LogTaskListener;
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -404,17 +402,7 @@ public abstract class SCMSourceRequest implements Closeable {
                 if (ioe == null) {
                     ioe = e;
                 } else {
-                    // TODO replace with direct call to addSuppressed once baseline Java is 1.7
-                    try {
-                        Method addSuppressed = Throwable.class.getMethod("addSuppressed", Throwable.class);
-                        addSuppressed.invoke(ioe, e);
-                    } catch (NoSuchMethodException e1) {
-                        // ignore, best effort
-                    } catch (IllegalAccessException e1) {
-                        // ignore, best effort
-                    } catch (InvocationTargetException e1) {
-                        // ignore, best effort
-                    }
+                    ioe.addSuppressed(e);
                 }
             }
         }
@@ -478,7 +466,7 @@ public abstract class SCMSourceRequest implements Closeable {
      * and {@link SCMRevision} instances.
      * <p>
      * Some {@link SCMRevision} instances may be expensive to instantiate, for example a {@link ChangeRequestSCMHead2}
-     * may need to get the effective merge revision in order to comply with the equality and "offline" requirememt
+     * may need to get the effective merge revision in order to comply with the equality and "offline" requirement
      * of a {@link SCMRevision} which could require either asking the remote server or performing a local trial merge.
      * As this type of operation is only required if the {@link SCMHead} actually meets the {@link SCMSourceCriteria}
      * it may be preferred to delay instantiation of the {@link SCMRevision} and instead create the

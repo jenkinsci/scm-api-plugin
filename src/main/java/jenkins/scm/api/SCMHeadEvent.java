@@ -40,7 +40,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import jenkins.scm.impl.SCMTriggerListener;
-import org.jvnet.localizer.Localizable;
 
 /**
  * Base class for events relating to {@link SCMHead} instances.
@@ -105,7 +104,7 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      *
      * @param navigator the {@link SCMNavigator}, the navigator must be {@link #isMatch(SCMNavigator)}.
      * @return the description or {@code null} if no description can be provided.
-     * @since TODO
+     * @since 2.1.1
      */
     @CheckForNull
     public String descriptionFor(@NonNull SCMNavigator navigator) {
@@ -143,7 +142,7 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      *
      * @param source the {@link SCMSource}, the source must be {@link #isMatch(SCMSource)}.
      * @return the description or {@code null} if no description can be provided.
-     * @since TODO
+     * @since 2.1.1
      */
     @CheckForNull
     public String descriptionFor(SCMSource source) {
@@ -187,7 +186,7 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      *
      * @param scm the {@link SCM}, the scm must be {@link #isMatch(SCM)}.
      * @return the description or {@code null} if no description can be provided.
-     * @since TODO
+     * @since 2.1.1
      */
     @CheckForNull
     public String descriptionFor(SCM scm) {

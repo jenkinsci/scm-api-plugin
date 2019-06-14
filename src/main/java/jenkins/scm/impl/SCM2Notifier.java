@@ -26,7 +26,6 @@
 package jenkins.scm.impl;
 
 import hudson.Extension;
-import hudson.ExtensionList;
 import hudson.XmlFile;
 import hudson.model.Item;
 import hudson.model.Saveable;

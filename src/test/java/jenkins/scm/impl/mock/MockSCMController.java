@@ -33,12 +33,11 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -51,6 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.scm.api.SCMFile;
 import jenkins.scm.api.SCMNavigatorOwner;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -275,6 +275,22 @@ public class MockSCMController implements Closeable {
 
     public synchronized void deleteBranch(String repository, String branch) throws IOException {
         resolve(repository).heads.remove(branch);
+    }
+
+    public synchronized void setPrimaryBranch(String repository, @CheckForNull String branch) throws IOException {
+        Repository repo = resolve(repository);
+        repo.primaryBranch = branch;
+    }
+
+    public synchronized boolean isPrimaryBranch(String repository, @CheckForNull String branch) throws IOException {
+        Repository repo = resolve(repository);
+        return StringUtils.equals(repo.primaryBranch, branch);
+    }
+
+    @CheckForNull
+    public synchronized String getPrimaryBranch(String repository) throws IOException {
+        Repository repo = resolve(repository);
+        return repo.primaryBranch;
     }
 
     public synchronized long createTag(String repository, String branch, String tag) throws IOException {
@@ -547,6 +563,7 @@ public class MockSCMController implements Closeable {
         private String description;
         private String displayName;
         private String url;
+        private String primaryBranch;
         private Set<MockRepositoryFlags> flags;
 
         private Repository(MockRepositoryFlags... flags) {
@@ -585,12 +602,11 @@ public class MockSCMController implements Closeable {
         public String getHash() {
             if (hash == null) {
                 try {
-                    Charset utf8 = Charset.forName("UTF-8");
                     MessageDigest sha = MessageDigest.getInstance("SHA-1");
                     if (parent != null) {
                         sha.update(new BigInteger(parent.getHash(), 16).toByteArray());
                     }
-                    sha.update(StringUtils.defaultString(message).getBytes(utf8));
+                    sha.update(StringUtils.defaultString(message).getBytes(StandardCharsets.UTF_8));
                     sha.update((byte) (timestamp & 0xff));
                     sha.update((byte) ((timestamp >> 8) & 0xff));
                     sha.update((byte) ((timestamp >> 16) & 0xff));
@@ -600,16 +616,20 @@ public class MockSCMController implements Closeable {
                     sha.update((byte) ((timestamp >> 48) & 0xff));
                     sha.update((byte) ((timestamp >> 56) & 0xff));
                     for (Map.Entry<String, byte[]> e : files.entrySet()) {
-                        sha.update(e.getKey().getBytes(utf8));
+                        sha.update(e.getKey().getBytes(StandardCharsets.UTF_8));
                         sha.update(e.getValue());
                     }
-                    hash = javax.xml.bind.DatatypeConverter.printHexBinary(sha.digest()).toLowerCase();
+                    this.hash = toHexBinary(sha.digest());
                 } catch (NoSuchAlgorithmException e) {
                     throw new IllegalStateException("SHA-1 message digest mandated by JLS");
                 }
             }
             return hash;
         }
+    }
+
+    static String toHexBinary(byte[] bytes) {
+        return new String(Hex.encodeHex(bytes));
     }
 
     public static final class LogEntry {

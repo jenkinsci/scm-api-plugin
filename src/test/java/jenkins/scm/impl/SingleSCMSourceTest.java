@@ -70,8 +70,7 @@ public class SingleSCMSourceTest {
 
     @Test
     public void configRoundtrip() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             SingleSCMSource source = new SingleSCMSource(
                     "the-name",
@@ -97,15 +96,12 @@ public class SingleSCMSourceTest {
             SCMSource actual = r.configRoundtrip(builder).scm;
             System.out.printf("expected=%s%nactual=%s%n", expected, actual);
             r.assertEqualDataBoundBeans(expected, actual);
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given_instance_when_fetch_then_revisionObserved() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             SCMHeadObserver observer = mock(SCMHeadObserver.class);
             SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
@@ -126,15 +122,12 @@ public class SingleSCMSourceTest {
                             )
                     )
             );
-        } finally {
-            c.close();
         }
     }
 
     @Test
-    public void given_instance_when_fetchWithCriterial_then_criteriaIgnoredAndRevisionObserved() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+    public void given_instance_when_fetchWithCriteria_then_criteriaIgnoredAndRevisionObserved() throws Exception {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             SCMHeadObserver observer = mock(SCMHeadObserver.class);
             SCMSourceCriteria criteria = mock(SCMSourceCriteria.class);
@@ -158,15 +151,12 @@ public class SingleSCMSourceTest {
                     )
             );
             seq.verifyNoMoreInteractions();
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given_instance_when_fetchingObservedHead_then_scmReturned() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
                     new MockSCM(c, "foo", new MockSCMHead("master"), null));
@@ -174,28 +164,22 @@ public class SingleSCMSourceTest {
             assertThat(result.entrySet(), hasSize(1));
             Map.Entry<SCMHead, SCMRevision> entry = result.entrySet().iterator().next();
             assertThat(instance.build(entry.getKey(), entry.getValue()), instanceOf(MockSCM.class));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given_instance_when_fetchingNonObservedHead_then_nullScmReturned() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
                     new MockSCM(c, "foo", new MockSCMHead("master"), null));
             assertThat(instance.build(new SCMHead("foo"), mock(SCMRevision.class)), instanceOf(NullSCM.class));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void scmRevisionImpl() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
                     new MockSCM(c, "foo", new MockSCMHead("master"), null));
@@ -205,8 +189,6 @@ public class SingleSCMSourceTest {
             assertThat(revision.equals(revision), is(true));
             assertThat(revision.equals(mock(SCMRevision.class)), is(false));
             assertThat(revision.hashCode(), is(result.keySet().iterator().next().hashCode()));
-        } finally {
-            c.close();
         }
     }
 

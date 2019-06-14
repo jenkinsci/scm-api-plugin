@@ -29,7 +29,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import jenkins.scm.api.trait.SCMTrait;
 import jenkins.scm.impl.UncategorizedSCMSourceCategory;
 import net.jcip.annotations.GuardedBy;
 import org.jenkins.ui.icon.IconSpec;
@@ -51,6 +53,16 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
 
     protected SCMNavigatorDescriptor(Class<? extends SCMNavigator> clazz) {
         super(clazz);
+    }
+
+    /**
+     * Returns the default traits for this {@link SCMSource}.
+     *
+     * @return An empty list if not overridden.
+     */
+    @NonNull
+    public List<SCMTrait<? extends SCMTrait<?>>> getTraitsDefaults() {
+        return Collections.emptyList();
     }
 
     /**

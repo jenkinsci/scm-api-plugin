@@ -29,14 +29,11 @@ import hudson.model.InvisibleAction;
 import java.io.Serializable;
 import java.net.URL;
 import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.metadata.ContributorMetadataAction;
 import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.export.Exported;
 
 /**
  * Class retained for on-disk compatibility only for instances upgrading and deserializing data from disk.

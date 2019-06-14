@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +37,8 @@ import static jenkins.scm.impl.mock.AbstractSampleRepoRule.run;
 
 /**
  * Rule tailored to a DVCS which may be initialized and cloned from a local directory.
- * @since FIXME
+ *
+ * @since 2.0.8
  */
 public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule {
 
@@ -82,14 +84,14 @@ public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule 
         List<String> args = new ArrayList<String>();
         args.add(tool);
         args.addAll(Arrays.asList(cmds));
-        run(false, sampleRepo, args.toArray(new String[args.size()]));
+        run(false, sampleRepo, args.toArray(new String[0]));
     }
 
     /**
      * Like {@link #fileUrl} but expressed only as a path, not a URL with protocol.
      */
     public final String bareUrl() throws UnsupportedEncodingException {
-        return URLEncoder.encode(toString(), "UTF-8");
+        return URLEncoder.encode(toString(), StandardCharsets.UTF_8.name());
     }
 
     /**

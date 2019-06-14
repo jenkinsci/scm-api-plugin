@@ -58,8 +58,7 @@ public class SymbolAnnotationsTest {
 
     @Test
     public void given__mockScm__when__uninstantiating__then__noRaw$class() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("test");
             MockSCM instance = new MockSCM(c, "test", new MockSCMHead("master"), new MockSCMRevision(
                     new MockSCMHead("master"), c.getRevision("test", "master")));
@@ -76,15 +75,12 @@ public class SymbolAnnotationsTest {
                     + "repository=test,"
                     + "revision=" + c.getRevision("test", "master")
                     + ")"));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given__mockScmSource__when__uninstantiating__then__noRaw$class() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("test");
             MockSCMSource instance = new MockSCMSource(c, "test", new MockSCMDiscoverBranches(),
                     new MockSCMDiscoverChangeRequests(), new MockSCMDiscoverTags(),
@@ -108,15 +104,12 @@ public class SymbolAnnotationsTest {
                     + "@headRegexFilter$RegexSCMHeadFilterTrait(regex=i.*)"
                     + "]"
                     + ")"));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given__mockScmNavigator__when__uninstantiating__then__noRaw$class() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("test");
             MockSCMNavigator instance = new MockSCMNavigator(c,
                     new MockSCMDiscoverBranches(),
@@ -145,15 +138,12 @@ public class SymbolAnnotationsTest {
                     + "@sourceRegexFilter$RegexSCMSourceFilterTrait(regex=ig.*)"
                     + "]"
                     + ")"));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given__singleScmNavigator__when__uninstantiating__then__noRaw$class() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("test");
             SingleSCMNavigator instance = new SingleSCMNavigator("foo",
                     Collections.<SCMSource>singletonList(new MockSCMSource(c, "test"))
@@ -174,15 +164,12 @@ public class SymbolAnnotationsTest {
                     + ")"
                     + "]"
                     + ")"));
-        } finally {
-            c.close();
         }
     }
 
     @Test
     public void given__singleScmSource__when__uninstantiating__then__noRaw$class() throws Exception {
-        MockSCMController c = MockSCMController.create();
-        try {
+        try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("test");
             SingleSCMSource instance = new SingleSCMSource("foo", "foo", new MockSCM(c, "test",
                     new MockSCMHead("master"), new MockSCMRevision(
@@ -205,8 +192,6 @@ public class SymbolAnnotationsTest {
                     + "revision=" + c.getRevision("test", "master")
                     + ")"
                     + ")"));
-        } finally {
-            c.close();
         }
     }
 

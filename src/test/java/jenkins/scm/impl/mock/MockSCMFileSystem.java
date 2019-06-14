@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2018, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,49 +20,36 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
  */
 
 package jenkins.scm.impl.mock;
 
-import hudson.model.User;
-import hudson.scm.ChangeLogSet;
-import java.util.Collection;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.model.Item;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
+import jenkins.scm.api.SCMFile;
+import jenkins.scm.api.SCMFileSystem;
+import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.SCMSourceDescriptor;
 
-public class MockSCMChangeLogEntry extends ChangeLogSet.Entry {
+import java.io.IOException;
 
-    private final MockSCMController.LogEntry delegate;
-
-    public MockSCMChangeLogEntry(MockSCMController.LogEntry delegate) {
-        this.delegate = delegate;
-    }
-
-    protected void setParent(MockSCMChangeLogSet parent) {
-        super.setParent(parent);
-    }
-
-    @Override
-    public String getCommitId() {
-        return delegate.getHash();
-    }
-
-    @Override
-    public long getTimestamp() {
-        return delegate.getTimestamp();
+public class MockSCMFileSystem extends SCMFileSystem {
+    public MockSCMFileSystem(@CheckForNull SCMRevision rev) {
+        super(rev);
     }
 
     @Override
-    public String getMsg() {
-        return delegate.getMessage();
+    public long lastModified() throws IOException, InterruptedException {
+        return 1;
     }
 
-    @Override
-    public User getAuthor() {
-        return User.getUnknown();
-    }
-
-    @Override
-    public Collection<String> getAffectedPaths() {
-        return delegate.getFiles();
+    @NonNull
+    public SCMFile getRoot() {
+        return new MockSCMFile();
     }
 }

@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.TransientActionFactory;
+import jenkins.scm.api.trait.SCMTrait;
 import org.kohsuke.stapler.DataBoundSetter;
 
 /**
@@ -67,7 +68,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
 
     /**
      * Cache of the ID of this {@link SCMNavigator}.
-     * @since FIXME
+     * @since 2.0.1
      */
     private transient String id;
 
@@ -93,7 +94,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * {@link List#equals(Object)}.
      *
      * @return the ID of the thing being navigated by this navigator.
-     * @since FIXME
+     * @since 2.0.1
      * @see #id()
      */
     @NonNull
@@ -127,7 +128,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * If implementations are using {@link DataBoundSetter} on fields that affect the {@link #id()} calculation then
      * those fields must call {@link #resetId()} if they may have invalidated the cached {@link #getId()}.
      *
-     * @since FIXME
+     * @since 2.0.1
      */
     protected final void resetId() {
         id = null;
@@ -151,12 +152,28 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * If the results could be non-equal for navigators with the same ID then more detail needs to be encoded in the ID.
      *
      * @return the ID of the thing being navigated by this navigator.
-     * @since FIXME
+     * @since 2.0.1
      * @see #resetId()
      * @see #getId()
      */
     @NonNull
     protected abstract String id();
+
+    /**
+     * Sets the traits for this navigator. No-op by default.
+     * @param traits the list of traits
+     */
+    public void setTraits(@CheckForNull List<SCMTrait<? extends SCMTrait<?>>> traits) {
+    }
+
+    /**
+     * Gets the traits for this navigator.
+     * @return traits the list of traits, empty by default.
+     */
+    @NonNull
+    public List<SCMTrait<? extends SCMTrait<?>>> getTraits() {
+        return Collections.emptyList();
+    }
 
     /**
      * Looks for SCM sources in a configured place.

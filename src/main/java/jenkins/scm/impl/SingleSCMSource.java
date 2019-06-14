@@ -230,7 +230,7 @@ public class SingleSCMSource extends SCMSource {
                     iterator.remove();
                 }
             }
-            if (context != null && context instanceof Describable) {
+            if (context instanceof Describable) {
                 final Descriptor descriptor = ((Describable) context).getDescriptor();
                 if (descriptor instanceof TopLevelItemDescriptor) {
                     final TopLevelItemDescriptor topLevelItemDescriptor = (TopLevelItemDescriptor) descriptor;
