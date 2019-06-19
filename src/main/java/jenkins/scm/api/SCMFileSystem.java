@@ -40,7 +40,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Objects;
 
 /**
  * A virtual file system for a specific {@link SCM} potentially pinned to a specific {@link SCMRevision}. In contrast
@@ -190,7 +189,7 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
             throws IOException, InterruptedException {
-        Objects.requireNonNull(scm);
+        scm.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
         Throwable failure = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
@@ -244,7 +243,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.0
      */
     public static boolean supports(@NonNull SCM scm) {
-        Objects.requireNonNull(scm);
+        scm.getClass(); // throw NPE if null
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(scm)) {
                 return true;
@@ -267,7 +266,6 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@NonNull SCMSource source, @NonNull SCMHead head)
             throws IOException, InterruptedException {
-        Objects.requireNonNull(source);
         return of(source.getOwner(), source, head, null);
     }
 
@@ -287,7 +285,7 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@NonNull SCMSource source, @NonNull SCMHead head,
                                    @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
-        Objects.requireNonNull(source);
+        source.getClass(); // throw NPE if null
         return of(source.getOwner(), source, head, rev);
     }
 
@@ -305,7 +303,7 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@CheckForNull Item context, @NonNull SCMSource source, @NonNull SCMHead head)
             throws IOException, InterruptedException {
-        Objects.requireNonNull(source);
+        source.getClass(); // throw NPE if null
         return of(context, source, head, null);
     }
 
@@ -325,8 +323,8 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@CheckForNull Item context, @NonNull SCMSource source, @NonNull SCMHead head,
                                    @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
-        Objects.requireNonNull(source);
-        Objects.requireNonNull(head);
+        source.getClass(); // throw NPE if null
+        head.getClass(); // throw NPE if null
         SCMFileSystem fallBack = null;
         Throwable failure = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
@@ -379,7 +377,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.0
      */
     public static boolean supports(@NonNull SCMSource source) {
-        Objects.requireNonNull(source);
+        source.getClass(); // throw NPE if null
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(source)) {
                 return true;
@@ -401,7 +399,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.3.0
      */
     public static boolean supports(@NonNull SCMDescriptor descriptor) {
-        Objects.requireNonNull(descriptor);
+        descriptor.getClass(); // throw NPE if null
         if (descriptor.clazz == null) {
             throw new NullPointerException();
         }
@@ -427,7 +425,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.3.0
      */
     public static boolean supports(@NonNull SCMSourceDescriptor descriptor) {
-        Objects.requireNonNull(descriptor);
+        descriptor.getClass(); // throw NPE if null
         if (descriptor.clazz == null) {
             throw new NullPointerException();
         }

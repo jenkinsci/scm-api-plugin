@@ -30,7 +30,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.InvisibleAction;
-import java.util.Objects;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.export.Exported;
@@ -85,7 +84,7 @@ public class SCMRevisionAction extends InvisibleAction {
      * @param sourceId the source id.
      */
     /*package*/ SCMRevisionAction(@NonNull SCMRevision revision, @CheckForNull String sourceId) {
-        Objects.requireNonNull(revision); // fail fast if null
+        revision.getClass(); // fail fast if null
         this.sourceId = sourceId;
         this.revision = revision;
     }
