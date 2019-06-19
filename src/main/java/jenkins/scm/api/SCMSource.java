@@ -634,6 +634,35 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             throws IOException, InterruptedException;
 
     /**
+     * Fetches the current list of heads. Implementers are free to cache intermediary results but the call must always
+     * check the validity of any intermediary caches.
+     *
+     * @param listener the task listener
+     * @return the current list of heads.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     */
+    @NonNull
+    public final Set<SCMHead> fetch(@CheckForNull TaskListener listener) throws IOException, InterruptedException {
+        return retrieve(getCriteria(), getOwner(), defaultListener(listener));
+    }
+
+    /**
+     * Fetches the current list of heads. Implementers are free to cache intermediary results but the call must always
+     * check the validity of any intermediary caches.
+     *
+     * @param listener the task listener
+     * @return the current list of heads.
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     */
+    @NonNull
+    public final Set<SCMHead> fetch(@CheckForNull Item context, @CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return retrieve(getCriteria(), context, defaultListener(listener));
+    }
+
+    /**
      * Looks up the immediate parent revision(s) of the specified revision within the specified head.
      *
      * @param head the head to look up the parent revision(s) within.
@@ -835,35 +864,6 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
                                                             @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         return Collections.emptyMap();
-    }
-
-    /**
-     * Fetches the current list of heads. Implementers are free to cache intermediary results but the call must always
-     * check the validity of any intermediary caches.
-     *
-     * @param listener the task listener
-     * @return the current list of heads.
-     * @throws IOException if an error occurs while performing the operation.
-     * @throws InterruptedException if any thread has interrupted the current thread.
-     */
-    @NonNull
-    public final Set<SCMHead> fetch(@CheckForNull TaskListener listener) throws IOException, InterruptedException {
-        return retrieve(getCriteria(), getOwner(), defaultListener(listener));
-    }
-
-    /**
-     * Fetches the current list of heads. Implementers are free to cache intermediary results but the call must always
-     * check the validity of any intermediary caches.
-     *
-     * @param listener the task listener
-     * @return the current list of heads.
-     * @throws IOException if an error occurs while performing the operation.
-     * @throws InterruptedException if any thread has interrupted the current thread.
-     */
-    @NonNull
-    public final Set<SCMHead> fetch(@CheckForNull Item context, @CheckForNull TaskListener listener)
-            throws IOException, InterruptedException {
-        return retrieve(getCriteria(), context, defaultListener(listener));
     }
 
     /**
@@ -1578,7 +1578,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @CheckForNull
     protected final SCMProbe fromSCMFileSystem(@NonNull final SCMHead head, @CheckForNull final SCMRevision revision)
             throws IOException, InterruptedException {
-        return fromSCMFileSystem(getOwner(), head, revision)
+        return fromSCMFileSystem(getOwner(), head, revision);
     }
 
     /**
