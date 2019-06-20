@@ -222,7 +222,7 @@ public abstract class SCMEvent<P> {
      * Shutdown the timer and throw it away.
      */
     @Terminator
-    public synchronized void closeExecutorService() {
+    public static synchronized void closeExecutorService() {
         if (executorService != null) {
             executorService.shutdownNow();
             executorService = null;
