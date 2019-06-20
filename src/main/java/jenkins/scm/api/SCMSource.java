@@ -267,7 +267,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return a {@link Closeable}
      */
     private Closeable overrideOwner(Item context) {
-        if (context != owner && context instanceof SCMSourceOwner) {
+        if (context != getOwner() && context instanceof SCMSourceOwner) {
             SCMSourceOwner previousOverride = ownerOverride.get();
             ownerOverride.set((SCMSourceOwner) context);
             return () -> {
@@ -652,6 +652,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @param head the head to look up the parent revision(s) within.
      * @param revision the revision to lookup the immediate parent(s) of.
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
      * @param listener the task listener.
      * @return a set of immediate parent revisions of the specified revision. An empty set indicates either that the
      *         parents are unknown or that the revision is a root revision. Where the backing SCM supports merge
@@ -674,6 +675,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @param head the head to look up the parent revision(s) within.
      * @param revision the revision to lookup the immediate parent(s) of.
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
      * @param listener the task listener.
      * @return a set of immediate parent revisions of the specified revision. An empty set indicates either that the
      *         parents are unknown or that the revision is a root revision. Where the backing SCM supports merge
@@ -708,6 +710,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @param head the head to look up the parent revision(s) within.
      * @param revision the revision to lookup the immediate parent(s) of.
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
      * @param listener the task listener.
      * @return a set of immediate parent revisions of the specified revision. An empty set indicates either that the
      *         parents are unknown or that the revision is a root revision. Where the backing SCM supports merge
@@ -753,6 +756,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Looks up the immediate parent heads of the specified head within the specified source.
      *
      * @param head the head to look up the parent head(s) within.
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
      * @param listener the task listener.
      * @return a map of immediate parent heads of the specified head where the heads are the keys and the revisions at
      *         which the parent relationship was established are the values. An empty map indicates either that the
@@ -775,6 +779,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * SPI: Looks up the immediate parent heads of the specified head within the specified source.
      *
      * @param head the head to look up the parent head(s) within.
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
      * @param listener the task listener.
      * @return a map of immediate parent heads of the specified head where the heads are the keys and the revisions at
      *         which the parent relationship was established are the values. An empty map indicates either that the
@@ -807,6 +812,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * SPI: Looks up the immediate parent heads of the specified head within the specified source.
      *
      * @param head the head to look up the parent head(s) within.
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
      * @param listener the task listener.
      * @return a map of immediate parent heads of the specified head where the heads are the keys and the revisions at
      *         which the parent relationship was established are the values. An empty map indicates either that the
@@ -898,6 +904,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * Gets the current head revision of the specified head. Does not check this against any {@link SCMSourceCriteria}.
      *
      * @param head the head.
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
      * @param listener the task listener
      * @return the revision hash (may be non-deterministic) or {@code null} if the head no longer exists.
      * @throws IOException if an error occurs while performing the operation.
@@ -931,6 +938,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * SCMSourceCriteria}.
      *
      * @param head the head.
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
      * @param listener the task listener
      * @return the revision hash (may be non-deterministic) or {@code null} if the head no longer exists.
      * @throws IOException if an error occurs while performing the operation.
