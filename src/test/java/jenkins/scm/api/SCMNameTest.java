@@ -68,4 +68,9 @@ public class SCMNameTest {
         assertThat(SCMName.fromUrl("http://\u4F8B\u5B50.\u4E2D\u56FD/"), is("\u4F8B\u5B50"));
     }
 
+    @Test
+    public void given__url_with_ipv4address__when__naming__then__no_name_inferred() throws Exception {
+        assertThat(SCMName.fromUrl("http://127.0.0.1/scm"), is(nullValue()));
+    }
+
 }

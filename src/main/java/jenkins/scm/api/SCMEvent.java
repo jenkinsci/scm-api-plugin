@@ -28,18 +28,23 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.init.Terminator;
 import hudson.model.Cause;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
+import hudson.util.ClassLoaderSanityThreadFactory;
+import hudson.util.DaemonThreadFactory;
+import hudson.util.NamingThreadFactory;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.servlet.http.HttpServletRequest;
-import jenkins.util.Timer;
+import jenkins.security.ImpersonatingScheduledExecutorService;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
@@ -127,6 +132,11 @@ public abstract class SCMEvent<P> {
     private final String origin;
 
     /**
+     * The scheduled executor thread pool. This is initialized lazily since it may be never needed.
+     */
+    private static ScheduledExecutorService executorService;
+
+    /**
      * Constructor to use when the timestamp is available from the external SCM.
      *
      * @param type      the type of event.
@@ -198,10 +208,25 @@ public abstract class SCMEvent<P> {
      * @return a {@link ScheduledExecutorService}.
      */
     @NonNull
-    protected static ScheduledExecutorService executorService() {
-        // Future-proofing, if we find out that events are drowning Timer then we may need to move them to their
-        // own dedicated ScheduledExecutorService thread pool
-        return Timer.get();
+    protected static synchronized ScheduledExecutorService executorService() {
+        if (executorService == null) {
+            // corePoolSize is set to 10, but will only be created if needed.
+            // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
+            executorService = new ImpersonatingScheduledExecutorService(new ScheduledThreadPoolExecutor(10, new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "SCMEvent")), ACL.SYSTEM);
+        }
+        return executorService;
+    }
+
+
+    /**
+     * Shutdown the timer and throw it away.
+     */
+    @Terminator
+    public synchronized void closeExecutorService() {
+        if (executorService != null) {
+            executorService.shutdownNow();
+            executorService = null;
+        }
     }
 
     /**
@@ -454,6 +479,7 @@ public abstract class SCMEvent<P> {
         }
 
         protected abstract void log(SCMEventListener l, Throwable e);
+
         protected abstract void fire(SCMEventListener l, E event);
 
         @Override
