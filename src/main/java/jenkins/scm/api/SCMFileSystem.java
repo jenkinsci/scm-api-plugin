@@ -40,6 +40,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 
 /**
  * A virtual file system for a specific {@link SCM} potentially pinned to a specific {@link SCMRevision}. In contrast
@@ -54,8 +55,6 @@ import java.io.OutputStream;
  * <p>
  * Where the {@link #getRevision()} is {@code null} or {@link SCMRevision#isDeterministic()} a {@link SCMFileSystem}
  * can choose to keep the results locally (up to {@link SCMFileSystem#close()}) or re-query against the remote.
- *
- * @author Stephen Connolly
  */
 public abstract class SCMFileSystem implements Closeable {
 
@@ -189,7 +188,7 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
             throws IOException, InterruptedException {
-        scm.getClass(); // throw NPE if null
+        Objects.requireNonNull(scm);
         SCMFileSystem fallBack = null;
         Throwable failure = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
@@ -243,7 +242,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.0
      */
     public static boolean supports(@NonNull SCM scm) {
-        scm.getClass(); // throw NPE if null
+        Objects.requireNonNull(scm);
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(scm)) {
                 return true;
@@ -285,7 +284,7 @@ public abstract class SCMFileSystem implements Closeable {
     @CheckForNull
     public static SCMFileSystem of(@NonNull SCMSource source, @NonNull SCMHead head,
                                    @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
-        source.getClass(); // throw NPE if null
+        Objects.requireNonNull(source);
         SCMFileSystem fallBack = null;
         Throwable failure = null;
         for (Builder b : ExtensionList.lookup(Builder.class)) {
@@ -338,7 +337,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.0
      */
     public static boolean supports(@NonNull SCMSource source) {
-        source.getClass(); // throw NPE if null
+        Objects.requireNonNull(source);
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(source)) {
                 return true;
@@ -360,7 +359,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.3.0
      */
     public static boolean supports(@NonNull SCMDescriptor descriptor) {
-        descriptor.getClass(); // throw NPE if null
+        Objects.requireNonNull(descriptor);
         if (descriptor.clazz == null) {
             throw new NullPointerException();
         }
@@ -386,7 +385,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @since 2.3.0
      */
     public static boolean supports(@NonNull SCMSourceDescriptor descriptor) {
-        descriptor.getClass(); // throw NPE if null
+        Objects.requireNonNull(descriptor);
         if (descriptor.clazz == null) {
             throw new NullPointerException();
         }

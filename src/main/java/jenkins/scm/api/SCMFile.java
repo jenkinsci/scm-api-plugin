@@ -39,9 +39,6 @@ import org.kohsuke.stapler.WebApp;
 
 /**
  * A file/directory inspected by {@link SCMFileSystem}.
- *
- * @author Stephen Connolly
- * @author Kohsuke Kawaguchi
  */
 public abstract class SCMFile {
 

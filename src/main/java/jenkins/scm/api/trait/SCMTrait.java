@@ -56,7 +56,7 @@ public abstract class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribabl
     /*package*/
     static <T extends SCMTrait<T>, D extends SCMTraitDescriptor<T>> DescriptorExtensionList<T, D> all(
             Class<T> specialization) {
-        return Jenkins.getActiveInstance().getDescriptorList(specialization);
+        return Jenkins.get().getDescriptorList(specialization);
     }
 
     /**

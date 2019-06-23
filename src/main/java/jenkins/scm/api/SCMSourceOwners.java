@@ -35,7 +35,6 @@ import java.util.NoSuchElementException;
 
 /**
  * Provides a means to lookup the {@link SCMSourceOwners} that own {@link SCMSource} instances.
- * @author Stephen Connolly
  */
 public abstract class SCMSourceOwners implements ExtensionPoint, Iterable<SCMSourceOwner> {
 
@@ -53,7 +52,7 @@ public abstract class SCMSourceOwners implements ExtensionPoint, Iterable<SCMSou
      * Extension point to allow for access to embedded {@link SCMSourceOwner} instances that
      * {@link SCMSourceOwners.JenkinsItemEnumerator} will not find.
      */
-    public static abstract class Enumerator implements ExtensionPoint, Iterable<SCMSourceOwner> {
+    public abstract static class Enumerator implements ExtensionPoint, Iterable<SCMSourceOwner> {
     }
 
     /**
@@ -66,10 +65,11 @@ public abstract class SCMSourceOwners implements ExtensionPoint, Iterable<SCMSou
         /**
          * {@inheritDoc}
          */
+        @NonNull
         public Iterator<SCMSourceOwner> iterator() {
-            // TODO use JENKINS-40252 implementation once available in baseline core.
-            Jenkins j = Jenkins.getActiveInstance();
-            return j.getAllItems(SCMSourceOwner.class).iterator();
+            return Jenkins.get()
+                    .allItems(SCMSourceOwner.class)
+                    .iterator();
         }
     }
 
@@ -80,6 +80,7 @@ public abstract class SCMSourceOwners implements ExtensionPoint, Iterable<SCMSou
         /**
          * {@inheritDoc}
          */
+        @NonNull
         public Iterator<SCMSourceOwner> iterator() {
             return new IteratorImpl(ExtensionList.lookup(Enumerator.class));
         }

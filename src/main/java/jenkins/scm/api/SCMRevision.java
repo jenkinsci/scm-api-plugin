@@ -26,13 +26,12 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.io.Serializable;
+import java.util.Objects;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Base class that represents a specific (or not so specific) revision of a {@link SCMHead}.
- *
- * @author Stephen Connolly
  */
 @ExportedBean
 public abstract class SCMRevision implements Serializable {
@@ -49,7 +48,7 @@ public abstract class SCMRevision implements Serializable {
      * @param head the {@link SCMHead} that the {@link SCMRevision} belongs to.
      */
     protected SCMRevision(@NonNull SCMHead head) {
-        head.getClass(); // throw NPE if null
+        Objects.requireNonNull(head);
         this.head = head;
     }
 
