@@ -66,10 +66,9 @@ public abstract class SCMNavigatorOwners implements ExtensionPoint, Iterable<SCM
         /**
          * {@inheritDoc}
          */
+        @NonNull
         public Iterator<SCMNavigatorOwner> iterator() {
-            // TODO use JENKINS-40252 implementation once available in baseline core.
-            Jenkins j = Jenkins.getActiveInstance();
-            return j.getAllItems(SCMNavigatorOwner.class).iterator();
+            return Jenkins.get().allItems(SCMNavigatorOwner.class).iterator();
         }
     }
 
@@ -80,6 +79,7 @@ public abstract class SCMNavigatorOwners implements ExtensionPoint, Iterable<SCM
         /**
          * {@inheritDoc}
          */
+        @NonNull
         public Iterator<SCMNavigatorOwner> iterator() {
             return new IteratorImpl(ExtensionList.lookup(Enumerator.class));
         }

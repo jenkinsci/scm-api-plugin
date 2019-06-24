@@ -61,7 +61,7 @@ public class SCMTriggerListener extends SCMEventListener {
             case CREATED:
             case UPDATED:
                 // only trigger polling for create/update
-                for (Item project : Jenkins.getActiveInstance().getAllItems()) {
+                for (Item project : Jenkins.get().allItems()) {
                     SCMTriggerItem scmTriggerItem = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(project);
                     if (scmTriggerItem == null) {
                         // if it is not a SCMTriggerItem => ignore it

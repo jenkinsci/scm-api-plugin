@@ -28,20 +28,17 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.TaskListener;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
+import java.io.IOException;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
-
-import java.io.IOException;
 import jenkins.scm.api.SCMSourceCriteria;
 
 /**
  * A special {@link SCMSource} that does not fetch any {@link SCMHead} instances and will build instances of
  * {@link NullSCM}.
- *
- * @author Stephen Connolly
  */
 public class NullSCMSource extends SCMSource {
     /**

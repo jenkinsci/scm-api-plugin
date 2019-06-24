@@ -43,8 +43,6 @@ import java.util.UUID;
 
 /**
  * A {@link Descriptor} for {@link SCMSource}s.
- *
- * @author Stephen Connolly
  */
 public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implements IconSpec {
 

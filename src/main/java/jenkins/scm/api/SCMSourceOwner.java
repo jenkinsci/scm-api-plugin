@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.TaskListener;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * An {@link Item} that owns {@link SCMSource} instances. Any {@link SCMSource} instances accessed through a
@@ -49,9 +50,15 @@ public interface SCMSourceOwner extends Item {
      * @param sourceId the {@link SCMSource#getId()}
      * @return the corresponding {@link SCMSource} or {@code null} if no matching source.
      */
-    // TODO provide a default implementation that iterates getSCMSources() once Java 8
     @CheckForNull
-    SCMSource getSCMSource(@CheckForNull String sourceId);
+    default SCMSource getSCMSource(@CheckForNull String sourceId) {
+        return sourceId == null
+                ? null
+                : getSCMSources().stream()
+                        .filter(s -> Objects.equals(sourceId, s.getId()))
+                        .findFirst()
+                        .orElse(null);
+    }
 
     /**
      * Called when a source has received notification of an update. Implementations are required to assume that
@@ -74,8 +81,9 @@ public interface SCMSourceOwner extends Item {
      * @param source the source to get the criteria for.
      * @return the criteria for determining if a candidate head is relevant for consumption.
      */
-    // TODO provide a default implementation returning null once Java 8
     @CheckForNull
-    SCMSourceCriteria getSCMSourceCriteria(@NonNull SCMSource source);
+    default SCMSourceCriteria getSCMSourceCriteria(@NonNull SCMSource source) {
+        return null;
+    }
 
 }

@@ -162,7 +162,7 @@ public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCM
      */
     @SuppressWarnings("unchecked")
     public static DescriptorExtensionList<SCMHeadAuthority<?, ?, ?>, SCMHeadAuthorityDescriptor> all() {
-        return (DescriptorExtensionList) Jenkins.getActiveInstance().getDescriptorList(SCMHeadAuthority.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(SCMHeadAuthority.class);
     }
 
     /**
