@@ -242,6 +242,21 @@ TIP: In plain english, when you trigger a build of a job for a `SCMRevision` you
 +
 For example, a Git `SCMSource` might return _Repository_, an Accurev `SCMSource` might return _Depot_, a CVS `SCMSource` might return _Module_ while a Subversion `SCMSource` could return _Repository_ or perhaps even something more generic like _Project_ depending on the way in which the Subversion server is being used footnote:[Do you create one `trunk|branches|tags` per repository or do you use a single big repository and create many `_project_/(trunk|branches|tags)` in that single repository?].
 
+[NOTE]
+====
+There are some rare but legitimate cases where a `SCMSource` needs to be owned by a `Item` that cannot extend `SCMSourceOwner`.
+For example, if you were implementing a `JobProperty` (or an `Action`, etc) that resolves information from a `SCMSource` then the owning item could be `FreeStyleProject` but, as that comes from Jenkins core, we cannot add the `SCMSourceOwner` interface.
+
+In such cases you can use the `SCMSourceOwner.proxyFromItem(item,proxyGetter,sourceSupplier,criteriaSupplier)`.
+
+There are two kinds of proxy that can be returned:
+
+. Requesting a proxy with a `null` `Function<Item,SCMSourceOwner>` indicates that this proxy will not receive `SCMEvent` notification.
+You may choose to either use the proxy owner as a single-shot owner, or attach it to the `Item` by storing as a `transient` field in some linking object (i.e. `Action`, `JobProperty`, etc) attached to the `Item`.
+
+. Requesting a proxy with a non-`null` `Function<Item,SCMSourceOwner>` indicates that the proxy will be stored as a `transient` field in some linking object attached to the `Item` and that the owned sources are interested in receiving events.
+====
+
 === Using SCMNavigator instances
 
 If you implement `jenkins.scm.api.SCMNavigatorOwner` your implementation *must*:
