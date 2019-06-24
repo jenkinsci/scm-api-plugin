@@ -55,7 +55,7 @@ public interface SCMSourceOwner extends Item {
         return sourceId == null
                 ? null
                 : getSCMSources().stream()
-                        .filter(s -> Objects.equals(sourceId, s.getId())
+                        .filter(s -> Objects.equals(sourceId, s.getId()))
                         .findFirst()
                         .orElse(null);
     }
