@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.TaskListener;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * An {@link Item} that owns {@link SCMSource} instances. Any {@link SCMSource} instances accessed through a
@@ -54,7 +55,7 @@ public interface SCMSourceOwner extends Item {
         return sourceId == null
                 ? null
                 : getSCMSources().stream()
-                        .filter(s -> sourceId.equals(s.getId()))
+                        .filter(s -> Objects.equals(sourceId, s.getId())
                         .findFirst()
                         .orElse(null);
     }
