@@ -27,6 +27,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.RootAction;
 import hudson.model.UnprotectedRootAction;
@@ -77,7 +78,7 @@ import static java.awt.RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY;
 import static java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC;
 
 /**
- * An avatar cache that will serve URLs that have been recently registered through {@link #buildUrl(String, String)}
+ * An avatar cache that will serve URLs that have been recently registered through {@link #buildUrl(String, String)}.
  *
  * @since 2.2.0
  */
@@ -133,8 +134,8 @@ public class AvatarCache implements UnprotectedRootAction {
      * @throws IllegalStateException if called outside of a request handling thread.
      */
     public static String buildUrl(@NonNull String url, @NonNull String size) {
-        Jenkins j = Jenkins.getActiveInstance();
-        AvatarCache instance = j.getExtensionList(RootAction.class).get(AvatarCache.class);
+        Jenkins j = Jenkins.get();
+        AvatarCache instance = ExtensionList.lookup(RootAction.class).get(AvatarCache.class);
         if (instance == null) {
             throw new AssertionError();
         }

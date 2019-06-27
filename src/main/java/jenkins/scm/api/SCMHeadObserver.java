@@ -31,14 +31,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import net.jcip.annotations.GuardedBy;
 
 /**
  * Something that observes {@link SCMHead} and corresponding {@link SCMRevision} details.
- *
- * @author Stephen Connolly
  */
 public abstract class SCMHeadObserver {
 
@@ -205,7 +204,7 @@ public abstract class SCMHeadObserver {
          * @param observers the observers to wrap.
          */
         public AllFinished(@NonNull Iterable<SCMHeadObserver> observers) {
-            observers.getClass(); // fail fast if null
+            Objects.requireNonNull(observers); // fail fast if null
             this.observers = observers;
         }
 
@@ -299,7 +298,7 @@ public abstract class SCMHeadObserver {
          * @param observers the observers to wrap.
          */
         public OneFinished(@NonNull Iterable<SCMHeadObserver> observers) {
-            observers.getClass(); // fail fast if null
+            Objects.requireNonNull(observers); // fail fast if null
             this.observers = observers;
         }
 
@@ -408,7 +407,7 @@ public abstract class SCMHeadObserver {
          * @param head the {@link SCMHead} to get the {@link SCMRevision} of.
          */
         public Selector(@NonNull SCMHead head) {
-            head.getClass(); // fail fast if null
+            Objects.requireNonNull(head); // fail fast if null
             this.head = head;
         }
 
@@ -470,7 +469,7 @@ public abstract class SCMHeadObserver {
          * @param head the {@link SCMHead#getName()} to get the {@link SCMRevision} of.
          */
         public Named(@NonNull String head) {
-            head.getClass(); // fail fast if null
+            Objects.requireNonNull(head); // fail fast if null
             this.head = head;
         }
 

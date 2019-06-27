@@ -54,8 +54,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * A single fixed branch using a legacy SCM implementation.
- *
- * @author Stephen Connolly
  */
 public class SingleSCMSource extends SCMSource {
 
