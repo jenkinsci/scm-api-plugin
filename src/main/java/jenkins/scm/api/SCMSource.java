@@ -609,11 +609,31 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since 1.3
+     * @deprecated rather call {@link #fetch(String, TaskListener, Item)}
      */
+    @Deprecated
     @CheckForNull
     public final SCMRevision fetch(@NonNull String thingName, @CheckForNull TaskListener listener)
             throws IOException, InterruptedException {
         return retrieve(thingName, defaultListener(listener));
+    }
+
+    /**
+     * Looks up a specific thingName based on some SCM-specific set of permissible syntaxes.
+     * Delegates to {@link #retrieve(String, TaskListener)}.
+     * @param thingName might be a branch name, a tag name, a cryptographic hash, a change request number, etc.
+     * @param listener the task listener (optional)
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
+     * @return a valid {@link SCMRevision} corresponding to the argument, with a usable corresponding head, or
+     * {@code null} if malformed or not found
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.5
+     */
+    @CheckForNull
+    public final SCMRevision fetch(@NonNull String thingName, @CheckForNull TaskListener listener, @CheckForNull Item context)
+            throws IOException, InterruptedException {
+        return retrieve(thingName, defaultListener(listener), context);
     }
 
     /**
@@ -626,13 +646,36 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since 1.3
+     * @deprecated rather override {@link #retrieve(String, TaskListener, Item)}
      */
+    @Deprecated
     @CheckForNull
     protected SCMRevision retrieve(@NonNull final String thingName, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
+        if (Util.isOverridden(SCMSource.class, getClass(), "retrieve", String.class, TaskListener.class, Item.class)) {
+            return retrieve(thingName, listener, getOwner());
+        }
         SCMHeadObserver.Named baptist = SCMHeadObserver.named(thingName);
         _retrieve(null, baptist, null, listener);
         return baptist.result();
+    }
+
+    /**
+     * SPI: Looks up a specific revision based on some SCM-specific set of permissible syntaxes.
+     * The default implementation uses {@link #retrieve(SCMSourceCriteria, SCMHeadObserver, TaskListener)}
+     * and looks for {@link SCMHead#getName} matching the argument (so typically only supporting branch names).
+     * @param thingName might be a branch name, a tag name, a cryptographic hash, a revision number, etc.
+     * @param listener the task listener
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
+     * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.5
+     */
+    @CheckForNull
+    protected SCMRevision retrieve(@NonNull final String thingName, @NonNull TaskListener listener, @CheckForNull Item context)
+            throws IOException, InterruptedException {
+        return retrieve(thingName, listener);
     }
 
     /**
@@ -644,9 +687,28 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since 1.3
+     * @deprecated rather call {@link #fetchRevisions(TaskListener, Item)}
      */
+    @Deprecated
     @NonNull
     public final Set<String> fetchRevisions(@CheckForNull TaskListener listener)
+            throws IOException, InterruptedException {
+        return retrieveRevisions(defaultListener(listener));
+    }
+
+    /**
+     * Looks up suggested revisions that could be passed to {@link #fetch(String, TaskListener)}.
+     * There is no guarantee that all returned revisions are in fact valid, nor that all valid revisions are returned.
+     * Delegates to {@link #retrieveRevisions}.
+     * @param listener the task listener
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
+     * @return a possibly empty set of revision names suggested by the implementation
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.5
+     */
+    @NonNull
+    public final Set<String> fetchRevisions(@CheckForNull TaskListener listener, @CheckForNull Item context)
             throws IOException, InterruptedException {
         return retrieveRevisions(defaultListener(listener));
     }
@@ -660,15 +722,37 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
      * @since 1.3
+     * @deprecated rather override {@link #retrieveRevisions(TaskListener, Item)}
      */
+    @Deprecated
     @NonNull
     protected Set<String> retrieveRevisions(@NonNull TaskListener listener)
             throws IOException, InterruptedException {
+        if (Util.isOverridden(SCMSource.class, getClass(), "retrieveRevisions", TaskListener.class, Item.class)) {
+            return retrieveRevisions(listener, getOwner());
+        }
         Set<String> revisions = new HashSet<String>();
         for (SCMHead head : retrieve(listener)) {
             revisions.add(head.getName());
         }
         return revisions;
+    }
+
+    /**
+     * SPI: Looks up suggested revisions that could be passed to {@link #fetch(String, TaskListener)}.
+     * There is no guarantee that all returned revisions are in fact valid, nor that all valid revisions are returned.
+     * By default, calls {@link #retrieve(TaskListener)}, thus typically returning only branch names.
+     * @param listener the task listener
+     * @param context an associated context to supersede {@link #getOwner}, such as a job in which this is running
+     * @return a possibly empty set of revision names suggested by the implementation
+     * @throws IOException if an error occurs while performing the operation.
+     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @since 2.5
+     */
+    @NonNull
+    protected Set<String> retrieveRevisions(@NonNull TaskListener listener, @CheckForNull Item context)
+            throws IOException, InterruptedException {
+        return retrieveRevisions(listener);
     }
 
     /**
