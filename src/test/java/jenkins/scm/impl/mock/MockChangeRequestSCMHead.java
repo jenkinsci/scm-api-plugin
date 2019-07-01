@@ -26,12 +26,12 @@ package jenkins.scm.impl.mock;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Locale;
+import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead3;
 
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2 {
+public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead3 {
     private final String target;
     private final Integer number;
     private final SCMHeadOrigin origin;
@@ -39,7 +39,7 @@ public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSC
 
     public MockChangeRequestSCMHead(SCMHeadOrigin origin, Integer number, String target,
                                     ChangeRequestCheckoutStrategy strategy, boolean singleStrategy) {
-        super("CR-"+number + (singleStrategy ? "" : "-"+strategy.name().toLowerCase(Locale.ENGLISH)));
+        super("CR-" + number + (singleStrategy ? "" : "-" + strategy.name().toLowerCase(Locale.ENGLISH)));
         this.number = number;
         this.target = target;
         this.origin = origin;
@@ -83,5 +83,10 @@ public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSC
         // MockSCMController maintains a separate list of change-requests independent from the branches
         // so unlike GitHub or Bitbucket, the name of a change request in the origin is the name.
         return getName();
+    }
+
+    @Override
+    public String getSourceCommitId() {
+        return "sha" + number;
     }
 }
