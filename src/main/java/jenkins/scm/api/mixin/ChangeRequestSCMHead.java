@@ -50,7 +50,7 @@ public interface ChangeRequestSCMHead extends SCMHeadMixin {
     /**
      * Branch to which this change would be merged or applied if it were accepted.
      *
-     * @return a “target” or “base” branch
+     * @return a "target" or "base" branch
      */
     @Exported
     @NonNull

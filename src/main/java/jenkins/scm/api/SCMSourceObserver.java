@@ -75,7 +75,7 @@ public abstract class SCMSourceObserver {
     }
 
     /**
-     * Declare that a new “project” such as a source repository has been found.
+     * Declare that a new "project" such as a source repository has been found.
      *
      * @param projectName a name of the project, such as a repository name within an organization; may be used as an
      *                    {@link Item#getName}
