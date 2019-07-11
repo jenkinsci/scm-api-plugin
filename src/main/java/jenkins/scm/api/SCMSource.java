@@ -628,7 +628,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * {@code null} if malformed or not found
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since 2.5
+     * @since 2.6.0
      */
     @CheckForNull
     public final SCMRevision fetch(@NonNull String thingName, @CheckForNull TaskListener listener, @CheckForNull Item context)
@@ -670,7 +670,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return a valid revision object corresponding to the argument, with a usable corresponding head, or null if malformed or not found
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since 2.5
+     * @since 2.6.0
      */
     @CheckForNull
     protected SCMRevision retrieve(@NonNull final String thingName, @NonNull TaskListener listener, @CheckForNull Item context)
@@ -705,12 +705,12 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return a possibly empty set of revision names suggested by the implementation
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since 2.5
+     * @since 2.6.0
      */
     @NonNull
     public final Set<String> fetchRevisions(@CheckForNull TaskListener listener, @CheckForNull Item context)
             throws IOException, InterruptedException {
-        return retrieveRevisions(defaultListener(listener));
+        return retrieveRevisions(defaultListener(listener), context);
     }
 
     /**
@@ -747,7 +747,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @return a possibly empty set of revision names suggested by the implementation
      * @throws IOException if an error occurs while performing the operation.
      * @throws InterruptedException if any thread has interrupted the current thread.
-     * @since 2.5
+     * @since 2.6.0
      */
     @NonNull
     protected Set<String> retrieveRevisions(@NonNull TaskListener listener, @CheckForNull Item context)
