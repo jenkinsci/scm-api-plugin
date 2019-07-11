@@ -710,7 +710,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @NonNull
     public final Set<String> fetchRevisions(@CheckForNull TaskListener listener, @CheckForNull Item context)
             throws IOException, InterruptedException {
-        return retrieveRevisions(defaultListener(listener));
+        return retrieveRevisions(defaultListener(listener), context);
     }
 
     /**
