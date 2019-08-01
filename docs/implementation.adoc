@@ -1432,6 +1432,8 @@ public class MySCMWebHook implements UnprotectedRootAction {
 }
 ----
 
+Basically, you don't have to worry about triggering the build... you just have to fire the event. If you event is implemented correctly then the event subsystem will match the event to the corresponding SCMSource instances and let them do what they need to do (and in the case of multibranch, what it needs to do is: initiate a check of the latest revision and then build if the revision is changed).
+
 There are some common concerns that you should be aware of when writing a webhook:
 
 * The webhook normally needs to be an `UnprotectedRootAction` because it can be tricky to configure the source control system to integrate with whatever `SecurityRealm` the user's Jenkins has been configured to use.
@@ -1541,7 +1543,7 @@ if ("branch-create".equals(event)) {
 } // else etc
 ----
 
-Because each event from the source control system has a 1:1 correspondence with the events in the SCM API the implementation of each event can be fairly straightforward:
+Because each event from the source control system has a 1:1 correspondence with the events in the SCM API the implementation of each event can be fairly straightforward. 
 
 You can define an `AbstractSCMHeadEvent`
 
