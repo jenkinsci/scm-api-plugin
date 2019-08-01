@@ -1353,11 +1353,12 @@ The first part of implementing event support is to determine how events will be 
 There are a number of techniques that can be used. The two most common techniques are:
 
 * Webhook
-* Messaging service
 
 The webhook technique typically involves setting up a `RootAction` that can receive a payload from the source control system.
 For this technique to work, the source control system must be able to establish a connection to the Jenkins server.
 This can be problematic where, for example, the Jenkins server is on an internal-only network and the source control system is an externally hosted service (e.g. GitHub)
+
+* Messaging service
 
 The messaging service uses a broker which can be reached by both the Jenkins server and the source control system.
 The source control system sends its event payloads to the broker system.
@@ -1366,13 +1367,16 @@ The Jenkins server periodically connects (or in some cases uses a persistent con
 The webhook technique is the simpler to implement and is generally sufficient for most Jenkins users.
 For the users where the webhook technique is not sufficient it is usually relatively easy to build a generic messaging service on top of the webhook, for example the https://wiki.jenkins-ci.org/display/JENKINS/SCM+SQS+Plugin[SCM SQS Plugin].
 
+=== Setting Up Webhook
+
 The basic starting point for a WebHook is an `UnprotectedRootAction`
 
 [source,java]
 ----
 @Extension
 public class MySCMWebHook implements UnprotectedRootAction {
-    private static final String URL_NAME = "my-scm-hook";
+    public static final String URL_NAME = "my-scm-hook";
+    public static final String ENPOINT = "notify";
     @Override
     public String getIconFileName() {
         return null;
@@ -1462,6 +1466,21 @@ Auto-registration of webhooks is performed in different methods depending on the
 * `SCMSource.afterSave()`
 * `SCM2.afterSave(_job_)`
 
+In the above methods you need to register the webhook url using your SCM Provider API to which Jenkins will listen for events.
+
+To get the hook url you create a method as follows:
+
+----
+public String getHookUrl() {
+    JenkinsLocationConfiguration locationConfiguration = JenkinsLocationConfiguration.get();
+    String rootUrl = locationConfiguration.getUrl();
+    if (StringUtils.isBlank(rootUrl) || rootUrl.startsWith("http://localhost:")) {
+        return "";
+    }
+    return rootUrl+"/"+MySCMWebHook.URL_NAME+"/"+MySCMWebHook.ENDPOINT;
+}
+----
+
 [NOTE]
 ====
 Existing implementations of the `hudson.scm.SCM` API have traditionally extended `hudson.triggers.Trigger` in order to integrate capture the requirement for setting up a webhook from the `Trigger.start(_job_,_newInstance_)` method.
@@ -1524,20 +1543,44 @@ if ("branch-create".equals(event)) {
 
 Because each event from the source control system has a 1:1 correspondence with the events in the SCM API the implementation of each event can be fairly straightforward:
 
+You can define an `AbstractSCMHeadEvent`
+
 [source,java]
 ----
-public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
+public class AbstractMySCMHeadEvent<E> extends SCMHeadEvent<E> {
 
-    public MyBranchSCMHeadEvent(@NonNull Type type, JsonNode payload, String origin) {
-        super(type, payload, origin);
+    public AbstractMySCMHeadEvent(Type type, E createEvent, String origin) {
+        super(type, createEvent, origin);
     }
 
     @Override
     public boolean isMatch(@NonNull SCMNavigator navigator) {
-        return navigator instanceof MySCMNavigator
-            && ((MySCMNavigator)navigator).getServer().equals(payload.path("server").asString());
-            && ((MySCMNavigator)navigator).getTeam().equals(payload.path("team").asString());
+        return navigator instanceof MySCMNavigator && isMatch((MySCMNavigator) navigator);
     }
+
+    // Define this method in your concrete event class to uniquely identify `MySCMNavigator`
+    public abstract boolean isMatch(@NonNull MySCMNavigator navigator);
+
+    @Override
+    public boolean isMatch(@NonNull SCMSource source) {
+        return source instanceof MySCMSource && isMatch((MySCMSource) source);
+    }
+
+    // Define this method in your concrete event class to uniquely identify `MySCMSource`
+    public abstract boolean isMatch(@NonNull MySCMSource source);
+
+    @Nonnull
+    @Override
+    public final Map<SCMHead, SCMRevision> heads(@Nonnull SCMSource source) {
+        Map<SCMHead, SCMRevision> heads = new HashMap<>();
+        if (source instanceof GitLabSCMSouMySCMSourcerce) {
+            return headsFor((MySCMSource) source);
+        }
+        return heads;
+    }
+
+    @NonNull
+    protected abstract Map<SCMHead, SCMRevision> headsFor(GitLabSCMSource source);
 
     @NonNull
     @Override
@@ -1577,6 +1620,8 @@ public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
         );
     }
 
+    // This method triggers builds for all jobs like freestyle, non-multibranch. So if you are implementing a
+    // "branch-source" plugin then you might return "false" in this method.
     @Override
     public boolean isMatch(@NonNull SCM scm) {
         if (scm instanceof MySCM) {
@@ -1587,6 +1632,29 @@ public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
                 && mySCM.getBranch().equals(getPayload().path("branch").asString());
         }
         return false;
+    }    
+}
+----
+
+Now extending `AbstractSCMHeadEvent` you can implement concrete `SCMEvent` like `MySCMPushEvent`, `MySCMPullRequestEvent`, `MySCMTagEvent` etc.
+
+Sample Impl of `MySCMPushSCMEvent`:
+
+----
+public class MySCMPushSCMEvent extends AbstractMySCMHeadEvent<JsonNode> {
+
+    public GitLabPushSCMEvent(JsonNode payload, String origin) {
+        super(typeOf(payload), pushEvent, origin);
+    }
+
+    private static Type typeOf(JsonNode payload) {
+        if (<check if type created from the payload>) {
+            return Type.CREATED;
+        }
+        if (<check if type removed from the payload>) {
+            return Type.REMOVED;
+        }
+        return Type.UPDATED;
     }
 
     @Override
@@ -1600,6 +1668,30 @@ public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
             getPayload().path("repository").asString(),
             getPayload().path("server").asString()
         );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String descriptionFor(@NonNull SCMNavigator navigator) {
+        String ref = getPayload().getRef();
+        ref = ref.startsWith(Constants.R_HEADS) ? ref.substring(Constants.R_HEADS.length()) : ref;
+        return "Push event to branch " + ref + " in project " + getPayload().getRepository().getName();
+    }
+
+    // Feel free to modify this method to uniquely identify the your SCMNavigator 
+    @Override
+    public boolean isMatch(@NonNull MySCMNavigator navigator) {
+            navigator.getServer().equals(payload.path("server").asString());
+            && navigator.getTeam().equals(payload.path("team").asString());
+    }
+
+    // Feel free to modify this method to uniquely identify the your SCMSource 
+    @Override
+    public boolean isMatch(@NonNull MySCMSource source) {
+            source.getServer().equals(payload.path("server").asString());
+            && (source.getRepository().equals(payload.path("repository").asString());
     }
 
     @Override
@@ -1626,6 +1718,179 @@ public class MyBranchSCMHeadEvent extends SCMHeadEvent<JsonNode> {
             // we know the source is a match so server, team and repository can be assumed in the context of the source
         );
     }
+
+    @NonNull
+    @Override
+    public Map<SCMHead, SCMRevision> headsFor(GitLabSCMSource source) {
+        if (!(source instanceof MySCMSource)) {
+            return Collections.emptyMap();
+        }
+        MySCMSource src = (MySCMSource) source;
+        if (!(src.getServer().equals(getPayload().path("server").asString()))) {
+            return Collections.emptyMap();
+        }
+        if (!(src.getTeam().equals(getPayload().path("team").asString()))) {
+            return Collections.emptyMap();
+        }
+        if (!(src.getRepository().equals(getPayload().path("repository").asString()))) {
+            return Collections.emptyMap();
+        }
+        MySCMSourceContext context = new MySCMSourceContext(null, SCMHeadObserver.none(), ...)
+            .withTraits(src.getTraits();
+        if (/*some condition dependent determined by traits*/) {
+            // the configured traits are saying this event is ignored for this source
+            return Collections.emptyMap();
+        }
+        MySCMHead head = new MySCMHead(getPayload().path("branch").asString(), false);
+        // the configuration of the context may also modify how we return the heads
+        // for example there could be traits to control whether to build the
+        // merge commit of a change request or the head commit of a change request (or even both)
+        // so the returned value may need to be customized based on the context
+        return Collections.<SCMHead, SCMRevision>singletonMap(
+                head, new MySCMRevision(head, revision)
+        );
+    }
+}
+----
+
+Specific Impl of `MySCMMergeRequestSCMEvent` (from GitLab Branch Source Plugin):
+
+----
+public class GitLabMergeRequestSCMEvent extends AbstractGitLabSCMHeadEvent<MergeRequestEvent> {
+
+    public GitLabMergeRequestSCMEvent(MergeRequestEvent mrEvent, String origin) {
+        super(typeOf(mrEvent), mrEvent, origin);
+    }
+
+    private static Type typeOf(MergeRequestEvent mrEvent) {
+        switch (mrEvent.getObjectAttributes().getState()) {
+            case "opened":
+                return Type.CREATED;
+            case "closed":
+                return Type.REMOVED;
+            case "reopened":
+            default:
+                return Type.UPDATED;
+        }
+    }
+
+    @Override
+    public String descriptionFor(@NonNull SCMNavigator navigator) {
+        String state = getPayload().getObjectAttributes().getState();
+        if (state != null) {
+            switch (state) {
+                case "opened":
+                    return "Merge request !" + getPayload().getObjectAttributes().getIid() + " opened in project " + getPayload()
+                            .getProject().getName();
+                case "reopened":
+                    return "Merge request !" + getPayload().getObjectAttributes().getIid() + " reopened in project " + getPayload()
+                            .getProject().getName();
+                case "closed":
+                    return "Merge request !" + getPayload().getObjectAttributes().getIid() + " closed in project " + getPayload()
+                            .getProject().getName();
+            }
+        }
+        return "Merge request !" + getPayload().getObjectAttributes().getIid()+ " event in project " + getPayload().getProject()
+                .getName();
+    }
+
+    @Override
+    public boolean isMatch(@NonNull GitLabSCMNavigator navigator) {
+        return navigator.getNavigatorProjects().contains(getPayload().getProject().getPathWithNamespace());
+    }
+
+    @Override
+    public boolean isMatch(@NonNull GitLabSCMSource source) {
+        return getPayload().getObjectAttributes().getTargetProjectId().equals(source.getProjectId());
+    }
+
+    @NonNull
+    @Override
+    public String getSourceName() {
+        return getPayload().getProject().getPathWithNamespace();
+    }
+
+    @Override
+    public String descriptionFor(@NonNull SCMSource source) {
+        String state = getPayload().getObjectAttributes().getState();
+        if (state != null) {
+            switch (state) {
+                case "opened":
+                    return "Merge request !" + getPayload().getObjectAttributes().getIid() + " opened";
+                case "reopened":
+                    return "Merge request !" + getPayload().getObjectAttributes().getIid() + " reopened";
+                case "closed":
+                    return "Merge request !" + getPayload().getObjectAttributes().getIid() + " closed";
+            }
+        }
+        return "Merge request !" + getPayload().getObjectAttributes() .getIid()+ " event";
+    }
+
+    @Override
+    public String description() {
+        String state = getPayload().getObjectAttributes().getState();
+        if (state != null) {
+            switch (state) {
+                case "opened":
+                    return "Merge request !" + getPayload().getObjectAttributes().getIid() + " opened in project " + getPayload()
+                            .getProject().getPathWithNamespace();
+                case "reopened":
+                    return "Merge request !" + getPayload().getObjectAttributes().getIid() + " reopened in project " + getPayload()
+                            .getProject().getPathWithNamespace();
+                case "closed":
+                    return "Merge request !" + getPayload().getObjectAttributes().getIid() + " closed in project " + getPayload()
+                            .getProject().getPathWithNamespace();
+            }
+        }
+        return "Merge request !" + getPayload().getObjectAttributes() .getIid()+ " event";
+    }
+
+    @NonNull
+    @Override
+    public Map<SCMHead, SCMRevision> headsFor(GitLabSCMSource source) {
+        Map<SCMHead, SCMRevision> result = new HashMap<>();
+        try (GitLabSCMSourceRequest request = new GitLabSCMSourceContext(null, SCMHeadObserver.none())
+                .withTraits(source.getTraits())
+                .newRequest(source, null)) {
+            MergeRequestEvent.ObjectAttributes m = getPayload().getObjectAttributes();
+            Map<Boolean, Set<ChangeRequestCheckoutStrategy>> strategies = request.getMRStrategies();
+            boolean fork = !getPayload().getObjectAttributes().getSourceProjectId().equals(getPayload().getObjectAttributes().getTargetProjectId());
+            String originOwner = getPayload().getUser().getUsername();
+            String originProjectPath = m.getSource().getPathWithNamespace();
+            for (ChangeRequestCheckoutStrategy strategy : strategies.get(fork)) {
+               MergeRequestSCMHead h = new MergeRequestSCMHead(
+                                "MR-" + m.getIid() + (strategies.size() > 1 ? "-" + strategy.name()
+                                        .toLowerCase(Locale.ENGLISH) : ""),
+                                m.getIid(),
+                                new BranchSCMHead(m.getTargetBranch()),
+                                ChangeRequestCheckoutStrategy.MERGE,
+                                fork
+                                        ? new SCMHeadOrigin.Fork(originProjectPath)
+                                        : SCMHeadOrigin.DEFAULT,
+                                originOwner,
+                                originProjectPath,
+                                m.getSourceBranch()
+                        );
+                result.put(h, m.getState().equals("closed")
+                        ? null
+                        : new MergeRequestSCMRevision(
+                        h,
+                        new BranchSCMRevision(
+                                h.getTarget(),
+                                "HEAD"
+                        ),
+                        new BranchSCMRevision(
+                                new BranchSCMHead(h.getOriginName()),
+                                m.getLastCommit().getId()
+                        )
+                ));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
 }
 ----
 
