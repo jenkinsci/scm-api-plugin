@@ -66,7 +66,7 @@ public abstract class MockLatency {
 
     /**
      * A fixed latency for all threads except the current thread.
-     * 
+     *
      * @param time the latency.
      * @param units the units.
      * @return a fixed latency.

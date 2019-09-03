@@ -7,10 +7,10 @@ We want people to be able to scratch their own itch, by writing an extension plu
 * Extension plugins can be small and easy to test, especially if they just add one or two `SCMTrait` implementations.
     * Reduces risk of upgrade of the extension plugin (as there is less changes to assess)
     * Reduces risk to release the more core plugins (as there is less functionality exposed by default to users)
-    
+
 In this regard, for SCM API we will:
 
-* Reject Pull Requests that add new `SCMTrait` implementations unless an exceedingly strong case can be made for their inclusion (i.e. these must be essential for 99.9% of users). 
+* Reject Pull Requests that add new `SCMTrait` implementations unless an exceedingly strong case can be made for their inclusion (i.e. these must be essential for 99.9% of users).
 *Note:* the `jenkins.scm.impl.trait.*FilterTrait` implementations would not pass this test now. The long term goal is to move these to a separate plugin, they were only added here because a filter was needed for the test harness.
 
 * Approve Pull Requests that enable extension plugins to be written, subject to presenting a coherent design within the overall principles of the SCM API.
@@ -89,7 +89,7 @@ To the greatest extent possible, please wrap lines to ensure that they do not ex
 ### Imports
 
 * For code in `src/main`:
-    - `*` imports are banned. 
+    - `*` imports are banned.
     - `static` imports are strongly discouraged.
     - `static` `*` imports are discouraged unless code readability is significantly enhanced and the import is restricted to a single class.
 * For code in `src/test`:
@@ -120,16 +120,16 @@ To the greatest extent possible, please wrap lines to ensure that they do not ex
      * The count of widgets
      */
     private int widgetCount;
-    
+
     /**
      * Returns the count of widgets.
      *
-     * @return the count of widgets. 
+     * @return the count of widgets.
      */
     public int getWidgetCount() {
         return widgetCount;
     }
-    
+
     /**
      * Sets the count of widgets.
      *

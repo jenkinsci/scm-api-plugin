@@ -58,7 +58,7 @@ public abstract class ChangeRequestSCMRevision<H extends SCMHead & ChangeRequest
      * Returns the revision of the {@link ChangeRequestSCMHead#getTarget()} that this {@link ChangeRequestSCMHead} is
      * associated with.
      *
-     * @return a “target” or “base” branch revision.
+     * @return a "target" or "base" branch revision.
      */
     @Exported
     @NonNull

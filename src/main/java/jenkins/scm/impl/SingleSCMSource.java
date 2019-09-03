@@ -107,7 +107,7 @@ public class SingleSCMSource extends SCMSource {
     public String getName() {
         return name;
     }
-    
+
     public SCM getScm() {
         return scm;
     }

@@ -85,7 +85,7 @@ public class SCMRevisionAction extends InvisibleAction {
      * @param sourceId the source id.
      */
     /*package*/ SCMRevisionAction(@NonNull SCMRevision revision, @CheckForNull String sourceId) {
-        Objects.requireNonNull(revision); 
+        Objects.requireNonNull(revision);
         this.sourceId = sourceId;
         this.revision = revision;
     }

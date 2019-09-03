@@ -47,8 +47,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  *     <li>A {@link SCMSource} implementation that corresponds to a GitHub Repository could use the
  *     {@link #getObjectUrl()} to point to the GitHub repository, and the {@link #getObjectDescription()} to provide the
  *     repository description name</li>
- *     <li>A {@link SCMHead} implementation that corresponds to a GitHub Pull Request could use the 
- *     {@link #getObjectUrl()} to point to the pull request on GitHub, the {@link #getObjectDisplayName()} to provide 
+ *     <li>A {@link SCMHead} implementation that corresponds to a GitHub Pull Request could use the
+ *     {@link #getObjectUrl()} to point to the pull request on GitHub, the {@link #getObjectDisplayName()} to provide
  *     the title of the pull request and {@link #getObjectDescription()} to provide the description of the pull request
  *     </li>
  * </ul>
