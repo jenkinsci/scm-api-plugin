@@ -33,7 +33,7 @@
   <f:dropdownDescriptorSelector field="scm" title="${%Source Code Management}" descriptors="${descriptor.getSCMDescriptors(sourceOwner)}"/>
   <!-- Presumably cribbed from /lib/hudson/project/config-scm.jelly but does not work for reasons TBD (and radio buttons take too much space anyway):
   <j:set var="namePrefix" value="${h.generateId()}"/>
-  <f:entry title="Source Code Management">
+  <f:entry title="${%Source Code Management}">
     <table width="100%">
       <j:set var="scms" value="${descriptor.getSCMDescriptors(sourceOwner)}" />
       <j:forEach var="descriptor" items="${scms}" varStatus="loop">
