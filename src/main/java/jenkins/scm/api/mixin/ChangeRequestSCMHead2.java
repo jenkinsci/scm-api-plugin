@@ -24,37 +24,16 @@
 
 package jenkins.scm.api.mixin;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMSource;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Additional attributes of a {@link ChangeRequestSCMHead} that should have been in the original mixin but we are not
  * targeting Java 8 so we cannot add the default methods to the interface and must have an ugly {@code 2} class instead.
  * @since 2.2.0
  */
-// TODO once Java 8 is baseline move method to ChangeRequestSCMHead with default return value,
-// TODO deprecate this interface and add @Restricted(NoExternalUse.class) (retain empty interface for binary compat)
+@Deprecated
+@Restricted(NoExternalUse.class)
 public interface ChangeRequestSCMHead2 extends ChangeRequestSCMHead {
-    /**
-     * Returns the {@link ChangeRequestCheckoutStrategy} of this {@link ChangeRequestSCMHead}.
-     *
-     * @return the {@link ChangeRequestCheckoutStrategy}.
-     */
-    @NonNull
-    ChangeRequestCheckoutStrategy getCheckoutStrategy();
-
-    /**
-     * Returns the name of the actual head on the source control system which may or may not be different from
-     * {@link #getName()}. For example in GitHub or Bitbucket this method would return the name of the origin branch
-     * whereas {@link #getName()} would return something like {@code PR-24}. It is perfectly acceptable for a SCM
-     * implementation to return the same value as {@link #getName()} where the SCM implementation does not have a
-     * separate concept of origin name.
-     *
-     * @return the name this {@link ChangeRequestSCMHead} would have if the {@link SCMSource} were configured
-     * against the {@link #getOrigin()} directly and the change request were be discoverable as a regular
-     * {@link SCMHead} or {@link #getName()} if such a concept is not possible in the backing source control system.
-     */
-    @NonNull
-    String getOriginName();
+    //retain empty interface for binary compatible
 }
