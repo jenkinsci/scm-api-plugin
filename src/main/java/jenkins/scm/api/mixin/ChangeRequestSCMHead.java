@@ -68,6 +68,7 @@ public interface ChangeRequestSCMHead extends SCMHeadMixin {
      * against the {@link #getOrigin()} directly and the change request were be discoverable as a regular
      * {@link SCMHead} or {@link #getName()} if such a concept is not possible in the backing source control system.
      */
+    @CheckForNull
     default String getOriginName() {
         return null;
     }
