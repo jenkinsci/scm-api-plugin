@@ -30,7 +30,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * Additional attributes of a {@link ChangeRequestSCMHead} that should have been in the original mixin but we are not
  * targeting Java 8 so we cannot add the default methods to the interface and must have an ugly {@code 2} class instead.
- * @since 2.2.0
+  * @since TODO
+  * @deprecated use {@link ChangeRequestSCMHead} instead. 
  */
 @Deprecated
 @Restricted(NoExternalUse.class)
