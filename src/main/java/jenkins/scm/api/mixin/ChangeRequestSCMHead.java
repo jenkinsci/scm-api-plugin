@@ -51,6 +51,7 @@ public interface ChangeRequestSCMHead extends SCMHeadMixin {
      * Returns the {@link ChangeRequestCheckoutStrategy} of this {@link ChangeRequestSCMHead}.
      *
      * @return the {@link ChangeRequestCheckoutStrategy}.
+     * @since TODO
      */
     @CheckForNull
     default ChangeRequestCheckoutStrategy getCheckoutStrategy() {
