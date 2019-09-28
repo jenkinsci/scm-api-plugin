@@ -27,10 +27,10 @@ THE SOFTWARE.
     <f:description>
         <j:out value="${%blurb}"/>
     </f:description>
-    <f:entry field="name" title="Name">
+    <f:entry field="name" title="${%Name}">
         <f:textbox/>
     </f:entry>
-    <f:entry field="sources" title="Sources">
+    <f:entry field="sources" title="${%Sources}">
         <f:repeatableHeteroProperty field="sources" hasHeader="true"/>
     </f:entry>
 </j:jelly>
