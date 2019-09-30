@@ -1432,7 +1432,7 @@ public class MySCMWebHook implements UnprotectedRootAction {
 }
 ----
 
-Basically, you don't have to worry about triggering the build... you just have to fire the event. If you event is implemented correctly then the event subsystem will match the event to the corresponding SCMSource instances and let them do what they need to do (and in the case of multibranch, what it needs to do is: initiate a check of the latest revision and then build if the revision is changed).
+You don't have to worry about triggering the build, you just have to fire the event. If your event is implemented correctly then the event subsystem will match the event to the corresponding SCMSource instances and let them do what they need to do. In the case of multibranch, for example, they will initiate a check of the latest revision and then build if the revision is changed.
 
 There are some common concerns that you should be aware of when writing a webhook:
 
