@@ -161,6 +161,75 @@ public abstract class SCMFileSystem implements Closeable {
     /**
      * Given a {@link SCM} this method will try to retrieve a corresponding {@link SCMFileSystem} instance.
      *
+     * @param build the build of the {@link SCM}
+     * @param scm the {@link SCM}.
+     * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
+     */
+    @CheckForNull
+    public static SCMFileSystem of(@NonNull Run build, @NonNull SCM scm) throws IOException, InterruptedException {
+        return of(build, scm, null);
+    }
+
+    /**
+     * Given a {@link SCM} this method will try to retrieve a corresponding {@link SCMFileSystem} instance that
+     * reflects the content at the specified {@link SCMRevision}.
+     *
+     * @param build the build of the {@link SCM}
+     * @param scm the {@link SCM}.
+     * @param rev the specified {@link SCMRevision}.
+     * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
+     */
+    @CheckForNull
+    public static SCMFileSystem of(@NonNull Run build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+            throws IOException, InterruptedException {
+        Objects.requireNonNull(scm);
+        SCMFileSystem fallBack = null;
+        Throwable failure = null;
+        for (Builder b : ExtensionList.lookup(Builder.class)) {
+            if (b.supports(scm)) {
+                try {
+                    SCMFileSystem inspector = b.build(build, scm, rev);
+                    if (inspector != null) {
+                        if (inspector.isFixedRevision()) {
+                            return inspector;
+                        }
+                        if (fallBack == null) {
+                            fallBack = inspector;
+                        }
+                    }
+                } catch (IOException | InterruptedException | RuntimeException e) {
+                    if (failure == null) {
+                        failure = e;
+                    } else {
+                        failure.addSuppressed(e);
+                    }
+                }
+            }
+        }
+        if (fallBack == null) {
+            if (failure instanceof IOException) {
+                throw (IOException) failure;
+            }
+            if (failure instanceof InterruptedException) {
+                throw (InterruptedException) failure;
+            }
+            //noinspection ConstantConditions
+            if (failure instanceof RuntimeException) {
+                throw (RuntimeException) failure;
+            }
+        }
+        return fallBack;
+    }
+
+    /**
+     * Given a {@link SCM} this method will try to retrieve a corresponding {@link SCMFileSystem} instance.
+     *
      * @param owner the owner of the {@link SCM}
      * @param scm the {@link SCM}.
      * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
@@ -482,6 +551,25 @@ public abstract class SCMFileSystem implements Closeable {
          * @since 2.3.0
          */
         protected abstract boolean supportsDescriptor(SCMSourceDescriptor descriptor);
+
+        /**
+         * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that
+         * reflects the content at the specified {@link SCMRevision}. If the {@link SCM} is supported but not
+         * for a fixed revision, best effort is acceptable as the most capable {@link SCMFileSystem} will be returned
+         * to the caller.
+         *
+         * @param build the build of the {@link SCM}
+         * @param scm the {@link SCM}.
+         * @param rev the specified {@link SCMRevision}.
+         * @return the corresponding {@link SCMFileSystem} or {@code null} if this builder cannot create a {@link
+         * SCMFileSystem} for the specified {@link SCM}.
+         * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+         *                              (such as the remote system being unavailable)
+         * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
+         */
+        @CheckForNull
+        public abstract SCMFileSystem build(@NonNull Run build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+                throws IOException, InterruptedException;
 
         /**
          * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that

@@ -27,6 +27,7 @@ package jenkins.scm.impl;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
+import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import jenkins.scm.api.SCMFileSystem;
@@ -117,6 +118,13 @@ public class SCMFileSystemTest {
             return null;
         }
 
+        @Override
+        @CheckForNull
+        public SCMFileSystem build(@NonNull Run build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+                throws IOException, InterruptedException {
+            return null;
+        }
+
     }
 
     @TestExtension("filesystem_supports_false_implementation_for_descriptor")
@@ -144,6 +152,13 @@ public class SCMFileSystemTest {
         @Override
         @CheckForNull
         public SCMFileSystem build(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+                throws IOException, InterruptedException {
+            return null;
+        }
+
+        @Override
+        @CheckForNull
+        public SCMFileSystem build(@NonNull Run build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
                 throws IOException, InterruptedException {
             return null;
         }
