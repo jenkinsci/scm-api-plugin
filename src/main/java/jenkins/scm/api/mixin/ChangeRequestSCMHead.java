@@ -30,8 +30,6 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMSource;
 import org.kohsuke.stapler.export.Exported;
 
-import javax.annotation.CheckForNull;
-
 /**
  * Mixin interface to identify {@link SCMHead} instances that correspond to a change request.
  *
@@ -55,7 +53,7 @@ public interface ChangeRequestSCMHead extends SCMHeadMixin {
      * @return the {@link ChangeRequestCheckoutStrategy}.
      * @since TODO
      */
-    @CheckForNull
+    @NonNull
     default ChangeRequestCheckoutStrategy getCheckoutStrategy() {
         return null;
     }
@@ -73,7 +71,7 @@ public interface ChangeRequestSCMHead extends SCMHeadMixin {
      *
      * @since TODO
      */
-    @CheckForNull
+    @NonNull
     @Exported
     default String getOriginName() {
         return null;
@@ -93,7 +91,8 @@ public interface ChangeRequestSCMHead extends SCMHeadMixin {
      * @return title of the change request
      */
     @Exported
+    @NonNull
     default String getTitle() {
-        return "";
+        return null;
     }
 }
