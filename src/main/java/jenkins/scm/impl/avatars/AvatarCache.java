@@ -55,13 +55,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
-import jenkins.scm.impl.avatars.AvatarCacheSource.AvatarImage;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;

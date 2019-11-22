@@ -23,30 +23,28 @@
  */
 package jenkins.scm.impl.avatars;
 
+import java.awt.image.BufferedImage;
+
 /**
- *
- * Interface for Avatar Cache Item Source
- * 
- * This defines a source for avatar to be ached and implementation to fetch it
+ * Holds Image and lastModified date
  */
-public interface AvatarCacheSource {
+public class AvatarImage {
     /**
-     *
-     * Fetch image from source
-     *
-     * @return image as AvatarImage object
+     * Avatar Image
      */
-    public AvatarImage fetch();
+    public final BufferedImage image;
+    /**
+     * Last Modified Timestamp
+     */
+    public final long lastModified;
 
     /**
-     * Get unique hash key for this item to be used for caching 
+     * Singleton for empty image
      */
-    public String hashKey();
+    public static final AvatarImage EMPTY = new AvatarImage(null, 0);
 
-    /**
-     * Make sure we can fetch
-     *
-     * @return true if can fetch
-     */
-    public boolean canFetch();
+    public AvatarImage(final BufferedImage image, final long lastModified) {
+        this.image = image;
+        this.lastModified = lastModified;
+    }
 }
