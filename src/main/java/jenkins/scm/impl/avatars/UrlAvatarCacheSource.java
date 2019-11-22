@@ -105,12 +105,12 @@ public class UrlAvatarCacheSource implements AvatarCacheSource {
                     }
                     return new AvatarImage(image, connection.getLastModified());
                 } catch (Exception e) {
-                    LOGGER.log(Level.INFO, "1:" + e.getMessage(), e);
+                    LOGGER.log(Level.INFO, "Failed to read from stream:" + e.getMessage(), e);
                 } finally {
                     IOUtils.closeQuietly(is);
                 }
             } catch (Exception e) {
-                LOGGER.log(Level.INFO, "2:" + e.getMessage(), e);
+                LOGGER.log(Level.INFO, "Failed to connect to remote:" + e.getMessage(), e);
             } finally {
                 connection.disconnect();
             }
