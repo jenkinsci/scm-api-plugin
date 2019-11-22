@@ -145,7 +145,7 @@ public class AvatarCache implements UnprotectedRootAction {
      * @return the URL of the cached image.
      * @throws IllegalStateException if called outside of a request handling thread.
      */
-    public static String buildUrl(@NonNull AvatarCacheSource source, @NonNull String size) {
+    public static String buildUrl(@NonNull AvatarImageSource source, @NonNull String size) {
         Jenkins j = Jenkins.get();
         AvatarCache instance = ExtensionList.lookup(RootAction.class).get(AvatarCache.class);
         if (instance == null) {
@@ -409,7 +409,7 @@ public class AvatarCache implements UnprotectedRootAction {
      * @return the entry or {@code null} if a read-only check found no matching entry.
      */
     @Nullable
-    private CacheEntry getCacheEntry(@NonNull final String key, @Nullable final AvatarCacheSource source) {
+    private CacheEntry getCacheEntry(@NonNull final String key, @Nullable final AvatarImageSource source) {
         CacheEntry entry = cache.get(key);
         if (entry == null) {
             synchronized (serviceLock) {
@@ -461,7 +461,7 @@ public class AvatarCache implements UnprotectedRootAction {
         /**
          * Source for avatar
          */
-        private final AvatarCacheSource source;
+        private final AvatarImageSource source;
         /**
          * The cached image or {@code null} if not retrieved yet.
          */
@@ -481,7 +481,7 @@ public class AvatarCache implements UnprotectedRootAction {
          */
         private Future<CacheEntry> future;
 
-        private CacheEntry(AvatarCacheSource source, BufferedImage image, long lastModified) {
+        private CacheEntry(AvatarImageSource source, BufferedImage image, long lastModified) {
             this.source = source;
             if (image.getHeight() > 128 || image.getWidth() > 128) {
                 // limit the amount of storage
@@ -500,14 +500,14 @@ public class AvatarCache implements UnprotectedRootAction {
             return (source != null && source.canFetch());
         }
 
-        private CacheEntry(AvatarCacheSource source, Future<CacheEntry> future) {
+        private CacheEntry(AvatarImageSource source, Future<CacheEntry> future) {
             this.source = source;
             this.image = null;
             this.lastModified = System.currentTimeMillis();
             this.future = future;
         }
 
-        private CacheEntry(AvatarCacheSource source) {
+        private CacheEntry(AvatarImageSource source) {
             this.source = source;
             this.lastModified = System.currentTimeMillis();
         }
@@ -601,9 +601,9 @@ public class AvatarCache implements UnprotectedRootAction {
      * A task to fetch an image from a remote URL.
      */
     private static class FetchImage implements Callable<CacheEntry> {
-        private final AvatarCacheSource source;
+        private final AvatarImageSource source;
 
-        private FetchImage(@NonNull AvatarCacheSource source) {
+        private FetchImage(@NonNull AvatarImageSource source) {
             this.source = source;
         }
 

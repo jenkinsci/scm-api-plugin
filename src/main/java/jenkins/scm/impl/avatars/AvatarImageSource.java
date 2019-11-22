@@ -29,7 +29,7 @@ package jenkins.scm.impl.avatars;
  * 
  * This defines a source for avatar to be ached and implementation to fetch it
  */
-public interface AvatarCacheSource {
+public interface AvatarImageSource {
     /**
      *
      * Fetch image from source

@@ -40,7 +40,7 @@ import org.apache.commons.io.IOUtils;
  * Basic URL based Cache Source - Fetches Image from HTTP/HTTPS URL without authentication
  *
  */
-public class UrlAvatarCacheSource implements AvatarCacheSource {
+public class UrlAvatarCacheSource implements AvatarImageSource {
     /**
      * Our logger.
      */
