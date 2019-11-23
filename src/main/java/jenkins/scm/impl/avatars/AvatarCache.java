@@ -405,7 +405,7 @@ public class AvatarCache implements UnprotectedRootAction {
      * Retrieves the entry from the cache.
      *
      * @param key the cache key.
-     * @param url the URL to fetch if the entry is missing or {@code null} to perform a read-only check.
+     * @param source the URL to fetch if the entry is missing or {@code null} to perform a read-only check.
      * @return the entry or {@code null} if a read-only check found no matching entry.
      */
     @Nullable
@@ -477,7 +477,7 @@ public class AvatarCache implements UnprotectedRootAction {
          */
         private long lastAccessed = -1L;
         /**
-         * The queued request to retrieve the image from the {@link #url}.
+         * The queued request to retrieve the image from the {@link #source}.
          */
         private Future<CacheEntry> future;
 
