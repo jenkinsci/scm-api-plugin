@@ -151,7 +151,7 @@ public class AvatarCache implements UnprotectedRootAction {
         if (instance == null) {
             throw new AssertionError();
         }
-        String key = Util.getDigestOf(AvatarCache.class.getName() + source.hashKey());
+        String key = Util.getDigestOf(AvatarCache.class.getName() + source.getId());
         // seed the cache
         instance.getCacheEntry(key, source);
         try {
@@ -353,7 +353,7 @@ public class AvatarCache implements UnprotectedRootAction {
             // we will generate avatars if the URL is not HTTP based
             // since the url string will not magically turn itself into a HTTP url this avatar is immutable
             return new ImageResponse(
-                    generateAvatar(avatar == null ? "" : avatar.source.hashKey(), targetSize),
+                    generateAvatar(avatar == null ? "" : avatar.source.getId(), targetSize),
                     true,
                     startedTime,
                     "max-age=365000000, immutable, public"
@@ -364,7 +364,7 @@ public class AvatarCache implements UnprotectedRootAction {
             // serve a temporary avatar until we get the remote one, no caching as we could have the real deal
             // real soon now
             return new ImageResponse(
-                    generateAvatar(avatar.source.hashKey(), targetSize),
+                    generateAvatar(avatar.source.getId(), targetSize),
                     true,
                     -1L,
                     "no-cache, public"
@@ -385,7 +385,7 @@ public class AvatarCache implements UnprotectedRootAction {
         if (avatar.image == null) {
             // we can retry in an hour
             return new ImageResponse(
-                    generateAvatar(avatar.source.hashKey(), targetSize),
+                    generateAvatar(avatar.source.getId(), targetSize),
                     true,
                     -1L,
                     "max-age=3600, public"

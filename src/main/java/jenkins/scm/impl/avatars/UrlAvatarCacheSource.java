@@ -130,7 +130,7 @@ public class UrlAvatarCacheSource implements AvatarImageSource {
      * Generate hash key used for caching
      */
     @Override
-    public String hashKey() {
+    public String getId() {
         // TODO Auto-generated method stub
         return this.url;
     }

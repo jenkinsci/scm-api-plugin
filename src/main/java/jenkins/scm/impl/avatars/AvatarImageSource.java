@@ -36,17 +36,17 @@ public interface AvatarImageSource {
      *
      * @return image as AvatarImage object
      */
-    public AvatarImage fetch();
+    AvatarImage fetch();
 
     /**
-     * Get unique hash key for this item to be used for caching 
+     * Get unique hash key for this item to be used for caching
      */
-    public String hashKey();
+    String getId();
 
     /**
      * Make sure we can fetch
      *
      * @return true if can fetch
      */
-    public boolean canFetch();
+    boolean canFetch();
 }
