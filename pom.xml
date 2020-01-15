@@ -41,7 +41,7 @@
   <description>
     This plugin provides a new enhanced API for interacting with SCM systems.
   </description>
-  <url>https://github.com/jenkinsci/scm-api-plugin/master/docs/consumer.adoc</url>
+  <url>https://github.com/jenkinsci/scm-api-plugin/blob/master/docs/consumer.adoc</url>
   <licenses>
     <license>
       <name>The MIT license</name>
