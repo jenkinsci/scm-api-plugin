@@ -30,5 +30,3 @@ To release the plugin:
 To test in a local Jenkins instance
 
     mvn hpi:run
-
-  [wiki]: http://wiki.jenkins-ci.org/display/JENKINS/SCM+API+Plugin
