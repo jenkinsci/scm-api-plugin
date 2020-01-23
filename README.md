@@ -1,6 +1,6 @@
 # Jenkins SCM API Plugin
 
- This plugin provides a new enhanced API for interacting with SCM systems. See also this [plugin's wiki page][wiki]
+ This plugin provides a new enhanced API for interacting with SCM systems.
 
  If you are writing a plugin that implements this API, please see [the implementation guide](docs/implementation.adoc)
 
