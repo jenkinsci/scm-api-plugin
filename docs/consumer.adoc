@@ -41,7 +41,7 @@ If project A depends on project B then we may have complex triggers between each
 * We you have even more projects, most jobs are doing mostly the same thing and reuse of these patterns and/or implementation of organizational best practices becomes hard.
 This is especially a concern when those organizational best practices change and you have thousands of jobs that need to be updated.
 
-One of the first attempts to solve this problem was introduced by the https://wiki.jenkins-ci.org/display/JENKINS/Git+Plugin[Git plugin]:
+One of the first attempts to solve this problem was introduced by the https://plugins.jenkins.io/git[Git plugin]:
 
 * Rather than having a job track a single branch, a job could be configured that tracked multiple branches.
 
@@ -69,7 +69,7 @@ In order to allow for some rollback of some of these side-effects, typically one
 
 This leaves only one job with meaningless change logs / build status history / trend charts / etc, but we still have the issue of needing to maintain all the sustaining branches.
 
-The https://wiki.jenkins-ci.org/display/JENKINS/Branch+API+Plugin[Branch API plugin] was developed as a second alternative solution to this problem space.
+The https://plugins.jenkins.io/branch-api+Plugin[Branch API plugin] was developed as a second alternative solution to this problem space.
 The idea behind the Branch API plugin is to have a special job type which will follow all the branches in a repository and create sub-jobs for each branch. These branch specific jobs can then be managed automatically by the multi-branch project such that they can be removed automatically after the corresponding branch has been removed.
 
 Each branch specific sub-job has:
@@ -95,7 +95,7 @@ Should branch `feature-23` of project A be using the artifacts from branch `mast
 
 Efforts to solve these issues are a responsibility of the plugins that implement multi-branch project types.
 
-* The https://wiki.jenkins-ci.org/display/JENKINS/Literate+Plugin[Literate plugin] stores the job configuration in a file (`README.md`) in source control directly in the branch.
+* The https://plugins.jenkins.io/literate[Literate plugin] stores the job configuration in a file (`README.md`) in source control directly in the branch.
 +
 Thus if the one branch uses a different build process then the configuration for that branch can live within that branch.
 +
@@ -104,9 +104,9 @@ The type of build configuration supported by the literate plugin is, as a result
 The literate plugin also follows the principle of keeping all job configuration in the branch to which it relates.
 This means if you want to change one aspect of the build process in multiple branches at the same time, you need to explicitly replicate the changes to all the branches.
 Whether this is an advantage or disadvantage depends on your point of view.
-* The https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch plugin] also stores the job configuration in a file (`Jenkinsfile`) in source control directly in the branch.
+* The https://plugins.jenkins.io/workflow-multibranch[Pipeline Multibranch plugin] also stores the job configuration in a file (`Jenkinsfile`) in source control directly in the branch.
 +
-That file can reference lightweight "plugins" in the form of https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Shared+Groovy+Libraries+Plugin[shared groovy libraries].
+That file can reference lightweight "plugins" in the form of https://plugins.jenkins.io/workflow-cps-global-lib[shared groovy libraries].
 This allows for a Jenkins administrator to split some reusable best practices into a shared library.
 Changing the best practice in the global shared library can then affect all the branches simultaneously -- or if the shared library version was pinned you would need to push the library version update to the required branches.
 
@@ -165,7 +165,7 @@ If your object is not discoverable through `Jenkins.getInstance().getAllItems(SC
 Each `SCMSource` assumes that it is owned by a `SCMSourceOwner` object.
 The owner is responsible for:
 
-* providing a context from which the `SCMSource` can resolve any required `Credentials` via the https://wiki.jenkins-ci.org/display/JENKINS/Credentials+Plugin[Credentials plugin]
+* providing a context from which the `SCMSource` can resolve any required `Credentials` via the https://plugins.jenkins.io/credentials[Credentials plugin]
 
 * providing any `SCMSourceCriteria` that would be required by the `SCMSource` in order to determine if a candidate `SCMHead` is actually a `SCMHead` that the owner is interested in.
 
