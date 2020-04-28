@@ -8,7 +8,7 @@ This document is structured as follows:
 
 * The second section is an overview of all the functionality provided by the SCM API.
 
-* The subsequent sections consider each of the API extension points in turn and the recommended usage patterns
+* The subsequent sections consider each of the API extension points in turn and the recommended usage patterns.
 
 === Background
 
@@ -26,7 +26,7 @@ Initially, creating one job for each development branch seems reasonable:
 
 * The older branches may require older versions of the build toolchain.
 * The job changelog for each branch reflects the changes in that branch.
-* The build break / fix status for each branch is correct
+* The build break / fix status for each branch is correct.
 * The creation of the branch job is just a copy operation within Jenkins - or a rename and copy if you want to move the build history.
 
 There are some issues however:
@@ -118,11 +118,11 @@ The initial SCM API extension points were driven by a lot of the use cases of th
 
 The primary requirements of the Branch API are:
 
-* provide a means to enumerate all the "branches" of a "repository"
+* provide a means to enumerate all the "branches" of a "repository".
 
 * provide a means to identify interesting "branches", by checking whether the branch has specific files or perhaps even checking the contents of specific files within the branch.
 
-* provide a means to enumerate all the "repositories" of a "source control server"
+* provide a means to enumerate all the "repositories" of a "source control server".
 
 === Overview
 
@@ -165,7 +165,7 @@ If your object is not discoverable through `Jenkins.getInstance().getAllItems(SC
 Each `SCMSource` assumes that it is owned by a `SCMSourceOwner` object.
 The owner is responsible for:
 
-* providing a context from which the `SCMSource` can resolve any required `Credentials` via the https://plugins.jenkins.io/credentials[Credentials plugin]
+* providing a context from which the `SCMSource` can resolve any required `Credentials` via the https://plugins.jenkins.io/credentials[Credentials plugin].
 
 * providing any `SCMSourceCriteria` that would be required by the `SCMSource` in order to determine if a candidate `SCMHead` is actually a `SCMHead` that the owner is interested in.
 
@@ -200,7 +200,7 @@ Normally this is achieved by setting the owner on creation, load and reconfigura
 
 Your implementation of `jenkins.scm.api.SCMSourceOwner` *should*:
 
-* Assume that `SCMSource.fetch(_observer_, _listener_)` may ignore your `SCMSourceOwner.getSCMSourceCriteria` -- not all source control systems will have the ability to perform either shallow probes (via `jenkins.scm.SCMProbe`) let alone deep probes (via `SCMProbe.getRoot()` or `jenkins.scm.SCMFileSystem.of(...)`)
+* Assume that `SCMSource.fetch(_observer_, _listener_)` may ignore your `SCMSourceOwner.getSCMSourceCriteria` -- not all source control systems will have the ability to perform either shallow probes (via `jenkins.scm.SCMProbe`) let alone deep probes (via `SCMProbe.getRoot()` or `jenkins.scm.SCMFileSystem.of(...)`).
 
 * Persist the results of any discovery of any interesting `SCMHead` instances resulting from calls to `SCMSource.fetch(...)` in some form or other.
 +
@@ -219,7 +219,7 @@ It may not always be either possible or preferred to attach the actions directly
 
 For example, `hudson.model.AbstractProject` subclasses do not allow modification of the project's actions (because `AbstractProject.getActions()` returns a read-only list and `Actionable.addAction(_action_)` tries to add the action to the list returned by `getActions()`).
 
-An alternative is to persist the actions through some other mechanism (in the case of the `AbstractProject` subclass, we could store them in a `JobProperty`) and then populate at runtime them using a `TransientItemActionFactory`
+An alternative is to persist the actions through some other mechanism (in the case of the `AbstractProject` subclass, we could store them in a `JobProperty`) and then populate at runtime them using a `TransientItemActionFactory`.
 ====
 
 The primary purpose of the `SCMSource` API is to allow the enumeration of `SCMHead` instances (and their current corresponding `SCMRevision`) from the source, so presumably you have implemented `SCMSourceOwner` because you want to do something with the `SCMHead` instances.
@@ -266,7 +266,7 @@ Your implementation of `jenkins.scm.api.SCMSourceOwner` *should*:
 * Persist the results of any discovery of any interesting project instances resulting from calls to `SCMNavigator.visitSources(...)` in some form or other.
 +
 For example the Branch API plugin creates sub-jobs in an organizational folder for each project that it is interested in.
-The project name and attributes are persisted with their corresponding sub-jobs..
+The project name and attributes are persisted with their corresponding sub-jobs.
 
 * Have a `jenkins.scm.api.SCMEventListener` implementation to respond to events.
 +
@@ -279,7 +279,7 @@ If a `Jenkinsfile` were present then the project would need to be created in ord
 
 * Persist the results of `SCMNavigator.fetchActions(_owner_, _listener_)` as part of each index and on receipt of any `SCMNavigatorEvent` events of type `UPDATED`.
 +
-If two `SCMNavigator` instances have the same `SCMNavigator.getId()` then the `SCMNavigatorOwner` can use a shared set of actions for these instances as they are both navigating the same thing (although with different selection criteria)
+If two `SCMNavigator` instances have the same `SCMNavigator.getId()` then the `SCMNavigatorOwner` can use a shared set of actions for these instances as they are both navigating the same thing (although with different selection criteria).
 +
 [TIP]
 ====
@@ -287,7 +287,7 @@ It may not always be either possible or preferred to attach the actions directly
 
 For example, `hudson.model.AbstractProject` subclasses do not allow modification of the project's actions (because `AbstractProject.getActions()` returns a read-only list and `Actionable.addAction(_action_)` tries to add the action to the list returned by `getActions()`).
 
-An alternative is to persist the actions through some other mechanism (in the case of the `AbstractProject` subclass, we could store them in a `JobProperty`) and then populate at runtime them using a `TransientItemActionFactory`
+An alternative is to persist the actions through some other mechanism (in the case of the `AbstractProject` subclass, we could store them in a `JobProperty`) and then populate at runtime them using a `TransientItemActionFactory`.
 ====
 
 The primary purpose of the `SCMNavigator` API is to allow the enumeration of named projects which each have a corresponding `SCMSource` instances, so presumably you have implemented `SCMSourceOwner` because you want to do something with the `SCMSource` instances.
