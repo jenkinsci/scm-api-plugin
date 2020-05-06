@@ -29,8 +29,8 @@ import jenkins.scm.api.SCMSource;
 import org.junit.Test;
 import org.mockito.InOrder;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
