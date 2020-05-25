@@ -568,8 +568,10 @@ public abstract class SCMFileSystem implements Closeable {
          * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
          */
         @CheckForNull
-        public abstract SCMFileSystem build(@NonNull Run build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
-                throws IOException, InterruptedException;
+        public SCMFileSystem build(@NonNull Run<?, ?> build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+                throws IOException, InterruptedException {
+            return build(build.getParent(), scm, rev);
+        }
 
         /**
          * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that
