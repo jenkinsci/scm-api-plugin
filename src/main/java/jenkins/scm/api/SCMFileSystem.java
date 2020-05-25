@@ -169,7 +169,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull Run build, @NonNull SCM scm) throws IOException, InterruptedException {
+    public static SCMFileSystem of(@NonNull Run<?, ?> build, @NonNull SCM scm) throws IOException, InterruptedException {
         return of(build, scm, null);
     }
 
