@@ -120,7 +120,7 @@ public class SCMFileSystemTest {
 
         @Override
         @CheckForNull
-        public SCMFileSystem build(@NonNull Run build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+        public SCMFileSystem build(@NonNull Run<?, ?> build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
                 throws IOException, InterruptedException {
             return null;
         }
@@ -158,7 +158,7 @@ public class SCMFileSystemTest {
 
         @Override
         @CheckForNull
-        public SCMFileSystem build(@NonNull Run build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+        public SCMFileSystem build(@NonNull Run<?, ?> build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
                 throws IOException, InterruptedException {
             return null;
         }

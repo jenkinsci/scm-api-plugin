@@ -169,7 +169,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull Run build, @NonNull SCM scm) throws IOException, InterruptedException {
+    public static SCMFileSystem of(@NonNull Run<?, ?> build, @NonNull SCM scm) throws IOException, InterruptedException {
         return of(build, scm, null);
     }
 
@@ -186,7 +186,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull Run build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+    public static SCMFileSystem of(@NonNull Run<?, ?> build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
             throws IOException, InterruptedException {
         Objects.requireNonNull(scm);
         SCMFileSystem fallBack = null;
@@ -568,8 +568,10 @@ public abstract class SCMFileSystem implements Closeable {
          * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
          */
         @CheckForNull
-        public abstract SCMFileSystem build(@NonNull Run build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
-                throws IOException, InterruptedException;
+        public abstract SCMFileSystem build(@NonNull Run<?, ?> build, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+                throws IOException, InterruptedException {
+            return build(build.getParent(), scm, rev);
+        }
 
         /**
          * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that
