@@ -27,8 +27,8 @@ package jenkins.scm.api;
 import java.util.Collections;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class SCMUriTest {
     @Test

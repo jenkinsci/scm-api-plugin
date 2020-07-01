@@ -30,9 +30,9 @@ import jenkins.scm.api.mixin.SCMHeadMixin;
 import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 public class SCMHeadTest {
 

@@ -41,9 +41,9 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.jvnet.localizer.Localizable;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class SCMCategoryTest {
     @Test
