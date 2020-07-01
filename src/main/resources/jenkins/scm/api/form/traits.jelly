@@ -100,7 +100,7 @@ THE SOFTWARE.
             <d:invokeBody/>
           </td>
         </j:otherwise>
-      </j:choose> 
+      </j:choose>
     </d:tag>
     <d:tag name="body">
       <local:blockWrapper>
