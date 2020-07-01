@@ -95,15 +95,6 @@ Should branch `feature-23` of project A be using the artifacts from branch `mast
 
 Efforts to solve these issues are a responsibility of the plugins that implement multi-branch project types.
 
-* The https://plugins.jenkins.io/literate[Literate plugin] stores the job configuration in a file (`README.md`) in source control directly in the branch.
-+
-Thus if the one branch uses a different build process then the configuration for that branch can live within that branch.
-+
-The type of build configuration supported by the literate plugin is, as a result of the configuration file format, restricted to shell steps and publishers.
-+
-The literate plugin also follows the principle of keeping all job configuration in the branch to which it relates.
-This means if you want to change one aspect of the build process in multiple branches at the same time, you need to explicitly replicate the changes to all the branches.
-Whether this is an advantage or disadvantage depends on your point of view.
 * The https://plugins.jenkins.io/workflow-multibranch[Pipeline Multibranch plugin] also stores the job configuration in a file (`Jenkinsfile`) in source control directly in the branch.
 +
 That file can reference lightweight "plugins" in the form of https://plugins.jenkins.io/workflow-cps-global-lib[shared groovy libraries].
