@@ -69,7 +69,7 @@ In order to allow for some rollback of some of these side-effects, typically one
 
 This leaves only one job with meaningless change logs / build status history / trend charts / etc, but we still have the issue of needing to maintain all the sustaining branches.
 
-The https://plugins.jenkins.io/branch-api+Plugin[Branch API plugin] was developed as a second alternative solution to this problem space.
+The https://plugins.jenkins.io/branch-api[Branch API plugin] was developed as a second alternative solution to this problem space.
 The idea behind the Branch API plugin is to have a special job type which will follow all the branches in a repository and create sub-jobs for each branch. These branch specific jobs can then be managed automatically by the multi-branch project such that they can be removed automatically after the corresponding branch has been removed.
 
 Each branch specific sub-job has:
