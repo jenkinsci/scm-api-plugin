@@ -33,15 +33,15 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class NullSCMSourceTest {
 
@@ -54,13 +54,13 @@ public class NullSCMSourceTest {
         NullSCMSource instance = new NullSCMSource();
         instance.fetch(null, observer, null);
         verify(observer, never()).observe(
-                (SCMHead)argThat(
+                argThat(
                         allOf(
                                 instanceOf(SCMHead.class),
                                 hasProperty("name", is("the-name"))
                         )
                 ),
-                (SCMRevision) argThat(
+                argThat(
                         allOf(
                                 instanceOf(SCMRevision.class),
                                 hasProperty("head", hasProperty("name", is("the-name"))),
@@ -74,7 +74,6 @@ public class NullSCMSourceTest {
     public void given_instance_when_fetchingNonObservedHead_then_nullScmReturned() throws Exception {
         NullSCMSource instance = new NullSCMSource();
         assertThat(instance.build(new SCMHead("foo"), mock(SCMRevision.class)), instanceOf(NullSCM.class));
-
     }
 
 }
