@@ -50,18 +50,18 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.mockito.InOrder;
 import org.mockito.Matchers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class SingleSCMSourceTest {
 
@@ -108,13 +108,13 @@ public class SingleSCMSourceTest {
                     new MockSCM(c, "foo", new MockSCMHead("master"), null));
             instance.fetch(null, observer, null);
             verify(observer).observe(
-                    (SCMHead) argThat(
+                    argThat(
                             allOf(
                                     instanceOf(SCMHead.class),
                                     hasProperty("name", is("the-name"))
                             )
                     ),
-                    (SCMRevision) argThat(
+                    argThat(
                             allOf(
                                     instanceOf(SCMRevision.class),
                                     hasProperty("head", hasProperty("name", is("the-name"))),

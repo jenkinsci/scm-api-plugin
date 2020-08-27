@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 CloudBees, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,34 +20,33 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
  */
+package jenkins.scm.impl.avatars;
 
-package jenkins.scm.impl;
+/**
+ *
+ * Interface for Avatar Cache Item Source
+ * 
+ * This defines a source for avatar to be ached and implementation to fetch it
+ */
+public interface AvatarImageSource {
+    /**
+     *
+     * Fetch image from source
+     *
+     * @return image as AvatarImage object
+     */
+    AvatarImage fetch();
 
-import jenkins.scm.api.SCMSource;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+    /**
+     * Get unique hash key for this item to be used for caching
+     */
+    String getId();
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.mock;
-
-@RunWith(Theories.class)
-public class UncategorizedSCMSourceCategoryTest {
-
-    @DataPoint
-    public static UncategorizedSCMSourceCategory defInstance = UncategorizedSCMSourceCategory.DEFAULT;
-
-    @DataPoint
-    public static UncategorizedSCMSourceCategory custInstance = new UncategorizedSCMSourceCategory(Messages._UncategorizedSCMSourceCategory_DisplayName());
-
-    @Theory
-    public void given_source_when_isMatch_then_confirmMatch(UncategorizedSCMSourceCategory instance) throws Exception {
-        SCMSource mock = mock(SCMSource.class);
-        assertThat(instance.isMatch(mock), is(true));
-    }
-
+    /**
+     * Make sure we can fetch
+     *
+     * @return true if can fetch
+     */
+    boolean canFetch();
 }

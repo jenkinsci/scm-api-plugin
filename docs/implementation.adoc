@@ -117,7 +117,7 @@ In reality, we do not know the time difference between the CVS server's clock an
 Implementers are free to map the concepts to their own SCM system as they see fit, but the recommendation is to try to keep close to the principles of mapping outlined in the above examples.
 
 The concepts we have covered so far determine how Jenkins plugins can drive interactions with the SCM system.
-While a Jenkins driven interaction with an SCM is sufficient for enabling advanced SCM functionality such as that provided in the https://wiki.jenkins-ci.org/display/JENKINS/Branch+API+Plugin[Branch API plugin], it does not lend to a good user experience as Jenkins would be required to continually poll the backing SCM to establish if there are any changes.
+While a Jenkins driven interaction with an SCM is sufficient for enabling advanced SCM functionality such as that provided in the https://plugins.jenkins.io/branch-api[Branch API plugin], it does not lend to a good user experience as Jenkins would be required to continually poll the backing SCM to establish if there are any changes.
 In order to minimize the load on Jenkins and the SCM system as well as minimize the amount of time between a change being committed to the SCM system and Jenkins responding to the change, it is necessary to implement the eventing portions of the SCM API.
 
 There are currently three classes of events:
@@ -180,9 +180,9 @@ The next step in implementing the SCM API is to allow for consuming plugins to p
 Consuming plugins may not be interested in every single `jenkins.scm.api.SCMHead`.
 For example:
 
-* the https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch Plugin] is only interested in `jenkins.scm.api.SCMHead` instances that have a `Jenkinsfile` in the root of the checkout.
+* the https://plugins.jenkins.io/workflow-multibranch[Pipeline Multibranch Plugin] is only interested in `jenkins.scm.api.SCMHead` instances that have a `Jenkinsfile` in the root of the checkout.
 
-* the https://wiki.jenkins-ci.org/display/JENKINS/Literate+Plugin[Literate Plugin] is only interested in `jenkins.scm.api.SCMHead` instances that have a marker file (configurable with the default being `.cloudbees.md`) in the root of the checkout.
+* the https://plugins.jenkins.io/literate[Literate Plugin] is only interested in `jenkins.scm.api.SCMHead` instances that have a marker file (configurable with the default being `.cloudbees.md`) in the root of the checkout.
 
 Each SCM API consuming plugin defines the criteria by implementing `jenkins.scm.api.SCMSourceCriteria`.
 Each `jenkins.scm.api.SCMSourceOwner` can specify the criteria for the `jenkins.scm.api.SCMSource` instances that it owns.
@@ -227,9 +227,9 @@ Consumers of the SCM API may want more advanced criteria to check the contents o
 Additionally, in some cases consumers of the SCM API may want to inspect specific files in the source control system in order to determine how to process that head / branch.
 For example,
 
-* when https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch Plugin] needs to build a specific revision of a specific branch, it first needs to parse the `Jenkinsfile` in order to determine the build plan.
+* when https://plugins.jenkins.io/workflow-multibranch[Pipeline Multibranch Plugin] needs to build a specific revision of a specific branch, it first needs to parse the `Jenkinsfile` in order to determine the build plan.
 
-* when https://wiki.jenkins-ci.org/display/JENKINS/Literate+Plugin[Literate Plugin] needs to build a specific revision of a specific branch, it first needs to parse the `README.md` in order to determine the matrix of execution environments against which to build.
+* when https://plugins.jenkins.io/literate[Literate Plugin] needs to build a specific revision of a specific branch, it first needs to parse the `README.md` in order to determine the matrix of execution environments against which to build.
 
 Consumers of the SCM API cannot assume that every SCM API implementation has the ability for deep inspection of specific files at specific revisions and thus must fall back to performing a full check-out.
 
@@ -1327,7 +1327,7 @@ Tag some of the branches.
 
 If your source control system has the concept of change requests, create some change requests.
 
-Install the https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Multibranch+Plugin[Pipeline Multibranch Plugin] and your plugin into your test instance.
+Install the https://plugins.jenkins.io/workflow-multibranch[Pipeline Multibranch Plugin] and your plugin into your test instance.
 
 ==== Tests
 
@@ -1365,7 +1365,7 @@ The source control system sends its event payloads to the broker system.
 The Jenkins server periodically connects (or in some cases uses a persistent connection) to the broker to receive the payloads.
 
 The webhook technique is the simpler to implement and is generally sufficient for most Jenkins users.
-For the users where the webhook technique is not sufficient it is usually relatively easy to build a generic messaging service on top of the webhook, for example the https://wiki.jenkins-ci.org/display/JENKINS/SCM+SQS+Plugin[SCM SQS Plugin].
+For the users where the webhook technique is not sufficient it is usually relatively easy to build a generic messaging service on top of the webhook, for example the https://plugins.jenkins.io/aws-sqs[SCM SQS Plugin].
 
 === Setting Up Webhook
 

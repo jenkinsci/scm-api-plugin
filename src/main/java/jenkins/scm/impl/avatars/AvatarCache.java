@@ -37,13 +37,9 @@ import hudson.util.NamingThreadFactory;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -59,13 +55,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.IOUtils;
+
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -88,6 +83,11 @@ public class AvatarCache implements UnprotectedRootAction {
      * Our logger.
      */
     private static final Logger LOGGER = Logger.getLogger(AvatarCache.class.getName());
+    /**
+     * URI For this action
+     */
+    private static final String ActionURI = "avatar-cache";
+
     /**
      * Maximum concurrent requests to fetch images.
      */
@@ -134,14 +134,26 @@ public class AvatarCache implements UnprotectedRootAction {
      * @throws IllegalStateException if called outside of a request handling thread.
      */
     public static String buildUrl(@NonNull String url, @NonNull String size) {
+        return buildUrl(new UrlAvatarCacheSource(url), size);
+    }
+
+    /**
+     * Builds the URL for the cached avatar image of the required size.
+     *
+     * @param source source avatar image definition.
+     * @param size   the size of the image.
+     * @return the URL of the cached image.
+     * @throws IllegalStateException if called outside of a request handling thread.
+     */
+    public static String buildUrl(@NonNull AvatarImageSource source, @NonNull String size) {
         Jenkins j = Jenkins.get();
         AvatarCache instance = ExtensionList.lookup(RootAction.class).get(AvatarCache.class);
         if (instance == null) {
             throw new AssertionError();
         }
-        String key = Util.getDigestOf(AvatarCache.class.getName() + url);
+        String key = Util.getDigestOf(AvatarCache.class.getName() + source.getId());
         // seed the cache
-        instance.getCacheEntry(key, url);
+        instance.getCacheEntry(key, source);
         try {
             return j.getRootUrlFromRequest()
                     + instance.getUrlName()
@@ -288,7 +300,7 @@ public class AvatarCache implements UnprotectedRootAction {
      */
     @Override
     public String getUrlName() {
-        return "avatar-cache";
+        return ActionURI;
     }
 
     /**
@@ -326,7 +338,7 @@ public class AvatarCache implements UnprotectedRootAction {
         }
         final CacheEntry avatar = getCacheEntry(key, null);
         final long since = req.getDateHeader("If-Modified-Since");
-        if (avatar == null || !(avatar.url.startsWith("http://") || avatar.url.startsWith("https://"))) {
+        if (avatar == null || !avatar.canFetch()) {
             if (startedTime <= since) {
                 return new HttpResponse() {
                     @Override
@@ -341,17 +353,18 @@ public class AvatarCache implements UnprotectedRootAction {
             // we will generate avatars if the URL is not HTTP based
             // since the url string will not magically turn itself into a HTTP url this avatar is immutable
             return new ImageResponse(
-                    generateAvatar(avatar == null ? "" : avatar.url, targetSize),
+                    generateAvatar(avatar == null ? "" : avatar.source.getId(), targetSize),
                     true,
                     startedTime,
                     "max-age=365000000, immutable, public"
             );
         }
+
         if (avatar.pending() && avatar.image == null) {
             // serve a temporary avatar until we get the remote one, no caching as we could have the real deal
             // real soon now
             return new ImageResponse(
-                    generateAvatar(avatar.url, targetSize),
+                    generateAvatar(avatar.source.getId(), targetSize),
                     true,
                     -1L,
                     "no-cache, public"
@@ -368,10 +381,11 @@ public class AvatarCache implements UnprotectedRootAction {
                 }
             };
         }
+        // If no image, generate a temp avatar
         if (avatar.image == null) {
             // we can retry in an hour
             return new ImageResponse(
-                    generateAvatar(avatar.url, targetSize),
+                    generateAvatar(avatar.source.getId(), targetSize),
                     true,
                     -1L,
                     "max-age=3600, public"
@@ -391,20 +405,20 @@ public class AvatarCache implements UnprotectedRootAction {
      * Retrieves the entry from the cache.
      *
      * @param key the cache key.
-     * @param url the URL to fetch if the entry is missing or {@code null} to perform a read-only check.
+     * @param source the URL to fetch if the entry is missing or {@code null} to perform a read-only check.
      * @return the entry or {@code null} if a read-only check found no matching entry.
      */
     @Nullable
-    private CacheEntry getCacheEntry(@NonNull final String key, @Nullable final String url) {
+    private CacheEntry getCacheEntry(@NonNull final String key, @Nullable final AvatarImageSource source) {
         CacheEntry entry = cache.get(key);
         if (entry == null) {
             synchronized (serviceLock) {
                 entry = cache.get(key);
                 if (entry == null) {
-                    if (url == null) {
+                    if (source == null) {
                         return null;
                     }
-                    entry = new CacheEntry(url, service.submit(new FetchImage(url)));
+                    entry = new CacheEntry(source, service.submit(new FetchImage(source)));
                     cache.put(key, entry);
                 }
             }
@@ -412,7 +426,7 @@ public class AvatarCache implements UnprotectedRootAction {
             if (entry.isStale()) {
                 synchronized (serviceLock) {
                     if (!entry.pending()) {
-                        entry.setFuture(service.submit(new FetchImage(entry.url)));
+                        entry.setFuture(service.submit(new FetchImage(entry.source)));
                     }
                 }
             }
@@ -445,9 +459,9 @@ public class AvatarCache implements UnprotectedRootAction {
      */
     private static class CacheEntry {
         /**
-         * The URL that is cached.
+         * Source for avatar
          */
-        private final String url;
+        private final AvatarImageSource source;
         /**
          * The cached image or {@code null} if not retrieved yet.
          */
@@ -463,12 +477,12 @@ public class AvatarCache implements UnprotectedRootAction {
          */
         private long lastAccessed = -1L;
         /**
-         * The queued request to retrieve the image from the {@link #url}.
+         * The queued request to retrieve the image from the {@link #source}.
          */
         private Future<CacheEntry> future;
 
-        private CacheEntry(String url, BufferedImage image, long lastModified) {
-            this.url = url;
+        private CacheEntry(AvatarImageSource source, BufferedImage image, long lastModified) {
+            this.source = source;
             if (image.getHeight() > 128 || image.getWidth() > 128) {
                 // limit the amount of storage
                 this.image = scaleImage(image, 128);
@@ -479,15 +493,22 @@ public class AvatarCache implements UnprotectedRootAction {
             this.lastModified = lastModified < 0 ? System.currentTimeMillis() : lastModified;
         }
 
-        private CacheEntry(String url, Future<CacheEntry> future) {
-            this.url = url;
+        /**
+         * Check if this entry is fetch-able
+         */
+        public boolean canFetch() {
+            return (source != null && source.canFetch());
+        }
+
+        private CacheEntry(AvatarImageSource source, Future<CacheEntry> future) {
+            this.source = source;
             this.image = null;
             this.lastModified = System.currentTimeMillis();
             this.future = future;
         }
 
-        private CacheEntry(String url) {
-            this.url = url;
+        private CacheEntry(AvatarImageSource source) {
+            this.source = source;
             this.lastModified = System.currentTimeMillis();
         }
 
@@ -580,10 +601,10 @@ public class AvatarCache implements UnprotectedRootAction {
      * A task to fetch an image from a remote URL.
      */
     private static class FetchImage implements Callable<CacheEntry> {
-        private final String url;
+        private final AvatarImageSource source;
 
-        private FetchImage(String url) {
-            this.url = url;
+        private FetchImage(@NonNull AvatarImageSource source) {
+            this.source = source;
         }
 
         /**
@@ -591,48 +612,12 @@ public class AvatarCache implements UnprotectedRootAction {
          */
         @Override
         public CacheEntry call() throws Exception {
-            LOGGER.log(Level.FINE, "Attempting to fetch remote avatar: {0}", url);
-            long start = System.nanoTime();
-            try {
-                if (!(url.startsWith("http://") || url.startsWith("https://"))) {
-                    return new CacheEntry(url);
-                }
-                HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-                try {
-                    connection.setConnectTimeout(10000);
-                    connection.setReadTimeout(30000);
-                    if (!connection.getContentType().startsWith("image/")) {
-                        return new CacheEntry(this.url);
-                    }
-                    int length = connection.getContentLength();
-                    // buffered stream should be no more than 16k if we know the length
-                    // if we don't know the length then 8k is what we will use
-                    length = length > 0 ? Math.min(16384, length) : 8192;
-                    InputStream is = null;
-                    try {
-                        is = connection.getInputStream();
-                        BufferedInputStream bis = new BufferedInputStream(is, length);
-                        BufferedImage image = ImageIO.read(bis);
-                        if (image == null) {
-                            return new CacheEntry(this.url);
-                        }
-                        return new CacheEntry(this.url, image, connection.getLastModified());
-                    } finally {
-                        IOUtils.closeQuietly(is);
-                    }
-                } finally {
-                    connection.disconnect();
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.INFO, e.getMessage(), e);
-                return new CacheEntry(url);
-            } finally {
-                long end = System.nanoTime();
-                long duration = TimeUnit.NANOSECONDS.toMillis(end - start);
-                LOGGER.log(duration > 250 ? Level.INFO : Level.FINE, "Avatar lookup of {0} took {1}ms",
-                        new Object[]{url, duration}
-                );
+            AvatarImage image = source.fetch();
+            // If no image, return no image
+            if (image == null) {
+                return new CacheEntry(source);
             }
+            return new CacheEntry(source, image.image, image.lastModified);
         }
     }
 }
