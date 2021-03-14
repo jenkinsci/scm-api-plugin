@@ -24,7 +24,6 @@
 
 package jenkins.scm.api;
 
-import com.google.common.net.InternetDomainName;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.net.IDN;
@@ -142,10 +141,10 @@ public final class SCMName {
         }
 
         if (host.hasPublicSuffix()) {
-            final String publicName = host.publicSuffix().name();
-            return StringUtils.removeEnd(StringUtils.removeEnd(host.name(), publicName), ".").toLowerCase(Locale.ENGLISH);
+            final String publicName = host.publicSuffix().toString();
+            return StringUtils.removeEnd(StringUtils.removeEnd(host.toString(), publicName), ".").toLowerCase(Locale.ENGLISH);
         }
 
-        return StringUtils.removeEnd(host.name(), ".").toLowerCase(Locale.ENGLISH);
+        return StringUtils.removeEnd(host.toString(), ".").toLowerCase(Locale.ENGLISH);
     }
 }
