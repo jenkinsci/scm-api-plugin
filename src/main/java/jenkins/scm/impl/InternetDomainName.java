@@ -12,7 +12,7 @@
  * the License.
  */
 
-package jenkins.scm.api;
+package jenkins.scm.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;

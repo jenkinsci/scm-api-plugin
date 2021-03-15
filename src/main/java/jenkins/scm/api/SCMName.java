@@ -32,6 +32,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+
+import jenkins.scm.impl.InternetDomainName;
 import org.apache.commons.lang.StringUtils;
 
 /**
