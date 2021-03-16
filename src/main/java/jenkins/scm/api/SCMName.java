@@ -27,12 +27,16 @@ package jenkins.scm.api;
 import com.google.common.net.InternetDomainName;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.IDN;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -142,10 +146,32 @@ public final class SCMName {
         }
 
         if (host.hasPublicSuffix()) {
-            final String publicName = host.publicSuffix().name();
-            return StringUtils.removeEnd(StringUtils.removeEnd(host.name(), publicName), ".").toLowerCase(Locale.ENGLISH);
+            final String publicName = name(host.publicSuffix());
+            return StringUtils.removeEnd(StringUtils.removeEnd(name(host), publicName), ".").toLowerCase(Locale.ENGLISH);
         }
 
-        return StringUtils.removeEnd(host.name(), ".").toLowerCase(Locale.ENGLISH);
+        return StringUtils.removeEnd(name(host), ".").toLowerCase(Locale.ENGLISH);
+    }
+
+    /**
+     * The full domain name, converted to lower case.
+     * It calls {@code InternetDomainName#name()} or falls back to {@link InternetDomainName#toString()}
+     * for compatibility with newer (&gt; 22.0) versions of guava.
+     *
+     * @since TODO
+     */
+    private static String name(InternetDomainName host) {
+        try {
+            try {
+                // Guava older than ~22
+                Method method = InternetDomainName.class.getMethod("name");
+                return (String) method.invoke(host);
+            } catch (NoSuchMethodException e) {
+                // TODO invert this to prefer the newer guava method once guava is upgrade in Jenkins core
+                return host.toString();
+            }
+        } catch (IllegalAccessException | InvocationTargetException e ) {
+            throw new RuntimeException(e);
+        }
     }
 }
