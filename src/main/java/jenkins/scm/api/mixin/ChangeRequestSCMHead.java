@@ -30,6 +30,8 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMSource;
 import org.kohsuke.stapler.export.Exported;
 
+import javax.annotation.CheckForNull;
+
 /**
  * Mixin interface to identify {@link SCMHead} instances that correspond to a change request.
  *
@@ -48,6 +50,36 @@ public interface ChangeRequestSCMHead extends SCMHeadMixin {
     String getId();
 
     /**
+     * Returns the {@link ChangeRequestCheckoutStrategy} of this {@link ChangeRequestSCMHead}.
+     *
+     * @return the {@link ChangeRequestCheckoutStrategy}.
+     * @since TODO
+     */
+    @CheckForNull
+    default ChangeRequestCheckoutStrategy getCheckoutStrategy() {
+        return null;
+    }
+
+    /**
+     * Returns the name of the actual head on the source control system which may or may not be different from
+     * {@link #getName()}. For example in GitHub or Bitbucket this method would return the name of the origin branch
+     * whereas {@link #getName()} would return something like {@code PR-24}. It is perfectly acceptable for a SCM
+     * implementation to return the same value as {@link #getName()} where the SCM implementation does not have a
+     * separate concept of origin name.
+     *
+     * @return the name this {@link ChangeRequestSCMHead} would have if the {@link SCMSource} were configured
+     * against the {@link #getOrigin()} directly and the change request were be discoverable as a regular
+     * {@link SCMHead} or {@link #getName()} if such a concept is not possible in the backing source control system.
+     *
+     * @since TODO
+     */
+    @CheckForNull
+    @Exported
+    default String getOriginName() {
+        return null;
+    }
+
+    /**
      * Branch to which this change would be merged or applied if it were accepted.
      *
      * @return a "target" or "base" branch
@@ -55,5 +87,4 @@ public interface ChangeRequestSCMHead extends SCMHeadMixin {
     @Exported
     @NonNull
     SCMHead getTarget();
-
 }
