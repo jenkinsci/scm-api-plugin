@@ -4,18 +4,8 @@ This plugin provides a new enhanced API for interacting with SCM systems.
 
 ## Version History
 
-### Version 2.6.4
-
-Release date: 2020-09-25
-
-- Improvement: Add support for upcoming [transition from table-based layout to div-based layout in Jenkins core](https://issues.jenkins-ci.org/browse/JENKINS-56109) ([PR #82](https://github.com/jenkinsci/scm-api-plugin/pull/82))
-- Improvement: Add localization support for text in configuration files for `SingleSCMNavigator` and `SingleSCMSource` ([PR #76](https://github.com/jenkinsci/scm-api-plugin/pull/76))
-- Developer: Make it possible for SCMs that require authentication to use `AvatarCache` ([JENKINS-59797](https://issues.jenkins-ci.org/browse/JENKINS-59797))
-- Docs: Update developer documentation regarding webhooks ([PR #75](https://github.com/jenkinsci/scm-api-plugin/pull/75))
-- Docs: Migrate wiki content to GitHub ([PR #80](https://github.com/jenkinsci/scm-api-plugin/pull/80))
-- Docs: Use consistent punctuation ([PR #81](https://github.com/jenkinsci/scm-api-plugin/pull/81))
-- Internal: Remove unnecessary whitespace ([PR #72](https://github.com/jenkinsci/scm-api-plugin/pull/72))
-- Internal: Update Javadoc on methods added in 2.6.0 as part of JENKINS-43802 ([PR #74](https://github.com/jenkinsci/scm-api-plugin/pull/74))
+### Versions after 2.6.3 
+Release notes for versions after v2.6.3 are tracked via [GitHub Releases](https://github.com/jenkinsci/scm-api-plugin/releases).
 
 ### Version 2.6.3 (July 11, 2019)
 

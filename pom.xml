@@ -58,9 +58,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+    <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
+    <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+    <url>https://github.com/${gitHubRepo}</url>
     <tag>${scmTag}</tag>
   </scm>
 
@@ -68,6 +68,7 @@
     <revision>2.6.5</revision>
     <changelist>-SNAPSHOT</changelist>
     <jenkins.version>2.235.5</jenkins.version>
+    <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <java.level>8</java.level>
     <no-test-jar>false</no-test-jar>
     <hpi.compatibleSinceVersion>2.0.0</hpi.compatibleSinceVersion>
