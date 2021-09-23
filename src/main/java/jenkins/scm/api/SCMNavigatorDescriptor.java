@@ -27,7 +27,6 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor;
-import hudson.model.TopLevelItemDescriptor;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
