@@ -126,7 +126,7 @@ public class AvatarCacheTest {
         blockReady.await(10, TimeUnit.SECONDS);
 
         // now we generate the URL
-        String url = callBuildUrl(r.getURL().toString() + "images/24x24/search.png", "32x32");
+        String url = callBuildUrl(r.getURL().toString() + "plugin/scm-api/test-avatar.png", "32x32");
         assertThat(url, allOf(startsWith(r.getURL().toString() + "avatar-cache/"), endsWith(".png?size=32x32")));
 
         // now we can test the pending responses
