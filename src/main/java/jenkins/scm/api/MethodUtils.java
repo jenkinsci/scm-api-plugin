@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.Validate;
 
@@ -54,8 +54,8 @@ class MethodUtils {
      * are overridden in the given derived type.
      */
     // TODO replace with core utility method once JENKINS-56660 is available in base version of Jenkins
-    static boolean isOverridden(@Nonnull Class base, @Nonnull Class derived, @Nonnull String methodName,
-                                       @Nonnull Class... types) {
+    static boolean isOverridden(@NonNull Class base, @NonNull Class derived, @NonNull String methodName,
+                                       @NonNull Class... types) {
         Method baseMethod = getMethodImpl(base, methodName, types);
         Method derivedMethod = getMethodImpl(derived, methodName, types);
         return baseMethod == null ?
