@@ -27,6 +27,7 @@ package jenkins.scm.api.trait;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
+import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,7 +39,7 @@ import jenkins.model.Jenkins;
  *
  * @param <T> the type of {@link SCMTrait} specialization.
  */
-public abstract class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribableImpl<T> {
+public abstract class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribableImpl<T> implements ExtensionPoint {
     /**
      * {@inheritDoc}
      */
