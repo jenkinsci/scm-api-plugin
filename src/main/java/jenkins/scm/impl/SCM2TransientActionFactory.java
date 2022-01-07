@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.TransientActionFactory;
 import jenkins.scm.api.SCM2;
 import jenkins.triggers.SCMTriggerItem;
@@ -56,9 +56,9 @@ public class SCM2TransientActionFactory extends TransientActionFactory<Item> {
     /**
      * {@inheritDoc}
      */
-    @Nonnull
+    @NonNull
     @Override
-    public Collection<? extends Action> createFor(@Nonnull Item target) {
+    public Collection<? extends Action> createFor(@NonNull Item target) {
         if (target instanceof SCMTriggerItem) {
             final SCMTriggerItem item = (SCMTriggerItem) target;
             List<Action> result = new ArrayList<Action>();

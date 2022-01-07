@@ -49,9 +49,9 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.scm.api.SCM2;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadOrigin;
@@ -193,9 +193,9 @@ public class MockSCM extends SCM2 implements Serializable {
     }
 
     @Override
-    public PollingResult compareRemoteRevisionWith(@Nonnull Job<?, ?> project, @Nullable Launcher launcher,
-                                                   @Nullable FilePath workspace, @Nonnull TaskListener listener,
-                                                   @Nonnull SCMRevisionState baseline)
+    public PollingResult compareRemoteRevisionWith(@NonNull Job<?, ?> project, @Nullable Launcher launcher,
+                                                   @Nullable FilePath workspace, @NonNull TaskListener listener,
+                                                   @NonNull SCMRevisionState baseline)
             throws IOException, InterruptedException {
         if (baseline instanceof MockSCMRevisionState) {
             String revision;
@@ -220,8 +220,8 @@ public class MockSCM extends SCM2 implements Serializable {
     }
 
     @Override
-    public void checkout(@Nonnull Run<?, ?> build, @Nonnull Launcher launcher, @Nonnull FilePath workspace,
-                         @Nonnull TaskListener listener, @CheckForNull File changelogFile,
+    public void checkout(@NonNull Run<?, ?> build, @NonNull Launcher launcher, @NonNull FilePath workspace,
+                         @NonNull TaskListener listener, @CheckForNull File changelogFile,
                          @CheckForNull SCMRevisionState baseline) throws IOException, InterruptedException {
         String identifier;
         if (this.revision instanceof MockSCMRevision) {
@@ -242,8 +242,8 @@ public class MockSCM extends SCM2 implements Serializable {
     }
 
     @Override
-    public SCMRevisionState calcRevisionsFromBuild(@Nonnull Run<?, ?> build, @Nullable FilePath workspace,
-                                                   @Nullable Launcher launcher, @Nonnull TaskListener listener)
+    public SCMRevisionState calcRevisionsFromBuild(@NonNull Run<?, ?> build, @Nullable FilePath workspace,
+                                                   @Nullable Launcher launcher, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         return build.getAction(MockSCMRevisionState.class);
     }
