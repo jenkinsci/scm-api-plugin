@@ -48,7 +48,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.mockito.InOrder;
-import org.mockito.Matchers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -57,6 +56,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -197,7 +197,7 @@ public class SingleSCMSourceTest {
         TopLevelItemDescriptor descriptor = mock(TopLevelItemDescriptor.class);
         TopLevelSCMOwner owner = mock(TopLevelSCMOwner.class);
         when(owner.getDescriptor()).thenReturn(descriptor);
-        when(descriptor.isApplicable(Matchers.any(Descriptor.class))).thenReturn(true);
+        when(descriptor.isApplicable(any(Descriptor.class))).thenReturn(true);
         assertThat(SingleSCMSource.DescriptorImpl.getSCMDescriptors(owner),
                 (Matcher) hasItem(instanceOf(MockSCM.DescriptorImpl.class)));
     }
