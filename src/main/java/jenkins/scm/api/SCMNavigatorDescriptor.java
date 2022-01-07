@@ -27,7 +27,6 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor;
-import hudson.model.TopLevelItemDescriptor;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -67,40 +66,27 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
     }
 
     /**
-     * A description of this kind of {@link SCMNavigator}. This description can contain HTML code but it is recommended
-     * to use text plain in order to avoid how it should be represented.
-     *
-     * @return A string with the description. {@link TopLevelItemDescriptor#getDescription()}.
-     *
-     * @since 1.2
+     * @deprecated No longer used.
      */
+    @Deprecated
     @NonNull
     public String getDescription() {
         return Messages.SCMNavigator_Description();
     }
 
     /**
-     * Used to categorize this kind of {@link SCMNavigator}.
-     *
-     * @return A string with the category identifier. {@link TopLevelItemDescriptor#getCategoryId()}
-     *
-     * @since 1.2
+     * @deprecated No longer used.
      */
+    @Deprecated
     @NonNull
     public String getCategoryId() {
         return "nested-projects";
     }
 
     /**
-     * Represents a file path pattern to get the Item icon in different sizes.
-     *
-     * For example: plugin/plugin-shortname/images/:size/item.png, where {@code :size} represents the different
-     * icon sizes used commonly in Jenkins project: 16x16, 24x24, 32x32 or 48x48
-     *
-     * @return A string or null if it is not defined. {@link TopLevelItemDescriptor#getIconFilePathPattern()}
-     *
-     * @since 1.2
+     * @deprecated No longer used.
      */
+    @Deprecated
     @CheckForNull
     public String getIconFilePathPattern() {
         return null;
@@ -173,16 +159,12 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
     }
 
     /**
-     * Creates a default navigator, if there should be one displayed.
-     * May be interpreted by {@code jenkins.branch.CustomOrganizationFolderDescriptor}.
-     *
-     * If returning non-null, you should also provide a {@link #getDescription()} implementation
-     *
-     * @param name a name supplied by the user which may be used as a hint for preconfiguration
-     *
-     * @return a navigator with a default configuration, or null if it should not be advertised this way
+     * @deprecated No longer used.
      */
+    @Deprecated
     @CheckForNull
-    public abstract SCMNavigator newInstance(@CheckForNull String name);
+    public SCMNavigator newInstance(@CheckForNull String name) {
+        return null;
+    }
 
 }
