@@ -109,7 +109,7 @@ public abstract class SCMEvent<P> {
     public static final String ORIGIN_UNKNOWN = "?";
 
     private static final int EVENT_THREAD_POOL_SIZE = SystemProperties
-        .getInteger(SCMEvent.class.getName() + ".EVENT_THREAD_POOL_SIZE", 30);
+        .getInteger(SCMEvent.class.getName() + ".EVENT_THREAD_POOL_SIZE", 10);
     /**
      * The event type.
      */
