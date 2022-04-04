@@ -135,6 +135,7 @@ public abstract class SCMEvent<P> {
      * The scheduled executor thread pool. This is initialized lazily since it may be never needed.
      */
     private static ScheduledExecutorService executorService;
+    private static ScheduledThreadPoolExecutor threadPoolExecutor;
 
     /**
      * Constructor to use when the timestamp is available from the external SCM.
@@ -210,11 +211,39 @@ public abstract class SCMEvent<P> {
     @NonNull
     protected static synchronized ScheduledExecutorService executorService() {
         if (executorService == null) {
-            // corePoolSize is set to 10, but will only be created if needed.
-            // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
-            executorService = new ImpersonatingScheduledExecutorService(new ScheduledThreadPoolExecutor(10, new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "SCMEvent")), ACL.SYSTEM);
+            threadPoolExecutor = new ScheduledThreadPoolExecutor(
+                10,
+                new NamingThreadFactory(
+                    new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "SCMEvent")
+            );
+            executorService = new ImpersonatingScheduledExecutorService(
+                threadPoolExecutor,
+                ACL.SYSTEM2);
         }
+
         return executorService;
+    }
+
+    public static EventQueueMetrics getEventProcessingMetrics() {
+        return new EventQueueMetrics();
+    }
+
+    public static class EventQueueMetrics {
+        public int getPoolSize() {
+            return threadPoolExecutor == null ? 0 : threadPoolExecutor.getPoolSize();
+        }
+
+        public int getActiveThreads() {
+            return threadPoolExecutor == null ? 0 : threadPoolExecutor.getActiveCount();
+        }
+
+        public int getQueuedTasks() {
+            return threadPoolExecutor == null ? 0 : threadPoolExecutor.getQueue().size();
+        }
+
+        public long getCompletedTasks() {
+            return threadPoolExecutor == null ? 0 : threadPoolExecutor.getCompletedTaskCount();
+        }
     }
 
 
