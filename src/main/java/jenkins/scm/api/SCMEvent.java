@@ -39,6 +39,7 @@ import hudson.util.NamingThreadFactory;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -229,24 +230,31 @@ public abstract class SCMEvent<P> {
     }
 
     public static EventQueueMetrics getEventProcessingMetrics() {
-        return new EventQueueMetrics();
+        return new EventQueueMetrics(threadPoolExecutor);
     }
 
     public static class EventQueueMetrics {
+
+        private final ThreadPoolExecutor executor;
+
+        public EventQueueMetrics(ThreadPoolExecutor executor) {
+            this.executor = executor;
+        }
+
         public int getPoolSize() {
-            return threadPoolExecutor == null ? 0 : threadPoolExecutor.getPoolSize();
+            return executor == null ? 0 : executor.getPoolSize();
         }
 
         public int getActiveThreads() {
-            return threadPoolExecutor == null ? 0 : threadPoolExecutor.getActiveCount();
+            return executor == null ? 0 : executor.getActiveCount();
         }
 
         public int getQueuedTasks() {
-            return threadPoolExecutor == null ? 0 : threadPoolExecutor.getQueue().size();
+            return executor == null ? 0 : executor.getQueue().size();
         }
 
         public long getCompletedTasks() {
-            return threadPoolExecutor == null ? 0 : threadPoolExecutor.getCompletedTaskCount();
+            return executor == null ? 0 : executor.getCompletedTaskCount();
         }
     }
 
