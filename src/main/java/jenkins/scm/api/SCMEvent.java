@@ -39,6 +39,7 @@ import hudson.util.NamingThreadFactory;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -135,6 +136,7 @@ public abstract class SCMEvent<P> {
      * The scheduled executor thread pool. This is initialized lazily since it may be never needed.
      */
     private static ScheduledExecutorService executorService;
+    private static ScheduledThreadPoolExecutor threadPoolExecutor;
 
     /**
      * Constructor to use when the timestamp is available from the external SCM.
@@ -210,11 +212,46 @@ public abstract class SCMEvent<P> {
     @NonNull
     protected static synchronized ScheduledExecutorService executorService() {
         if (executorService == null) {
-            // corePoolSize is set to 10, but will only be created if needed.
-            // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
-            executorService = new ImpersonatingScheduledExecutorService(new ScheduledThreadPoolExecutor(10, new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "SCMEvent")), ACL.SYSTEM);
+            threadPoolExecutor = new ScheduledThreadPoolExecutor(
+                10,
+                new NamingThreadFactory(
+                    new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "SCMEvent")
+            );
+            executorService = new ImpersonatingScheduledExecutorService(
+                threadPoolExecutor,
+                ACL.SYSTEM2);
         }
+
         return executorService;
+    }
+
+    public static EventQueueMetrics getEventProcessingMetrics() {
+        return new EventQueueMetrics(threadPoolExecutor);
+    }
+
+    public static class EventQueueMetrics {
+
+        private final ThreadPoolExecutor executor;
+
+        public EventQueueMetrics(ThreadPoolExecutor executor) {
+            this.executor = executor;
+        }
+
+        public int getPoolSize() {
+            return executor == null ? 0 : executor.getPoolSize();
+        }
+
+        public int getActiveThreads() {
+            return executor == null ? 0 : executor.getActiveCount();
+        }
+
+        public int getQueuedTasks() {
+            return executor == null ? 0 : executor.getQueue().size();
+        }
+
+        public long getCompletedTasks() {
+            return executor == null ? 0 : executor.getCompletedTaskCount();
+        }
     }
 
 
