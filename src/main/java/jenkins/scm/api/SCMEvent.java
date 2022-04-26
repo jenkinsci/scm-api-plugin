@@ -46,6 +46,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.servlet.http.HttpServletRequest;
 import jenkins.security.ImpersonatingScheduledExecutorService;
+import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
@@ -107,6 +108,9 @@ public abstract class SCMEvent<P> {
      * @since 2.0.3
      */
     public static final String ORIGIN_UNKNOWN = "?";
+
+    private static final int EVENT_THREAD_POOL_SIZE = SystemProperties
+        .getInteger(SCMEvent.class.getName() + ".EVENT_THREAD_POOL_SIZE", 10);
     /**
      * The event type.
      */
@@ -213,7 +217,7 @@ public abstract class SCMEvent<P> {
     protected static synchronized ScheduledExecutorService executorService() {
         if (executorService == null) {
             threadPoolExecutor = new ScheduledThreadPoolExecutor(
-                10,
+                EVENT_THREAD_POOL_SIZE,
                 new NamingThreadFactory(
                     new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "SCMEvent")
             );
