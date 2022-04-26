@@ -58,7 +58,6 @@
     <changelist>999999-SNAPSHOT</changelist>
     <jenkins.version>2.289.1</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
-    <java.level>8</java.level>
     <no-test-jar>false</no-test-jar>
     <hpi.compatibleSinceVersion>2.0.0</hpi.compatibleSinceVersion>
   </properties>
