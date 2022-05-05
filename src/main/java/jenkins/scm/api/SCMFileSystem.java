@@ -30,6 +30,7 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.model.Descriptor;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -436,7 +437,7 @@ public abstract class SCMFileSystem implements Closeable {
             if (Util.isOverridden(SCMFileSystem.Builder.class, getClass(), "supportsDescriptor", SCMDescriptor.class)) {
                 return supportsDescriptor(descriptor);
             } else {
-                return descriptor.clazz.isAssignableFrom((getClass().getEnclosingClass())) ||
+                return isEnclosedByDescribable(descriptor) ||
                         getClass().getPackage().equals(descriptor.clazz.getPackage()) ||
                         getClass().getPackage().getName().startsWith(descriptor.clazz.getPackage().getName());
             }
@@ -466,7 +467,7 @@ public abstract class SCMFileSystem implements Closeable {
             if (Util.isOverridden(SCMFileSystem.Builder.class, getClass(), "supportsDescriptor", SCMSourceDescriptor.class)) {
                 return supportsDescriptor(descriptor);
             } else {
-                return descriptor.clazz.isAssignableFrom((getClass().getEnclosingClass())) ||
+                return isEnclosedByDescribable(descriptor) ||
                         getClass().getPackage().equals(descriptor.clazz.getPackage()) ||
                         getClass().getPackage().getName().startsWith(descriptor.clazz.getPackage().getName());
             }
@@ -525,6 +526,11 @@ public abstract class SCMFileSystem implements Closeable {
                 throw new IOException("Cannot instantiate a SCMFileSystem from an SCM without an owner");
             }
             return build(owner, source.build(head, rev), rev);
+        }
+
+        private boolean isEnclosedByDescribable(Descriptor<?> descriptor) {
+            Class<?> enclosingClass = getClass().getEnclosingClass();
+            return enclosingClass != null && descriptor.clazz.isAssignableFrom(enclosingClass);
         }
     }
 }
