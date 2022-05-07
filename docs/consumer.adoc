@@ -63,7 +63,7 @@ Jenkins then notifies you and the developer of the other feature branch that the
 
 In order to allow for some rollback of some of these side-effects, typically one would:
 
-* Create a job that just builds the master branch.
+* Create a job that just builds the controller branch.
 * Create one job each for each of the sustaining branches that need to be tracked.
 * Create one job that builds everything else (including for example pull requests).
 
