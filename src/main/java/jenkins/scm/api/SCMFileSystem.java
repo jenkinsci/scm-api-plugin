@@ -187,7 +187,28 @@ public abstract class SCMFileSystem implements Closeable {
      * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+    public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm,@CheckForNull SCMRevision rev) throws IOException, InterruptedException {
+        return of(owner, scm, rev,null);
+    }
+
+
+    /**
+     * Given a {@link SCM} this method will try to retrieve a corresponding {@link SCMFileSystem} instance that
+     * reflects the content at the specified {@link SCMRevision}.
+     *
+     * @param owner the owner of the {@link SCM}
+     * @param scm the {@link SCM}.
+     * @param rev the specified {@link SCMRevision}.
+     * @param build the specified {@link Run<?,?>}.
+     * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
+     * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+     *                              (such as the remote system being unavailable)
+     * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
+     */
+    @CheckForNull
+    public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm,
+                                   @CheckForNull SCMRevision rev,
+                                   @CheckForNull Run<?,?> build)
             throws IOException, InterruptedException {
         Objects.requireNonNull(scm);
         SCMFileSystem fallBack = null;
@@ -195,7 +216,15 @@ public abstract class SCMFileSystem implements Closeable {
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(scm)) {
                 try {
-                    SCMFileSystem inspector = b.build(owner, scm, rev);
+                    SCMFileSystem inspector;
+                    if (b instanceof Builder2)
+                    {
+                        inspector = ((Builder2)b).build(owner,scm,rev, build);
+                    } else
+                    {
+                        inspector = b.build(owner, scm, rev);
+                    }
+
                     if (inspector != null) {
                         if (inspector.isFixedRevision()) {
                             return inspector;
@@ -231,15 +260,15 @@ public abstract class SCMFileSystem implements Closeable {
 
     /**
      * Given a {@link SCM} this method will check if there is at least one {@link SCMFileSystem} provider capable
-     * of being instantiated. Returning {@code true} does not mean that {@link #of(Item, SCM, SCMRevision)}
+     * of being instantiated. Returning {@code true} does not mean that {@link #of(Item, SCM, SCMRevision, Run<?,?>)}
      * will be able to instantiate a {@link SCMFileSystem} for any specific {@link SCMRevision},
      * rather returning {@code false} indicates that there is absolutely no point in calling
-     * {@link #of(Item, SCM, SCMRevision)} as it will always return {@code null}.
+     * {@link #of(Item, SCM, SCMRevision, Run<?,?>)} as it will always return {@code null}.
      *
      * @param scm the {@link SCMSource}.
-     * @return {@code true} if {@link SCMFileSystem#of(Item, SCM)} / {@link #of(Item, SCM, SCMRevision)} could return a
+     * @return {@code true} if {@link SCMFileSystem#of(Item, SCM)} / {@link #of(Item, SCM, SCMRevision, Run<?,?>)} could return a
      * {@link SCMFileSystem} implementation, {@code false} if {@link SCMFileSystem#of(Item, SCM)} /
-     * {@link #of(Item, SCM, SCMRevision)} will always return {@code null} for the supplied {@link SCM}.
+     * {@link #of(Item, SCM, SCMRevision, Run<?,?>)} will always return {@code null} for the supplied {@link SCM}.
      * @since 2.0
      */
     public static boolean supports(@NonNull SCM scm) {
@@ -350,13 +379,13 @@ public abstract class SCMFileSystem implements Closeable {
     /**
      * Given a {@link SCMDescriptor} this method will check if there is at least one {@link SCMFileSystem} provider
      * capable of being instantiated from the descriptor's {@link SCMSource}. Returning {@code true} does not mean that
-     * {@link #of(Item, SCM, SCMRevision)} will be able to instantiate a {@link SCMFileSystem} for any specific
+     * {@link #of(Item, SCM, SCMRevision, Run<?,?>)} will be able to instantiate a {@link SCMFileSystem} for any specific
      * {@link Item} or {@link SCMRevision}, rather returning {@code false} indicates that there is absolutely no point
-     * in calling {@link #of(Item, SCM, SCMRevision)} as it will always return {@code null}.
+     * in calling {@link #of(Item, SCM, SCMRevision, Run<?,?>)} as it will always return {@code null}.
      *
      * @param descriptor the {@link SCMDescriptor}.
-     * @return {@code true} if {@link #of(Item, SCM, SCMRevision)} could return a {@link SCMFileSystem} implementation,
-     * {@code false} if {@link #of(Item, SCM, SCMRevision)} will always return {@code null} for the supplied {@link SCM}.
+     * @return {@code true} if {@link #of(Item, SCM, SCMRevision, Run<?,?>)} could return a {@link SCMFileSystem} implementation,
+     * {@code false} if {@link #of(Item, SCM, SCMRevision, Run<?,?>)} will always return {@code null} for the supplied {@link SCM}.
      * @since 2.3.0
      */
     public static boolean supports(@NonNull SCMDescriptor descriptor) {
@@ -532,5 +561,28 @@ public abstract class SCMFileSystem implements Closeable {
             Class<?> enclosingClass = getClass().getEnclosingClass();
             return enclosingClass != null && descriptor.clazz.isAssignableFrom(enclosingClass);
         }
+    }
+
+    public abstract static class Builder2 extends Builder {
+
+        /**
+         * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that
+         * reflects the content at the specified {@link SCMRevision}. If the {@link SCM} is supported but not
+         * for a fixed revision, best effort is acceptable as the most capable {@link SCMFileSystem} will be returned
+         * to the caller.
+         *
+         * @param owner the owner of the {@link SCM}
+         * @param scm the {@link SCM}.
+         * @param rev the specified {@link SCMRevision}.
+         * @return the corresponding {@link SCMFileSystem} or {@code null} if this builder cannot create a {@link
+         * SCMFileSystem} for the specified {@link SCM}.
+         * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
+         *                              (such as the remote system being unavailable)
+         * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
+         */
+        @CheckForNull
+        public abstract SCMFileSystem build(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev,
+                                            Run<?,?> build)
+                throws IOException, InterruptedException;
     }
 }
