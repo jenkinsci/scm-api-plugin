@@ -569,11 +569,13 @@ public abstract class SCMFileSystem implements Closeable {
          * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that
          * reflects the content at the specified {@link SCMRevision}. If the {@link SCM} is supported but not
          * for a fixed revision, best effort is acceptable as the most capable {@link SCMFileSystem} will be returned
-         * to the caller.
+         * to the caller. If the {@link Run} is provided, it can be used to alter the behaviour of buil based on the current Run
+         * for example, expand branch name based on current build properties, etc.
          *
          * @param owner the owner of the {@link SCM}
          * @param scm the {@link SCM}.
          * @param rev the specified {@link SCMRevision}.
+         * @param build the specified {@link Run}.
          * @return the corresponding {@link SCMFileSystem} or {@code null} if this builder cannot create a {@link
          * SCMFileSystem} for the specified {@link SCM}.
          * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
@@ -582,7 +584,7 @@ public abstract class SCMFileSystem implements Closeable {
          */
         @CheckForNull
         public abstract SCMFileSystem build(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev,
-                                            Run<?,?> build)
+                                            @CheckForNull Run<?,?> build)
                 throws IOException, InterruptedException;
     }
 }
