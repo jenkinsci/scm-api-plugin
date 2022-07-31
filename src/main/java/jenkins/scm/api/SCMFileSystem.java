@@ -199,7 +199,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @param owner the owner of the {@link SCM}
      * @param scm the {@link SCM}.
      * @param rev the specified {@link SCMRevision}.
-     * @param build the specified {@link Run<?,?>}.
+     * @param build the specified {@link Run}.
      * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
      * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
      *                              (such as the remote system being unavailable)
@@ -260,15 +260,15 @@ public abstract class SCMFileSystem implements Closeable {
 
     /**
      * Given a {@link SCM} this method will check if there is at least one {@link SCMFileSystem} provider capable
-     * of being instantiated. Returning {@code true} does not mean that {@link #of(Item, SCM, SCMRevision, Run<?,?>)}
+     * of being instantiated. Returning {@code true} does not mean that {@link #of(Item, SCM, SCMRevision, Run)}
      * will be able to instantiate a {@link SCMFileSystem} for any specific {@link SCMRevision},
      * rather returning {@code false} indicates that there is absolutely no point in calling
-     * {@link #of(Item, SCM, SCMRevision, Run<?,?>)} as it will always return {@code null}.
+     * {@link #of(Item, SCM, SCMRevision, Run)} as it will always return {@code null}.
      *
      * @param scm the {@link SCMSource}.
-     * @return {@code true} if {@link SCMFileSystem#of(Item, SCM)} / {@link #of(Item, SCM, SCMRevision, Run<?,?>)} could return a
+     * @return {@code true} if {@link SCMFileSystem#of(Item, SCM)} / {@link #of(Item, SCM, SCMRevision, Run)} could return a
      * {@link SCMFileSystem} implementation, {@code false} if {@link SCMFileSystem#of(Item, SCM)} /
-     * {@link #of(Item, SCM, SCMRevision, Run<?,?>)} will always return {@code null} for the supplied {@link SCM}.
+     * {@link #of(Item, SCM, SCMRevision, Run)} will always return {@code null} for the supplied {@link SCM}.
      * @since 2.0
      */
     public static boolean supports(@NonNull SCM scm) {
@@ -379,13 +379,13 @@ public abstract class SCMFileSystem implements Closeable {
     /**
      * Given a {@link SCMDescriptor} this method will check if there is at least one {@link SCMFileSystem} provider
      * capable of being instantiated from the descriptor's {@link SCMSource}. Returning {@code true} does not mean that
-     * {@link #of(Item, SCM, SCMRevision, Run<?,?>)} will be able to instantiate a {@link SCMFileSystem} for any specific
+     * {@link #of(Item, SCM, SCMRevision, Run)} will be able to instantiate a {@link SCMFileSystem} for any specific
      * {@link Item} or {@link SCMRevision}, rather returning {@code false} indicates that there is absolutely no point
-     * in calling {@link #of(Item, SCM, SCMRevision, Run<?,?>)} as it will always return {@code null}.
+     * in calling {@link #of(Item, SCM, SCMRevision, Run)} as it will always return {@code null}.
      *
      * @param descriptor the {@link SCMDescriptor}.
-     * @return {@code true} if {@link #of(Item, SCM, SCMRevision, Run<?,?>)} could return a {@link SCMFileSystem} implementation,
-     * {@code false} if {@link #of(Item, SCM, SCMRevision, Run<?,?>)} will always return {@code null} for the supplied {@link SCM}.
+     * @return {@code true} if {@link #of(Item, SCM, SCMRevision, Run)} could return a {@link SCMFileSystem} implementation,
+     * {@code false} if {@link #of(Item, SCM, SCMRevision, Run)} will always return {@code null} for the supplied {@link SCM}.
      * @since 2.3.0
      */
     public static boolean supports(@NonNull SCMDescriptor descriptor) {
