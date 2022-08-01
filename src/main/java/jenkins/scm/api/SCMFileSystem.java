@@ -216,14 +216,7 @@ public abstract class SCMFileSystem implements Closeable {
         for (Builder b : ExtensionList.lookup(Builder.class)) {
             if (b.supports(scm)) {
                 try {
-                    SCMFileSystem inspector;
-                    if (b instanceof Builder2)
-                    {
-                        inspector = ((Builder2)b).build(owner,scm,rev, build);
-                    } else
-                    {
-                        inspector = b.build(owner, scm, rev);
-                    }
+                    SCMFileSystem inspector = b.build(owner, scm, rev, build);
 
                     if (inspector != null) {
                         if (inspector.isFixedRevision()) {
@@ -561,9 +554,6 @@ public abstract class SCMFileSystem implements Closeable {
             Class<?> enclosingClass = getClass().getEnclosingClass();
             return enclosingClass != null && descriptor.clazz.isAssignableFrom(enclosingClass);
         }
-    }
-
-    public abstract static class Builder2 extends Builder {
 
         /**
          * Given a {@link SCM} this should try to build a corresponding {@link SCMFileSystem} instance that
@@ -575,7 +565,7 @@ public abstract class SCMFileSystem implements Closeable {
          * @param owner the owner of the {@link SCM}
          * @param scm the {@link SCM}.
          * @param rev the specified {@link SCMRevision}.
-         * @param build the specified {@link Run}.
+         * @param _build the specified {@link Run}.
          * @return the corresponding {@link SCMFileSystem} or {@code null} if this builder cannot create a {@link
          * SCMFileSystem} for the specified {@link SCM}.
          * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
@@ -583,8 +573,12 @@ public abstract class SCMFileSystem implements Closeable {
          * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
          */
         @CheckForNull
-        public abstract SCMFileSystem build(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev,
-                                            @CheckForNull Run<?,?> build)
-                throws IOException, InterruptedException;
+        public SCMFileSystem build(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev,
+                                            @CheckForNull Run<?,?> _build)
+                throws IOException, InterruptedException
+        {
+            // if this is not overriden, fallback to the previous implementation
+            return build(owner,scm, rev);
+        }
     }
 }
