@@ -522,8 +522,11 @@ public abstract class SCMFileSystem implements Closeable {
          * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
          */
         @CheckForNull
-        public abstract SCMFileSystem build(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
-                throws IOException, InterruptedException;
+        public SCMFileSystem build(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
+                throws IOException, InterruptedException
+        {
+            throw new AbstractMethodError("Implement build(Item, SCM, SCMRevision,Run<?,?>)");
+        }
 
         /**
          * Given a {@link SCMSource}, a {@link SCMHead} and a {@link SCMRevision} this method should try to build a
@@ -547,7 +550,7 @@ public abstract class SCMFileSystem implements Closeable {
             if (owner == null) {
                 throw new IOException("Cannot instantiate a SCMFileSystem from an SCM without an owner");
             }
-            return build(owner, source.build(head, rev), rev);
+            return build(owner, source.build(head, rev), rev, null);
         }
 
         private boolean isEnclosedByDescribable(Descriptor<?> descriptor) {
