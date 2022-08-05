@@ -525,7 +525,7 @@ public abstract class SCMFileSystem implements Closeable {
         public SCMFileSystem build(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev)
                 throws IOException, InterruptedException
         {
-            throw new AbstractMethodError("Implement build(Item, SCM, SCMRevision,Run<?,?>)");
+            throw new AbstractMethodError("Implement build(Item, SCM, SCMRevision, Run)");
         }
 
         /**
