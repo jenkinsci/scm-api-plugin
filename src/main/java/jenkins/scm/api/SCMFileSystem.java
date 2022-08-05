@@ -187,8 +187,8 @@ public abstract class SCMFileSystem implements Closeable {
      * @throws InterruptedException if the attempt to create a {@link SCMFileSystem} was interrupted.
      */
     @CheckForNull
-    public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm,@CheckForNull SCMRevision rev) throws IOException, InterruptedException {
-        return of(owner, scm, rev,null);
+    public static SCMFileSystem of(@NonNull Item owner, @NonNull SCM scm, @CheckForNull SCMRevision rev) throws IOException, InterruptedException {
+        return of(owner, scm, rev, null);
     }
 
 
@@ -199,7 +199,7 @@ public abstract class SCMFileSystem implements Closeable {
      * @param owner the owner of the {@link SCM}
      * @param scm the {@link SCM}.
      * @param rev the specified {@link SCMRevision}.
-     * @param build the specified {@link Run}.
+     * @param build an associated build context, if any, that could be used for example to look up parameters
      * @return the corresponding {@link SCMFileSystem} or {@code null} if there is none.
      * @throws IOException          if the attempt to create a {@link SCMFileSystem} failed due to an IO error
      *                              (such as the remote system being unavailable)
@@ -580,8 +580,8 @@ public abstract class SCMFileSystem implements Closeable {
                                             @CheckForNull Run<?,?> _build)
                 throws IOException, InterruptedException
         {
-            // if this is not overriden, fallback to the previous implementation
-            return build(owner,scm, rev);
+            // if this is not overridden, fall back to the previous implementation
+            return build(owner, scm, rev);
         }
     }
 }
