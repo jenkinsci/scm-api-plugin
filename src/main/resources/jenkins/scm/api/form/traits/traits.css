@@ -3,6 +3,7 @@ DIV.repeated-chunk.trait-section {
     text-align: center;
     margin: 0;
     padding: 0.1em;
+    border: 0 !important;
 }
 
 DIV.repeated-chunk.trait-section.trait-section-empty {
