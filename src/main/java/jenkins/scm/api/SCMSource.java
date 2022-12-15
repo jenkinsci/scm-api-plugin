@@ -77,6 +77,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
         implements ExtensionPoint {
 
+    private static final Logger LOGGER = Logger.getLogger(SCMSource.class.getName());
+
     /**
      * Replaceable pronoun of that points to a {@link SCMSource}. Defaults to {@code null} depending on the context.
      * @since 2.0
@@ -956,11 +958,35 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @throws IOException in case the implementation must call {@link #fetch(SCMHead, TaskListener)} or similar
      * @throws InterruptedException in case the implementation must call {@link #fetch(SCMHead, TaskListener)} or similar
      * @since 1.1
+     * @see #getTrustedRevisionForBuild
      */
     @NonNull
     public SCMRevision getTrustedRevision(@NonNull SCMRevision revision, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
         return revision;
+    }
+
+    /**
+     * Refined version of {@link #getTrustedRevision(SCMRevision, TaskListener)} that takes into account the build context.
+     * @param build a running build
+     * @return {@link #getTrustedRevision} if the build itself does not indicate trust;
+     *         simply {@code revision} if any {@link TrustworthyBuild} says that it does
+     */
+    @NonNull
+    public final SCMRevision getTrustedRevisionForBuild(@NonNull SCMRevision revision, @NonNull TaskListener listener, @NonNull Run<?, ?> build)
+            throws IOException, InterruptedException {
+        if (ExtensionList.lookup(TrustworthyBuild.class).stream().anyMatch(tb -> tb.shouldBeTrusted(build))) {
+            LOGGER.fine(() -> build + " with " + build.getCauses() + " was considered trustworthy, so using " + revision + " as is");
+            return revision;
+        } else {
+            SCMRevision trustedRevision = getTrustedRevision(revision, listener);
+            if (trustedRevision.equals(revision)) {
+                LOGGER.fine(() -> build + " was not considered trustworthy, but " + revision + " was trusted anyway");
+            } else {
+                LOGGER.fine(() -> build + " was not considered trustworthy, so replacing " + revision + " with " + trustedRevision);
+            }
+            return trustedRevision;
+        }
     }
 
     /**
