@@ -30,9 +30,16 @@ import jenkins.scm.api.TrustworthyBuild;
 
 public class TrustworthyBuilds {
 
+    // Also effectively handles ReplayCause since that is only ever added in conjunction with UserIdCause. (see ReplayAction.run2)
     @Extension
     public static TrustworthyBuild byUserId() {
         return TrustworthyBuild.byCause(Cause.UserIdCause.class);
+    }
+
+    // TODO until github-checks can declare a dep on a sufficiently new scm-api
+    @Extension
+    public static TrustworthyBuild byGitHubChecks() {
+        return build -> build.getCauses().stream().anyMatch(cause -> cause.getClass().getName().equals("io.jenkins.plugins.checks.github.CheckRunGHEventSubscriber$GitHubChecksRerunActionCause"));
     }
 
     private TrustworthyBuilds() {}
