@@ -27,6 +27,7 @@ package jenkins.scm.impl;
 import hudson.Extension;
 import hudson.model.Cause;
 import hudson.model.Item;
+import hudson.model.Run;
 import hudson.model.User;
 import jenkins.scm.api.TrustworthyBuild;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -53,12 +54,15 @@ public class TrustworthyBuilds {
                 return false;
             }
             try {
-                // TODO could also have workflow-cps offer this to anyone with only ReplayAction.REPLAY
-                if (build.hasPermission2(user.impersonate2(), Item.CONFIGURE)) {
+                var permission = Run.PERMISSIONS.find("Replay"); // ReplayAction.REPLAY
+                if (permission == null) { // no workflow-cps
+                    permission = Item.CONFIGURE;
+                }
+                if (build.hasPermission2(user.impersonate2(), permission)) {
                     listener.getLogger().printf("Trusting build since it was started by user ‘%s’%n", userId);
                     return true;
                 } else {
-                    listener.getLogger().printf("Not trusting build since user ‘%s’ lacks Job/Configure permission%n", userId);
+                    listener.getLogger().printf("Not trusting build since user ‘%s’ lacks %s/%s permission%n", userId, permission.group.title, permission.name);
                     return false;
                 }
             } catch (UsernameNotFoundException x) {
