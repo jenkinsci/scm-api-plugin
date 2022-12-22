@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.Cause;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 
@@ -43,16 +44,10 @@ public interface TrustworthyBuild extends ExtensionPoint {
      * Should this build be trusted to load sensitive source files?
      * If any implementation returns true then it is trusted.
      */
-    boolean shouldBeTrusted(@NonNull Run<?, ?> build);
+    boolean shouldBeTrusted(@NonNull Run<?, ?> build, @NonNull TaskListener listener);
 
     /**
      * Convenience for the common case that a particular trigger cause indicates trust.
-     * Examples of causes which could be trusted include:
-     * <ul>
-     * <li>{@link Cause.UserIdCause}
-     * <li>{@code ReplayCause}
-     * <li>{@code CheckRunGHEventSubscriber.GitHubChecksRerunActionCause}
-     * </ul>
      * Examples of causes which should <em>not</em> be registered include:
      * <ul>
      * <li>{@link TimerTrigger.TimerTriggerCause}
@@ -62,7 +57,7 @@ public interface TrustworthyBuild extends ExtensionPoint {
      * </ul>
      */
     static TrustworthyBuild byCause(Class<? extends Cause> causeType) {
-        return build -> build.getCause(causeType) != null;
+        return (build, listener) -> build.getCause(causeType) != null;
     }
 
 }

@@ -975,7 +975,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @NonNull
     public final SCMRevision getTrustedRevisionForBuild(@NonNull SCMRevision revision, @NonNull TaskListener listener, @NonNull Run<?, ?> build)
             throws IOException, InterruptedException {
-        if (ExtensionList.lookup(TrustworthyBuild.class).stream().anyMatch(tb -> tb.shouldBeTrusted(build))) {
+        if (ExtensionList.lookup(TrustworthyBuild.class).stream().anyMatch(tb -> tb.shouldBeTrusted(build, listener))) {
             LOGGER.fine(() -> build + " with " + build.getCauses() + " was considered trustworthy, so using " + revision + " as is");
             return revision;
         } else {

@@ -26,20 +26,53 @@ package jenkins.scm.impl;
 
 import hudson.Extension;
 import hudson.model.Cause;
+import hudson.model.Item;
+import hudson.model.User;
 import jenkins.scm.api.TrustworthyBuild;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class TrustworthyBuilds {
 
     // Also effectively handles ReplayCause since that is only ever added in conjunction with UserIdCause. (see ReplayAction.run2)
     @Extension
     public static TrustworthyBuild byUserId() {
-        return TrustworthyBuild.byCause(Cause.UserIdCause.class);
+        return (build, listener) -> {
+            var cause = build.getCause(Cause.UserIdCause.class);
+            if (cause == null) {
+                // probably some other cause; do not print anything
+                return false;
+            }
+            var userId = cause.getUserId();
+            if (userId == null) {
+                listener.getLogger().println("Not trusting build since no user name was recorded");
+                return false;
+            }
+            var user = User.getById(userId, false);
+            if (user == null) {
+                listener.getLogger().printf("Not trusting build since no user ‘%s’ is known%n", userId);
+                return false;
+            }
+            try {
+                // TODO could also have workflow-cps offer this to anyone with only ReplayAction.REPLAY
+                if (build.hasPermission2(user.impersonate2(), Item.CONFIGURE)) {
+                    listener.getLogger().printf("Trusting build since it was started by user ‘%s’%n", userId);
+                    return true;
+                } else {
+                    listener.getLogger().printf("Not trusting build since user ‘%s’ lacks Job/Configure permission%n", userId);
+                    return false;
+                }
+            } catch (UsernameNotFoundException x) {
+                listener.getLogger().printf("Not trusting build since user ‘%s’ is invalid%n", userId);
+                return false;
+            }
+        };
     }
 
     // TODO until github-checks can declare a dep on a sufficiently new scm-api
     @Extension
     public static TrustworthyBuild byGitHubChecks() {
-        return build -> build.getCauses().stream().anyMatch(cause -> cause.getClass().getName().equals("io.jenkins.plugins.checks.github.CheckRunGHEventSubscriber$GitHubChecksRerunActionCause"));
+        return (build, listener) -> build.getCauses().stream().anyMatch(
+            cause -> cause.getClass().getName().equals("io.jenkins.plugins.checks.github.CheckRunGHEventSubscriber$GitHubChecksRerunActionCause"));
     }
 
     private TrustworthyBuilds() {}
