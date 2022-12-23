@@ -30,8 +30,9 @@ import hudson.triggers.SCMTrigger;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.util.Arrays;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.AssumptionViolatedException;
 import org.junit.Rule;
@@ -60,7 +61,7 @@ public abstract class AbstractSampleRepoRule extends ExternalResource {
             if (probing) {
                 Assume.assumeThat(message, r, is(0));
             } else {
-                Assert.assertThat(message, r, is(0));
+                assertThat(message, r, is(0));
             }
         } catch (Exception x) {
             if (probing) {

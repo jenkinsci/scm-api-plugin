@@ -243,8 +243,8 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
                 SCMHeadMixin.Equality.class);
 
         try {
-            return c.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return c.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             // fallback to reflection
         }
         return new ReflectiveEquality(properties.values().toArray(new Method[0]));

@@ -8,8 +8,8 @@ import jenkins.scm.impl.mock.MockSCMRevision;
 import jenkins.scm.impl.mock.MockSCMSource;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
 
 public class SCMRevisionActionTest {
     @Test
