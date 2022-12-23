@@ -34,6 +34,7 @@ import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -488,7 +489,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
                     // should not happen as these are supposed to be public methods and they worked on o1
                     return false;
                 }
-                if (p1 == null ? p2 != null : !p1.equals(p2)) {
+                if (!Objects.equals(p1, p2)) {
                     return false;
                 }
             }

@@ -28,6 +28,8 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Util;
 import hudson.model.InvisibleAction;
 import java.io.Serializable;
+import java.util.Objects;
+
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMRevision;
@@ -128,17 +130,13 @@ public class ObjectMetadataAction extends InvisibleAction implements Serializabl
 
         ObjectMetadataAction that = (ObjectMetadataAction) o;
 
-        if (objectDisplayName != null
-                ? !objectDisplayName.equals(that.objectDisplayName)
-                : that.objectDisplayName != null) {
+        if (!Objects.equals(objectDisplayName, that.objectDisplayName)) {
             return false;
         }
-        if (objectDescription != null
-                ? !objectDescription.equals(that.objectDescription)
-                : that.objectDescription != null) {
+        if (!Objects.equals(objectDescription, that.objectDescription)) {
             return false;
         }
-        return objectUrl != null ? objectUrl.equals(that.objectUrl) : that.objectUrl == null;
+        return Objects.equals(objectUrl, that.objectUrl);
     }
 
     /**

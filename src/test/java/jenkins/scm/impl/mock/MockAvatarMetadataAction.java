@@ -27,6 +27,8 @@ package jenkins.scm.impl.mock;
 
 import jenkins.scm.api.metadata.AvatarMetadataAction;
 
+import java.util.Objects;
+
 public class MockAvatarMetadataAction extends AvatarMetadataAction {
     private final String iconClassName;
 
@@ -55,7 +57,7 @@ public class MockAvatarMetadataAction extends AvatarMetadataAction {
 
         MockAvatarMetadataAction that = (MockAvatarMetadataAction) o;
 
-        return iconClassName != null ? iconClassName.equals(that.iconClassName) : that.iconClassName == null;
+        return Objects.equals(iconClassName, that.iconClassName);
     }
 
     @Override
