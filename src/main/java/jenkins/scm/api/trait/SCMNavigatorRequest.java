@@ -146,10 +146,8 @@ public abstract class SCMNavigatorRequest implements Closeable {
     @SuppressWarnings("unchecked")
     private static void record(@NonNull String projectName, boolean isMatch,
                                @NonNull Witness... witnesses) {
-        if (witnesses.length > 0) {
-            for (Witness witness : witnesses) {
-                witness.record(projectName, isMatch);
-            }
+        for (Witness witness : witnesses) {
+            witness.record(projectName, isMatch);
         }
     }
 
