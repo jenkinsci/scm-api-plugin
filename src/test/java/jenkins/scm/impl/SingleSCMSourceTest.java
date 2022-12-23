@@ -24,6 +24,7 @@
 
 package jenkins.scm.impl;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.TopLevelItem;
@@ -220,6 +221,7 @@ public class SingleSCMSourceTest {
         @TestExtension
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "SCMSourceBuilder";

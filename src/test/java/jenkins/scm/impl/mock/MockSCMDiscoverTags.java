@@ -55,6 +55,7 @@ public class MockSCMDiscoverTags extends SCMSourceTrait {
     @Extension
     public static final class DescriptorImpl extends SCMSourceTraitDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Discover tags";

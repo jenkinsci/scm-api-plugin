@@ -119,6 +119,7 @@ public class RegexSCMSourceFilterTrait extends SCMNavigatorTrait {
         /**
          * {@inheritDoc}
          */
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.RegexSCMSourceFilterTrait_DisplayName();

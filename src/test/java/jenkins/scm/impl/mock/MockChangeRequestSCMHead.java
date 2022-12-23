@@ -78,6 +78,7 @@ public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSC
         return strategy;
     }
 
+    @NonNull
     @Override
     public String getOriginName() {
         // MockSCMController maintains a separate list of change-requests independent from the branches

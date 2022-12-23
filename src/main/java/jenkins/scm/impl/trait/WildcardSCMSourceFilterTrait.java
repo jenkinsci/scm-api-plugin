@@ -136,6 +136,7 @@ public class WildcardSCMSourceFilterTrait extends SCMNavigatorTrait {
         /**
          * {@inheritDoc}
          */
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.WildcardSCMSourceFilterTrait_DisplayName();

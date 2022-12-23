@@ -292,6 +292,7 @@ public class MockSCM extends SCM2 implements Serializable {
             super(MockSCMRepositoryBrowser.class);
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Mock SCM";

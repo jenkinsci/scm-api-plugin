@@ -54,6 +54,7 @@ public class MockSCMDiscoverBranches extends SCMSourceTrait {
     @Extension
     public static final class DescriptorImpl extends SCMSourceTraitDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Discover branches";

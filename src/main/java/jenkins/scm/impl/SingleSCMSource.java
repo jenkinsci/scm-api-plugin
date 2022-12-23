@@ -208,6 +208,7 @@ public class SingleSCMSource extends SCMSource {
         /**
          * {@inheritDoc}
          */
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.SingleSCMSource_DisplayName();

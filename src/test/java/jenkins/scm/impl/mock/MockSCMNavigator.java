@@ -88,6 +88,7 @@ public class MockSCMNavigator extends SCMNavigator {
         return controller;
     }
 
+    @NonNull
     @Override
     public List<SCMTrait<?>> getTraits() {
         return Collections.unmodifiableList(traits);
@@ -99,6 +100,7 @@ public class MockSCMNavigator extends SCMNavigator {
         this.traits.addAll(SCMTrait.asSetList(traits));
     }
 
+    @NonNull
     @Override
     protected String id() {
         return controllerId;
