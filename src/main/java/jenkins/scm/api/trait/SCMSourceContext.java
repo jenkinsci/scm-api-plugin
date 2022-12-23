@@ -65,22 +65,22 @@ public abstract class SCMSourceContext<C extends SCMSourceContext<C, R>, R exten
      * The criteria.
      */
     @NonNull
-    private final List<SCMSourceCriteria> criteria = new ArrayList<SCMSourceCriteria>();
+    private final List<SCMSourceCriteria> criteria = new ArrayList<>();
     /**
      * The pre-filters (i.e. filters that are independent of the {@link SCMSourceRequest}).
      */
     @NonNull
-    private final List<SCMHeadPrefilter> prefilters = new ArrayList<SCMHeadPrefilter>();
+    private final List<SCMHeadPrefilter> prefilters = new ArrayList<>();
     /**
      * The {@link SCMSourceRequest} dependent filters.
      */
     @NonNull
-    private final List<SCMHeadFilter> filters = new ArrayList<SCMHeadFilter>();
+    private final List<SCMHeadFilter> filters = new ArrayList<>();
     /**
      * The authorities.
      */
     @NonNull
-    private final List<SCMHeadAuthority<?, ?, ?>> authorities = new ArrayList<SCMHeadAuthority<?, ?, ?>>();
+    private final List<SCMHeadAuthority<?, ?, ?>> authorities = new ArrayList<>();
     /**
      * The observer.
      */

@@ -95,12 +95,12 @@ public class AvatarCache implements UnprotectedRootAction {
     /**
      * The cache of entries. Unused entries will be removed over time.
      */
-    private final ConcurrentMap<String, CacheEntry> cache = new ConcurrentHashMap<String, CacheEntry>();
+    private final ConcurrentMap<String, CacheEntry> cache = new ConcurrentHashMap<>();
     /**
      * A background thread pool to refresh images.
      */
     /*package*/ final ThreadPoolExecutor service = new ThreadPoolExecutor(CONCURRENT_REQUEST_LIMIT, CONCURRENT_REQUEST_LIMIT,
-            1L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+            1L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
             new NamingThreadFactory(new DaemonThreadFactory(), getClass().getName())
     );
     /**

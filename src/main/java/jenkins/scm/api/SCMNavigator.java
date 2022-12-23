@@ -64,7 +64,7 @@ public abstract class SCMNavigator extends AbstractDescribableImpl<SCMNavigator>
      * @since 2.0
      */
     public static final AlternativeUiTextProvider.Message<SCMNavigator> PRONOUN
-            = new AlternativeUiTextProvider.Message<SCMNavigator>();
+            = new AlternativeUiTextProvider.Message<>();
 
     /**
      * Cache of the ID of this {@link SCMNavigator}.

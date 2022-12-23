@@ -125,7 +125,7 @@ public abstract class SCMNavigatorDescriptor extends Descriptor<SCMNavigator> im
     @NonNull
     public synchronized final Set<SCMSourceCategory> getCategories() {
         if (categories == null) {
-            Set<SCMSourceCategory> categories = new LinkedHashSet<SCMSourceCategory>();
+            Set<SCMSourceCategory> categories = new LinkedHashSet<>();
             boolean haveDefault = false;
             for (SCMSourceCategory c: createCategories()) {
                 if (c.isUncategorized()) {

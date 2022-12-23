@@ -105,13 +105,13 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
      */
     @GuardedBy("lock")
     private static final Map<ClassLoader, SCMHeadMixinEqualityGenerator> generators
-            = new WeakHashMap<ClassLoader, SCMHeadMixinEqualityGenerator>();
+            = new WeakHashMap<>();
     /**
      * Weak hashmap of the {@link SCMHeadMixin.Equality} instances keyed by the concrete type that requires them.
      */
     @GuardedBy("lock")
     private static final WeakHashMap<Class<? extends SCMHead>, SCMHeadMixin.Equality> mixinEqualities
-            = new WeakHashMap<Class<? extends SCMHead>, SCMHeadMixin.Equality>();
+            = new WeakHashMap<>();
 
     /**
      * Get the {@link SCMHeadMixin.Equality} instance to use.
@@ -141,7 +141,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
             SCMHeadMixinEqualityGenerator generator;
             generator = generators.get(loader);
             if (generator == null) {
-                generator = AccessController.doPrivileged(new PrivilegedAction<SCMHeadMixinEqualityGenerator>() {
+                generator = AccessController.doPrivileged(new PrivilegedAction<>() {
                     @Override
                     public SCMHeadMixinEqualityGenerator run() {
                         return new SCMHeadMixinEqualityGenerator(loader);
@@ -174,7 +174,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
      */
     @NonNull
     private SCMHeadMixin.Equality create(@NonNull Class<? extends SCMHead> type) {
-        Map<String, Method> properties = new TreeMap<String, Method>();
+        Map<String, Method> properties = new TreeMap<>();
         for (Class clazz : (List<Class>) ClassUtils.getAllInterfaces(type)) {
             if (!SCMHeadMixin.class.isAssignableFrom(clazz)) {
                 // not a mix-in

@@ -146,7 +146,7 @@ public class SymbolAnnotationsTest {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("test");
             SingleSCMNavigator instance = new SingleSCMNavigator("foo",
-                    Collections.<SCMSource>singletonList(new MockSCMSource(c, "test"))
+                    Collections.singletonList(new MockSCMSource(c, "test"))
             );
             assertThat(DescribableModel.uninstantiate2_(instance).toString(), allOf(
                     startsWith("@"),

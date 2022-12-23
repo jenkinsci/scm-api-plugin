@@ -44,7 +44,7 @@ public class MockSCMSourceRequest extends SCMSourceRequest {
         this.fetchTags = builder.needsTags();
         this.fetchChangeRequests = builder.needsChangeRequests();
         this.checkoutStrategies = builder.checkoutStrategies().isEmpty()
-                ? Collections.<ChangeRequestCheckoutStrategy>emptySet()
+                ? Collections.emptySet()
                 : Collections.unmodifiableSet(EnumSet.copyOf(builder.checkoutStrategies()));
     }
 

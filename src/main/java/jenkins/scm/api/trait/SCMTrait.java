@@ -71,9 +71,9 @@ public abstract class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribabl
      */
     @NonNull
     public static <T extends SCMTrait<?>> ArrayList<T> asSetList(@CheckForNull Iterable<? extends T> list) {
-        ArrayList<T> result = new ArrayList<T>();
+        ArrayList<T> result = new ArrayList<>();
         if (list != null) {
-            Set<Class> seen = new HashSet<Class>();
+            Set<Class> seen = new HashSet<>();
             for (T trait : list) {
                 if (trait == null) {
                     continue;
@@ -99,10 +99,10 @@ public abstract class SCMTrait<T extends SCMTrait<T>> extends AbstractDescribabl
      * @since 2.2.0
      */
     public static <T extends SCMTrait<?>> ArrayList<T> asSetList(@NonNull T first, @CheckForNull Iterable<? extends T> list) {
-        ArrayList<T> result = new ArrayList<T>();
+        ArrayList<T> result = new ArrayList<>();
         result.add(first);
         if (list != null) {
-            Set<Class> seen = new HashSet<Class>();
+            Set<Class> seen = new HashSet<>();
             seen.add(first.getClass());
             for (T trait : list) {
                 if (trait == null) {

@@ -82,7 +82,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @since 2.0
      */
     public static final AlternativeUiTextProvider.Message<SCMSource> PRONOUN
-            = new AlternativeUiTextProvider.Message<SCMSource>();
+            = new AlternativeUiTextProvider.Message<>();
     /**
      * This thread local allows us to refactor the {@link SCMSource} API so that there are now implementations that
      * explicitly pass the {@link SCMSourceCriteria} while legacy implementations can still continue to work
@@ -90,7 +90,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @since 2.0
      */
-    private static final ThreadLocal<SCMSourceCriteria> compatibilityHack = new ThreadLocal<SCMSourceCriteria>();
+    private static final ThreadLocal<SCMSourceCriteria> compatibilityHack = new ThreadLocal<>();
     /**
      * A special marker value used by {@link #getCriteria()} and stored in {@link #compatibilityHack} to signal
      * that {@link #getCriteria()} should return {@code null}.
@@ -731,7 +731,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
         if (Util.isOverridden(SCMSource.class, getClass(), "retrieveRevisions", TaskListener.class, Item.class)) {
             return retrieveRevisions(listener, getOwner());
         }
-        Set<String> revisions = new HashSet<String>();
+        Set<String> revisions = new HashSet<>();
         for (SCMHead head : retrieve(listener)) {
             revisions.add(head.getName());
         }

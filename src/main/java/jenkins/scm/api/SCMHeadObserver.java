@@ -132,7 +132,7 @@ public abstract class SCMHeadObserver {
      */
     @NonNull
     public static <O extends SCMHeadObserver> Filter<O> filter(O delegate, SCMHead... heads) {
-        return new Filter<O>(delegate, heads);
+        return new Filter<>(delegate, heads);
     }
 
     /**
@@ -252,7 +252,7 @@ public abstract class SCMHeadObserver {
                     return null;
                 }
                 if (result == null) {
-                    result = new HashSet<SCMHead>(includes);
+                    result = new HashSet<>(includes);
                 } else {
                     result.addAll(includes);
                 }
@@ -346,7 +346,7 @@ public abstract class SCMHeadObserver {
                     return null;
                 }
                 if (result == null) {
-                    result = new HashSet<SCMHead>(includes);
+                    result = new HashSet<>(includes);
                 } else {
                     result.addAll(includes);
                 }
@@ -365,7 +365,7 @@ public abstract class SCMHeadObserver {
          * The collected results.
          */
         @NonNull
-        private final Map<SCMHead, SCMRevision> result = new TreeMap<SCMHead, SCMRevision>();
+        private final Map<SCMHead, SCMRevision> result = new TreeMap<>();
 
         /**
          * {@inheritDoc}
@@ -671,12 +671,12 @@ public abstract class SCMHeadObserver {
          */
         public Filter(O delegate, SCMHead... heads) {
             super(delegate);
-            this.heads = new HashSet<SCMHead>(Arrays.asList(heads));
+            this.heads = new HashSet<>(Arrays.asList(heads));
             Set<SCMHead> includes = super.getIncludes();
             if (includes != null) {
                 this.heads.retainAll(includes);
             }
-            this.remaining = new HashSet<SCMHead>(this.heads);
+            this.remaining = new HashSet<>(this.heads);
         }
 
         /**

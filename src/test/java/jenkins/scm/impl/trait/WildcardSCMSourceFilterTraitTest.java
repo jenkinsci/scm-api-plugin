@@ -89,7 +89,7 @@ public class WildcardSCMSourceFilterTraitTest {
     }
 
     private static class SimpleSCMSourceObserver extends SCMSourceObserver {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         LogTaskListener listener =
                 new LogTaskListener(Logger.getLogger(WildcardSCMSourceFilterTrait.class.getName()),
                         Level.INFO);

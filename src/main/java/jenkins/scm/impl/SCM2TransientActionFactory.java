@@ -61,7 +61,7 @@ public class SCM2TransientActionFactory extends TransientActionFactory<Item> {
     public Collection<? extends Action> createFor(@NonNull Item target) {
         if (target instanceof SCMTriggerItem) {
             final SCMTriggerItem item = (SCMTriggerItem) target;
-            List<Action> result = new ArrayList<Action>();
+            List<Action> result = new ArrayList<>();
             for (SCM scm : item.getSCMs()) {
                 if (scm instanceof SCM2) {
                     result.addAll(((SCM2) scm).getItemActions(item));

@@ -52,7 +52,7 @@ public class RegexSCMHeadFilterTraitTest {
             c.createBranch("foo", "alt");
             MockSCMSource src = new MockSCMSource(c, "foo", new MockSCMDiscoverBranches(), new RegexSCMHeadFilterTrait("[fm].*"));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
-            Set<String> names = new TreeSet<String>();
+            Set<String> names = new TreeSet<>();
             for (SCMHead h: result.keySet()) {
                 names.add(h.getName());
             }

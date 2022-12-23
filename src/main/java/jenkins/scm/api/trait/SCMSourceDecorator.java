@@ -44,7 +44,7 @@ public abstract class SCMSourceDecorator<B extends SCMSourceBuilder<B, S>, S ext
      * builder class from the type parameters of the implementation class.
      */
     private static final WeakHashMap<Class<? extends SCMSourceDecorator>, Class<? extends SCMSourceBuilder>> builders
-            = new WeakHashMap<Class<? extends SCMSourceDecorator>, Class<? extends SCMSourceBuilder>>();
+            = new WeakHashMap<>();
 
     /**
      * The {@link B} class.
@@ -56,7 +56,7 @@ public abstract class SCMSourceDecorator<B extends SCMSourceBuilder<B, S>, S ext
      * class. If the inference fails use {@link #SCMSourceDecorator(Class)}.
      */
     protected SCMSourceDecorator() {
-        builderClass = SCMSourceDecorator.<B, S>inferBuilderClass(getClass());
+        builderClass = SCMSourceDecorator.inferBuilderClass(getClass());
     }
 
     /**

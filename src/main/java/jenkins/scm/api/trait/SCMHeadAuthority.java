@@ -187,7 +187,7 @@ public abstract class SCMHeadAuthority<S extends SCMSourceRequest, H extends SCM
         if (revisionClass == null) {
             revisionClass = SCMRevision.class;
         }
-        List<SCMHeadAuthorityDescriptor> result = new ArrayList<SCMHeadAuthorityDescriptor>();
+        List<SCMHeadAuthorityDescriptor> result = new ArrayList<>();
         for (SCMHeadAuthorityDescriptor d : all()) {
             if (d.isApplicableToRequest(requestClass)
                     && d.isApplicableToHead(headClass)

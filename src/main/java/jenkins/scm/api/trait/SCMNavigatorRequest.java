@@ -96,7 +96,7 @@ public abstract class SCMNavigatorRequest implements Closeable {
      */
     // TODO widen type to AutoClosable once Java 7+
     @NonNull
-    private final List<Closeable> managedClosables = new ArrayList<Closeable>();
+    private final List<Closeable> managedClosables = new ArrayList<>();
 
     /**
      * Constructor.
@@ -108,12 +108,12 @@ public abstract class SCMNavigatorRequest implements Closeable {
     protected SCMNavigatorRequest(@NonNull SCMNavigator source, @NonNull SCMNavigatorContext<?, ?> context,
                                   @NonNull SCMSourceObserver observer) {
         this.navigator = source;
-        this.filters = new ArrayList<SCMSourceFilter>(context.filters());
-        this.prefilters = new ArrayList<SCMSourcePrefilter>(context.prefilters());
+        this.filters = new ArrayList<>(context.filters());
+        this.prefilters = new ArrayList<>(context.prefilters());
         this.observer = observer;
         this.observerIncludes = this.observer.getIncludes();
-        this.traits = new ArrayList<SCMSourceTrait>(context.traits());
-        this.decorators = new ArrayList<SCMSourceDecorator<?, ?>>(context.decorators());
+        this.traits = new ArrayList<>(context.traits());
+        this.decorators = new ArrayList<>(context.decorators());
     }
 
     /**

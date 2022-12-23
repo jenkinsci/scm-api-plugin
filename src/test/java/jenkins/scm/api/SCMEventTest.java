@@ -135,7 +135,7 @@ public class SCMEventTest {
 
     @Test
     public void getPayload() throws Exception {
-        assertThat(new MySCMEvent(SCMEvent.Type.CREATED, this).getPayload(), sameInstance((Object) this));
+        assertThat(new MySCMEvent(SCMEvent.Type.CREATED, this).getPayload(), sameInstance(this));
     }
 
     @Test

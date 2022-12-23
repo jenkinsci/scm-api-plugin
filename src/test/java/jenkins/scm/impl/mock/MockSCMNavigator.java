@@ -140,7 +140,7 @@ public class MockSCMNavigator extends SCMNavigator {
             throws IOException, InterruptedException {
         controller().applyLatency();
         controller().checkFaults(null, null, null, true);
-        List<Action> result = new ArrayList<Action>();
+        List<Action> result = new ArrayList<>();
         result.add(new MockSCMLink("organization"));
         String description = controller().getDescription();
         String displayName = controller().getDisplayName();
@@ -184,7 +184,7 @@ public class MockSCMNavigator extends SCMNavigator {
         }
 
         public List<SCMTraitDescriptor<?>> getTraitsDescriptors() {
-            List<SCMTraitDescriptor<?>> descriptors = new ArrayList<SCMTraitDescriptor<?>>();
+            List<SCMTraitDescriptor<?>> descriptors = new ArrayList<>();
             descriptors.addAll(SCMNavigatorTrait._for(MockSCMNavigatorContext.class, MockSCMSourceBuilder.class));
             descriptors.addAll(SCMSourceTrait._for(MockSCMSourceContext.class, MockSCMBuilder.class));
             return descriptors;
@@ -193,7 +193,7 @@ public class MockSCMNavigator extends SCMNavigator {
         @Override
         @NonNull
         public List<SCMTrait<?>> getTraitsDefaults() {
-            return Collections.<SCMTrait<?>>singletonList(new MockSCMDiscoverBranches());
+            return Collections.singletonList(new MockSCMDiscoverBranches());
         }
     }
 }

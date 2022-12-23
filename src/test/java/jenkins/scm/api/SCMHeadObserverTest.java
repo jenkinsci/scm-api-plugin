@@ -81,7 +81,7 @@ public class SCMHeadObserverTest {
         assertThat("Still observing", instance.isObserving(), is(true));
         instance.observe(head2, revision2);
         assertThat("Still observing", instance.isObserving(), is(true));
-        assertThat(instance.result(), Matchers.<Map<SCMHead,SCMRevision>>allOf(hasEntry(head1, revision1), hasEntry(head2, revision2)));
+        assertThat(instance.result(), Matchers.allOf(hasEntry(head1, revision1), hasEntry(head2, revision2)));
 
     }
 

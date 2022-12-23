@@ -136,13 +136,13 @@ public class SingleSCMSourceTest {
                     new MockSCM(c, "foo", new MockSCMHead("master"), null));
             instance.fetch(criteria, observer, null);
             seq.verify(observer).observe(
-                    (SCMHead) argThat(
+                    argThat(
                             allOf(
                                     instanceOf(SCMHead.class),
                                     hasProperty("name", is("the-name"))
                             )
                     ),
-                    (SCMRevision) argThat(
+                    argThat(
                             allOf(
                                     instanceOf(SCMRevision.class),
                                     hasProperty("head", hasProperty("name", is("the-name"))),
@@ -199,7 +199,7 @@ public class SingleSCMSourceTest {
         when(owner.getDescriptor()).thenReturn(descriptor);
         when(descriptor.isApplicable(any(Descriptor.class))).thenReturn(true);
         assertThat(SingleSCMSource.DescriptorImpl.getSCMDescriptors(owner),
-                (Matcher) hasItem(instanceOf(MockSCM.DescriptorImpl.class)));
+                hasItem(instanceOf(MockSCM.DescriptorImpl.class)));
     }
 
     public interface TopLevelSCMOwner extends TopLevelItem, SCMSourceOwner {

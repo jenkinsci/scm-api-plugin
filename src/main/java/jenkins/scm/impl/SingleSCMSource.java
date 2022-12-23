@@ -221,7 +221,7 @@ public class SingleSCMSource extends SCMSource {
          */
         @SuppressWarnings("unused") // used by stapler binding
         public static List<SCMDescriptor<?>> getSCMDescriptors(@AncestorInPath SCMSourceOwner context) {
-            List<SCMDescriptor<?>> result = new ArrayList<SCMDescriptor<?>>(SCM.all());
+            List<SCMDescriptor<?>> result = new ArrayList<>(SCM.all());
             for (Iterator<SCMDescriptor<?>> iterator = result.iterator(); iterator.hasNext(); ) {
                 SCMDescriptor<?> d = iterator.next();
                 if (NullSCM.class.equals(d.clazz)) {

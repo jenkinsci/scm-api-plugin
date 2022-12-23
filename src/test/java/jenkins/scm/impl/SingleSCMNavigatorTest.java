@@ -50,13 +50,13 @@ public class SingleSCMNavigatorTest {
     public void getName() throws Exception {
         Random entropy = new Random();
         String name = "foo-" + entropy.nextLong();
-        SingleSCMNavigator instance = new SingleSCMNavigator(name, Collections.<SCMSource>emptyList());
+        SingleSCMNavigator instance = new SingleSCMNavigator(name, Collections.emptyList());
         assertThat(instance.getName(), is(name));
     }
 
     @Test
     public void getSources_empty() throws Exception {
-        assertThat(new SingleSCMNavigator("foo", Collections.<SCMSource>emptyList()).getSources(), emptyCollectionOf(SCMSource.class));
+        assertThat(new SingleSCMNavigator("foo", Collections.emptyList()).getSources(), emptyCollectionOf(SCMSource.class));
     }
 
     @Test
@@ -81,7 +81,7 @@ public class SingleSCMNavigatorTest {
         SCMSourceObserver.ProjectObserver observer = mock(SCMSourceObserver.ProjectObserver.class);
         InOrder seq = inOrder(mock, observer);
         when(mock.observe("foo")).thenReturn(observer);
-        new SingleSCMNavigator("foo", Collections.<SCMSource>emptyList()).visitSources(mock);
+        new SingleSCMNavigator("foo", Collections.emptyList()).visitSources(mock);
         seq.verify(mock, times(1)).observe("foo");
         seq.verify(observer, never()).addSource(any(SCMSource.class));
         seq.verify(observer, never()).addAttribute(anyString(), anyString());

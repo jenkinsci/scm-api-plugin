@@ -53,7 +53,7 @@ public final class SCMUri {
     }
 
     static {
-        Map<String, Integer> ports = new HashMap<String, Integer>();
+        Map<String, Integer> ports = new HashMap<>();
         ports.put("ftp", 21);
         ports.put("ssh", 22);
         ports.put("telnet", 22);
