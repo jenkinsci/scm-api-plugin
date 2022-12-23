@@ -25,7 +25,6 @@
 
 package jenkins.scm.api;
 
-import java.util.Map;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 

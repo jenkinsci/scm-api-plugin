@@ -47,5 +47,5 @@ public enum ChangeRequestCheckoutStrategy {
      * the revision of the {@link ChangeRequestSCMHead#getTarget()}
      * </p>
      */
-    MERGE;
+    MERGE
 }

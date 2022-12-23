@@ -37,5 +37,5 @@ public enum MockRepositoryFlags {
      * The repository has the concept of trust for change requests and will report change requests marked {@link
      * MockChangeRequestFlags#UNTRUSTED} as untrusted.
      */
-    TRUST_AWARE;
+    TRUST_AWARE
 }

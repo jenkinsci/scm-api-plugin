@@ -26,7 +26,7 @@
 package jenkins.scm.impl;
 
 import java.util.Collections;
-import jenkins.scm.api.SCMSource;
+
 import jenkins.scm.impl.mock.MockSCM;
 import jenkins.scm.impl.mock.MockSCMController;
 import jenkins.scm.impl.mock.MockSCMDiscoverBranches;

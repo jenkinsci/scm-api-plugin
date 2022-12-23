@@ -36,7 +36,6 @@ import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
