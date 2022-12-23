@@ -33,6 +33,7 @@ import hudson.model.Cause;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
@@ -47,8 +48,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.servlet.http.HttpServletRequest;
 import jenkins.security.ImpersonatingScheduledExecutorService;
 import jenkins.util.SystemProperties;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -541,17 +540,16 @@ public abstract class SCMEvent<P> {
                         event.getClass(), event.getTimestamp(), oldName)
                 );
                 for (final SCMEventListener l : ExtensionList.lookup(SCMEventListener.class)) {
-                    SecurityContext context = ACL.impersonate(ACL.SYSTEM);
-                    try {
-                        fire(l, event);
-                    } catch (LinkageError e) {
-                        log(l, e);
-                    } catch (Error e) {
-                        throw e;
-                    } catch (Throwable e) {
-                        log(l, e);
-                    } finally {
-                        SecurityContextHolder.setContext(context);
+                    try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
+                        try {
+                            fire(l, event);
+                        } catch (LinkageError e) {
+                            log(l, e);
+                        } catch (Error e) {
+                            throw e;
+                        } catch (Throwable e) {
+                            log(l, e);
+                        }
                     }
                 }
             } finally {
