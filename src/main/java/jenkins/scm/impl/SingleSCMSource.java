@@ -222,22 +222,12 @@ public class SingleSCMSource extends SCMSource {
         @SuppressWarnings("unused") // used by stapler binding
         public static List<SCMDescriptor<?>> getSCMDescriptors(@AncestorInPath SCMSourceOwner context) {
             List<SCMDescriptor<?>> result = new ArrayList<>(SCM.all());
-            for (Iterator<SCMDescriptor<?>> iterator = result.iterator(); iterator.hasNext(); ) {
-                SCMDescriptor<?> d = iterator.next();
-                if (NullSCM.class.equals(d.clazz)) {
-                    iterator.remove();
-                }
-            }
+            result.removeIf(d -> NullSCM.class.equals(d.clazz));
             if (context instanceof Describable) {
                 final Descriptor descriptor = ((Describable) context).getDescriptor();
                 if (descriptor instanceof TopLevelItemDescriptor) {
                     final TopLevelItemDescriptor topLevelItemDescriptor = (TopLevelItemDescriptor) descriptor;
-                    for (Iterator<SCMDescriptor<?>> iterator = result.iterator(); iterator.hasNext(); ) {
-                        SCMDescriptor<?> d = iterator.next();
-                        if (!topLevelItemDescriptor.isApplicable(d)) {
-                            iterator.remove();
-                        }
-                    }
+                    result.removeIf(d -> !topLevelItemDescriptor.isApplicable(d));
                 }
             }
             return result;

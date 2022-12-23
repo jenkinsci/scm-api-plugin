@@ -248,11 +248,7 @@ public abstract class SCMCategory<T> {
         Map<String, List<C>> result = new TreeMap<>();
         for (C c : categories) {
             String name = c.getName();
-            List<C> l = result.get(name);
-            if (l == null) {
-                l = new ArrayList<>();
-                result.put(name, l);
-            }
+            List<C> l = result.computeIfAbsent(name, k -> new ArrayList<>());
             l.add(c);
         }
         return result;

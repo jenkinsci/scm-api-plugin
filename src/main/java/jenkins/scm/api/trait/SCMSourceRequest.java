@@ -123,12 +123,12 @@ public abstract class SCMSourceRequest implements Closeable {
     protected SCMSourceRequest(@NonNull SCMSource source, @NonNull SCMSourceContext<?, ?> context,
                                @CheckForNull TaskListener listener) {
         this.source = source;
-        this.filters = Collections.unmodifiableList(new ArrayList<>(context.filters()));
-        this.prefilters = Collections.unmodifiableList(new ArrayList<>(context.prefilters()));
-        this.authorities = Collections.unmodifiableList(new ArrayList<SCMHeadAuthority>(context.authorities()));
+        this.filters = List.copyOf(context.filters());
+        this.prefilters = List.copyOf(context.prefilters());
+        this.authorities = List.copyOf(context.authorities());
         this.criteria = context.criteria().isEmpty()
-                ? Collections.<SCMSourceCriteria>emptyList()
-                : Collections.unmodifiableList(new ArrayList<>(context.criteria()));
+                ? Collections.emptyList()
+                : List.copyOf(context.criteria());
         this.observer = context.observer();
         this.observerIncludes = observer.getIncludes();
         this.listener = defaultListener(listener);

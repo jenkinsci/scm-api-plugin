@@ -1175,13 +1175,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             // if result has only one entry then it must be the default, so will never be filtered
             // if we didn't override the category enabled check, then none will be disabled
             result = new LinkedHashSet<SCMHeadCategory>(result);
-            for (Iterator<? extends SCMHeadCategory> iterator = result.iterator(); iterator.hasNext(); ) {
-                SCMHeadCategory category = iterator.next();
-                if (!category.isUncategorized() && !isCategoryEnabled(category)) {
-                    // only keep the enabled non-default categories
-                    iterator.remove();
-                }
-            }
+            // only keep the enabled non-default categories
+            result.removeIf(category -> !category.isUncategorized() && !isCategoryEnabled(category));
         }
         return result;
     }
