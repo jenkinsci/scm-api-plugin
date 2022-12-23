@@ -124,7 +124,7 @@ public abstract class SCMFileSystem implements Closeable {
      * Short for {@code getRoot().child(path)}.
      *
      * @param path Path of the SCMFile to obtain from the root of the repository.
-     * @return null if there's no file/directory at the requested path.
+     * @return Child path
      */
     @NonNull
     public final SCMFile child(@NonNull String path) {
