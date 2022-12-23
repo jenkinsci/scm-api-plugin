@@ -534,7 +534,7 @@ public class MockSCMController implements Closeable {
         }
         Long date = repo.tagDates.get(tag);
         if (tag == null) {
-            throw new IOException("Unknown tag: " + tag + " in repository " + repository);
+            throw new IOException("Unknown tag: null in repository " + repository);
         }
         return date;
     }
