@@ -154,16 +154,12 @@ public class AvatarCache implements UnprotectedRootAction {
         String key = Util.getDigestOf(AvatarCache.class.getName() + source.getId());
         // seed the cache
         instance.getCacheEntry(key, source);
-        try {
-            return j.getRootUrlFromRequest()
-                    + instance.getUrlName()
-                    + "/"
-                    + Util.rawEncode(key)
-                    + ".png?size="
-                    + URLEncoder.encode(size, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError("JLS specification mandates support for UTF-8 encoding", e);
-        }
+        return j.getRootUrlFromRequest()
+                + instance.getUrlName()
+                + "/"
+                + Util.rawEncode(key)
+                + ".png?size="
+                + URLEncoder.encode(size, StandardCharsets.UTF_8);
     }
 
     /**
