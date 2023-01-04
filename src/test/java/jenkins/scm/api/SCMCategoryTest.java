@@ -193,7 +193,7 @@ public class SCMCategoryTest {
 
         @Override
         public boolean isMatch(@NonNull Object instance) {
-            return instance != null && (instance.hashCode() % 31 == 7);
+            return instance.hashCode() % 31 == 7;
         }
     }
 }

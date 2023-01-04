@@ -65,22 +65,22 @@ public abstract class SCMNavigatorContext<C extends SCMNavigatorContext<C, R>, R
      * The pre-filters that do not need the context of a request.
      */
     @NonNull
-    private final List<SCMSourcePrefilter> prefilters = new ArrayList<SCMSourcePrefilter>();
+    private final List<SCMSourcePrefilter> prefilters = new ArrayList<>();
     /**
      * The filters that need the context of a request.
      */
     @NonNull
-    private final List<SCMSourceFilter> filters = new ArrayList<SCMSourceFilter>();
+    private final List<SCMSourceFilter> filters = new ArrayList<>();
     /**
      * The traits to apply to {@link SCMSource} instances for discovered projects.
      */
     @NonNull
-    private final List<SCMSourceTrait> traits = new ArrayList<SCMSourceTrait>();
+    private final List<SCMSourceTrait> traits = new ArrayList<>();
     /**
      * The decorators to customize a subset of {@link SCMSource} instances.
      */
     @NonNull
-    private final List<SCMSourceDecorator<?,?>> decorators = new ArrayList<SCMSourceDecorator<?, ?>>();
+    private final List<SCMSourceDecorator<?,?>> decorators = new ArrayList<>();
 
     /**
      * Constructor.

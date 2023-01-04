@@ -121,7 +121,7 @@ public class NamedArrayList<E> extends ArrayList<E> {
     public static <E> void select(@NonNull List<? extends E> source, @NonNull String name,
                                   @CheckForNull Predicate<? super E> selector, boolean removeSelectedFromSource,
                                   @NonNull List<NamedArrayList<? extends E>> destination, int index) {
-        NamedArrayList<E> selection = new NamedArrayList<E>(name);
+        NamedArrayList<E> selection = new NamedArrayList<>(name);
         if (selector == null) {
             selection.addAll(source);
             if (removeSelectedFromSource) {
@@ -154,7 +154,7 @@ public class NamedArrayList<E> extends ArrayList<E> {
         if (predicates.length < 2) {
             throw new IllegalArgumentException("Must supply at least two predicates");
         }
-        return new Predicate<E>() {
+        return new Predicate<>() {
             @Override
             public boolean test(E e) {
                 for (Predicate<? super E> p : predicates) {
@@ -178,7 +178,7 @@ public class NamedArrayList<E> extends ArrayList<E> {
         if (predicates.length < 2) {
             throw new IllegalArgumentException("Must supply at least two predicates");
         }
-        return new Predicate<E>() {
+        return new Predicate<>() {
             @Override
             public boolean test(E e) {
                 for (Predicate<? super E> p : predicates) {
@@ -200,7 +200,7 @@ public class NamedArrayList<E> extends ArrayList<E> {
      * @return the predicate.
      */
     public static <A extends Annotation> Predicate<Object> withAnnotation(final Class<A> annotation) {
-        return new Predicate<Object>() {
+        return new Predicate<>() {
             @Override
             public boolean test(Object o) {
                 return o.getClass().getAnnotation(annotation) != null;

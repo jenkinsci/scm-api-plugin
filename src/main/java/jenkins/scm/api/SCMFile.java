@@ -109,7 +109,7 @@ public abstract class SCMFile {
             // root node
             return "";
         }
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         SCMFile ptr = this;
         while (ptr != null && !ptr.isRoot()) {
             names.add(ptr.getName());

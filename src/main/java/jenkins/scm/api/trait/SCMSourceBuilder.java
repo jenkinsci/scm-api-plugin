@@ -77,7 +77,7 @@ public abstract class SCMSourceBuilder<B extends SCMSourceBuilder<B, S>, S exten
      * {@link SCMSourceTrait} aware.
      */
     @NonNull
-    private final List<SCMSourceTrait> traits = new ArrayList<SCMSourceTrait>();
+    private final List<SCMSourceTrait> traits = new ArrayList<>();
 
     /**
      * Constructor.

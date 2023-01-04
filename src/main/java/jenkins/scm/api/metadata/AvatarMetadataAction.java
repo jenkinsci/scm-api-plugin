@@ -113,14 +113,21 @@ public abstract class AvatarMetadataAction extends InvisibleAction implements Se
     protected final String avatarIconClassNameImageOf(@CheckForNull String iconClassName, @NonNull String size) {
         if (StringUtils.isNotBlank(iconClassName)) {
             String spec = null;
-            if ("16x16".equals(size)) {
-                spec = "icon-sm";
-            } else if ("24x24".equals(size)) {
-                spec = "icon-md";
-            } else if ("32x32".equals(size)) {
-                spec = "icon-lg";
-            } else if ("48x48".equals(size)) {
-                spec = "icon-xlg";
+            switch (size) {
+                case "16x16":
+                    spec = "icon-sm";
+                    break;
+                case "24x24":
+                    spec = "icon-md";
+                    break;
+                case "32x32":
+                    spec = "icon-lg";
+                    break;
+                case "48x48":
+                    spec = "icon-xlg";
+                    break;
+                default:
+                    break;
             }
             if (spec != null) {
                 Icon icon = IconSet.icons.getIconByClassSpec(iconClassName + " " + spec);

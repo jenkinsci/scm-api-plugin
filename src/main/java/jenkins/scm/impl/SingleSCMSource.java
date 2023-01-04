@@ -36,7 +36,6 @@ import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
@@ -208,6 +207,7 @@ public class SingleSCMSource extends SCMSource {
         /**
          * {@inheritDoc}
          */
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.SingleSCMSource_DisplayName();
@@ -221,23 +221,13 @@ public class SingleSCMSource extends SCMSource {
          */
         @SuppressWarnings("unused") // used by stapler binding
         public static List<SCMDescriptor<?>> getSCMDescriptors(@AncestorInPath SCMSourceOwner context) {
-            List<SCMDescriptor<?>> result = new ArrayList<SCMDescriptor<?>>(SCM.all());
-            for (Iterator<SCMDescriptor<?>> iterator = result.iterator(); iterator.hasNext(); ) {
-                SCMDescriptor<?> d = iterator.next();
-                if (NullSCM.class.equals(d.clazz)) {
-                    iterator.remove();
-                }
-            }
+            List<SCMDescriptor<?>> result = new ArrayList<>(SCM.all());
+            result.removeIf(d -> NullSCM.class.equals(d.clazz));
             if (context instanceof Describable) {
                 final Descriptor descriptor = ((Describable) context).getDescriptor();
                 if (descriptor instanceof TopLevelItemDescriptor) {
                     final TopLevelItemDescriptor topLevelItemDescriptor = (TopLevelItemDescriptor) descriptor;
-                    for (Iterator<SCMDescriptor<?>> iterator = result.iterator(); iterator.hasNext(); ) {
-                        SCMDescriptor<?> d = iterator.next();
-                        if (!topLevelItemDescriptor.isApplicable(d)) {
-                            iterator.remove();
-                        }
-                    }
+                    result.removeIf(d -> !topLevelItemDescriptor.isApplicable(d));
                 }
             }
             return result;

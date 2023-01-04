@@ -90,7 +90,7 @@ public class MockSCMHeadEvent extends SCMHeadEvent<String> {
             return Collections.emptyMap();
         }
         MockSCMHead key = new MockSCMHead(head);
-        return Collections.<SCMHead, SCMRevision>singletonMap(
+        return Collections.singletonMap(
                 key,
                 revision != null ? new MockSCMRevision(key, revision) : null
         );

@@ -28,8 +28,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.net.IDN;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -53,13 +51,7 @@ public final class SCMUri {
     }
 
     static {
-        Map<String, Integer> ports = new HashMap<String, Integer>();
-        ports.put("ftp", 21);
-        ports.put("ssh", 22);
-        ports.put("telnet", 22);
-        ports.put("http", 80);
-        ports.put("https", 443);
-        commonDefaultPorts = Collections.unmodifiableMap(ports);
+        commonDefaultPorts = Map.of("ftp", 21, "ssh", 22, "telnet", 22, "http", 80, "https", 443);
     }
 
     /**

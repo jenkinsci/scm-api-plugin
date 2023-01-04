@@ -177,7 +177,7 @@ public abstract class SCMSourceTrait extends SCMTrait<SCMSourceTrait> {
             @CheckForNull SCMSourceDescriptor scmSource,
             @CheckForNull Class<? extends SCMSourceContext> contextClass,
             @CheckForNull Class<? extends SCMBuilder> builderClass) {
-        List<SCMSourceTraitDescriptor> result = new ArrayList<SCMSourceTraitDescriptor>();
+        List<SCMSourceTraitDescriptor> result = new ArrayList<>();
         if (scmSource != null) {
             for (SCMSourceTraitDescriptor d : all()) {
                 if ((contextClass == null || d.isApplicableToContext(contextClass))

@@ -70,7 +70,7 @@ public class SingleSCMNavigator extends SCMNavigator {
     }
 
     @Override
-    public void visitSources(SCMSourceObserver observer) throws IOException, InterruptedException {
+    public void visitSources(@NonNull SCMSourceObserver observer) throws IOException, InterruptedException {
         SCMSourceObserver.ProjectObserver projectObserver = observer.observe(name);
         for (SCMSource source : sources) {
             projectObserver.addSource(source);
@@ -82,6 +82,7 @@ public class SingleSCMNavigator extends SCMNavigator {
     @Extension
     public static class DescriptorImpl extends SCMNavigatorDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.SingleSCMNavigator_DisplayName();

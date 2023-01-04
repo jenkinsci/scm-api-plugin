@@ -48,7 +48,7 @@ public abstract class SCMHeadCategory extends SCMCategory<SCMHead> {
      */
     @NonNull
     public static List<SCMHeadCategory> collect(@NonNull Iterable<SCMSource> sources) {
-        List<SCMHeadCategory> result = new ArrayList<SCMHeadCategory>();
+        List<SCMHeadCategory> result = new ArrayList<>();
         for (SCMSource source : sources) {
             CATEGORIES:
             for (SCMHeadCategory c : source.getCategories()) {
@@ -94,7 +94,7 @@ public abstract class SCMHeadCategory extends SCMCategory<SCMHead> {
             return categories.get(0);
         }
         boolean includesCatchAll = false;
-        final List<SCMHeadCategory> _categories = new ArrayList<SCMHeadCategory>(categories);
+        final List<SCMHeadCategory> _categories = new ArrayList<>(categories);
         for (SCMHeadCategory c : _categories) {
             if (c.isUncategorized()) {
                 includesCatchAll = true;
@@ -145,7 +145,7 @@ public abstract class SCMHeadCategory extends SCMCategory<SCMHead> {
      * @return the map of simplified categories keyed by {@link #getName()}.
      */
     public static Map<String, SCMHeadCategory> simplify(Iterable<SCMHeadCategory> categories) {
-        Map<String, SCMHeadCategory> result = new TreeMap<String, SCMHeadCategory>();
+        Map<String, SCMHeadCategory> result = new TreeMap<>();
         for (Map.Entry<String, List<SCMHeadCategory>> entry : group(categories).entrySet()) {
             result.put(entry.getKey(), union(entry.getValue()));
         }

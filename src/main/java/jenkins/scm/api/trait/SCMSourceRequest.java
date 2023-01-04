@@ -111,7 +111,7 @@ public abstract class SCMSourceRequest implements Closeable {
      */
     // TODO widen type to AutoClosable once Java 7+
     @NonNull
-    private final List<Closeable> managedClosables = new ArrayList<Closeable>();
+    private final List<Closeable> managedClosables = new ArrayList<>();
 
     /**
      * Constructor.
@@ -123,12 +123,12 @@ public abstract class SCMSourceRequest implements Closeable {
     protected SCMSourceRequest(@NonNull SCMSource source, @NonNull SCMSourceContext<?, ?> context,
                                @CheckForNull TaskListener listener) {
         this.source = source;
-        this.filters = Collections.unmodifiableList(new ArrayList<SCMHeadFilter>(context.filters()));
-        this.prefilters = Collections.unmodifiableList(new ArrayList<SCMHeadPrefilter>(context.prefilters()));
-        this.authorities = Collections.unmodifiableList(new ArrayList<SCMHeadAuthority>(context.authorities()));
+        this.filters = List.copyOf(context.filters());
+        this.prefilters = List.copyOf(context.prefilters());
+        this.authorities = List.copyOf(context.authorities());
         this.criteria = context.criteria().isEmpty()
-                ? Collections.<SCMSourceCriteria>emptyList()
-                : Collections.unmodifiableList(new ArrayList<SCMSourceCriteria>(context.criteria()));
+                ? Collections.emptyList()
+                : List.copyOf(context.criteria());
         this.observer = context.observer();
         this.observerIncludes = observer.getIncludes();
         this.listener = defaultListener(listener);
@@ -246,13 +246,13 @@ public abstract class SCMSourceRequest implements Closeable {
                                                                             @NonNull ProbeLambda<H, R> probeFactory,
                                                                             @NonNull Witness... witnesses)
             throws IOException, InterruptedException {
-        return process(head, new IntermediateLambda<R>() {
+        return process(head, new IntermediateLambda<>() {
             @Nullable
             @Override
             public R create() throws IOException, InterruptedException {
                 return revision;
             }
-        }, probeFactory, new LazyRevisionLambda<H, SCMRevision, R>() {
+        }, probeFactory, new LazyRevisionLambda<>() {
             @NonNull
             @Override
             public SCMRevision create(@NonNull H head, @Nullable R ignored)
@@ -283,13 +283,13 @@ public abstract class SCMSourceRequest implements Closeable {
                                                                             @NonNull ProbeLambda<H, R> probeFactory,
                                                                             @NonNull Witness... witnesses)
             throws IOException, InterruptedException {
-        return process(head, new IntermediateLambda<R>() {
+        return process(head, new IntermediateLambda<>() {
             @NonNull
             @Override
             public R create() throws IOException, InterruptedException {
                 return revisionFactory.create(head);
             }
-        }, probeFactory, new LazyRevisionLambda<H, SCMRevision, R>() {
+        }, probeFactory, new LazyRevisionLambda<>() {
             @NonNull
             @Override
             public SCMRevision create(@NonNull H head, @Nullable R revision)

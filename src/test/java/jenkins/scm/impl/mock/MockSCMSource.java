@@ -144,11 +144,11 @@ public class MockSCMSource extends SCMSource {
                                     controller().checkFaults(repository, head.getName(), null, false);
                                     return new MockSCMRevision(head, controller().getRevision(repository, branch));
                                 }
-                            }, new SCMSourceRequest.ProbeLambda<MockSCMHead, MockSCMRevision>() {
+                            }, new SCMSourceRequest.ProbeLambda<>() {
                                 @NonNull
                                 @Override
                                 public SCMSourceCriteria.Probe create(@NonNull MockSCMHead head, @Nullable
-                                        MockSCMRevision revisionInfo) throws IOException, InterruptedException {
+                                MockSCMRevision revisionInfo) throws IOException, InterruptedException {
                                     controller().applyLatency();
                                     controller().checkFaults(repository, head.getName(), revisionInfo.getHash(), false);
                                     return new MockSCMProbe(head, revisionInfo.getHash());
@@ -174,7 +174,7 @@ public class MockSCMSource extends SCMSource {
                                 @NonNull
                                 @Override
                                 public SCMSourceCriteria.Probe create(@NonNull MockTagSCMHead head, @Nullable
-                                        MockSCMRevision revisionInfo)
+                                MockSCMRevision revisionInfo)
                                         throws IOException, InterruptedException {
                                     controller().applyLatency();
                                     controller().checkFaults(repository, head.getName(), revisionInfo.getHash(), false);
@@ -220,7 +220,7 @@ public class MockSCMSource extends SCMSource {
                                     @Override
                                     public SCMSourceCriteria.Probe create(@NonNull MockChangeRequestSCMHead head,
                                                                           @Nullable
-                                                                                  MockChangeRequestSCMRevision revisionInfo)
+                                                                          MockChangeRequestSCMRevision revisionInfo)
                                             throws IOException, InterruptedException {
                                         controller().applyLatency();
                                         controller()
@@ -253,7 +253,7 @@ public class MockSCMSource extends SCMSource {
             throws IOException, InterruptedException {
         controller().applyLatency();
         controller().checkFaults(repository, null, null, true);
-        List<Action> result = new ArrayList<Action>();
+        List<Action> result = new ArrayList<>();
         result.add(new MockSCMLink("source"));
         String description = controller().getDescription(repository);
         String displayName = controller().getDisplayName(repository);
@@ -284,7 +284,7 @@ public class MockSCMSource extends SCMSource {
             throw new IOException("Unexpected revision");
         }
         controller().checkFaults(repository, revision.getHead().getName(), hash, true);
-        return Collections.<Action>singletonList(new MockSCMLink("revision"));
+        return Collections.singletonList(new MockSCMLink("revision"));
     }
 
     @NonNull
@@ -295,7 +295,7 @@ public class MockSCMSource extends SCMSource {
             throws IOException, InterruptedException {
         controller().applyLatency();
         controller().checkFaults(repository, head.getName(), null, true);
-        List<Action> result = new ArrayList<Action>();
+        List<Action> result = new ArrayList<>();
         if (head instanceof MockChangeRequestSCMHead) {
             result.add(new ContributorMetadataAction(
                     "bob",
@@ -396,7 +396,7 @@ public class MockSCMSource extends SCMSource {
         @Override
         @NonNull
         public List<SCMSourceTrait> getTraitsDefaults() {
-            return Collections.<SCMSourceTrait>singletonList(new MockSCMDiscoverBranches());
+            return Collections.singletonList(new MockSCMDiscoverBranches());
         }
     }
 

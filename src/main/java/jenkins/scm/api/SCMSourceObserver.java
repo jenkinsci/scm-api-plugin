@@ -122,7 +122,7 @@ public abstract class SCMSourceObserver {
      */
     @NonNull
     public static <O extends SCMSourceObserver> SCMSourceObserver.Filter<O> filter(O delegate, String... projectNames) {
-        return new SCMSourceObserver.Filter<O>(delegate, projectNames);
+        return new SCMSourceObserver.Filter<>(delegate, projectNames);
     }
 
     /**
@@ -263,12 +263,12 @@ public abstract class SCMSourceObserver {
          */
         public Filter(O delegate, String... projectNames) {
             super(delegate);
-            this.projectNames = new HashSet<String>(Arrays.asList(projectNames));
+            this.projectNames = new HashSet<>(Arrays.asList(projectNames));
             Set<String> includes = delegate.getIncludes();
             if (includes != null) {
                 this.projectNames.retainAll(includes);
             }
-            this.remaining = new HashSet<String>(this.projectNames);
+            this.remaining = new HashSet<>(this.projectNames);
         }
 
         /**

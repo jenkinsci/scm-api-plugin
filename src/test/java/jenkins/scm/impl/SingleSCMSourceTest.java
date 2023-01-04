@@ -24,6 +24,7 @@
 
 package jenkins.scm.impl;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.TopLevelItem;
@@ -41,7 +42,6 @@ import jenkins.scm.api.SCMSourceOwner;
 import jenkins.scm.impl.mock.MockSCM;
 import jenkins.scm.impl.mock.MockSCMController;
 import jenkins.scm.impl.mock.MockSCMHead;
-import org.hamcrest.Matcher;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -136,13 +136,13 @@ public class SingleSCMSourceTest {
                     new MockSCM(c, "foo", new MockSCMHead("master"), null));
             instance.fetch(criteria, observer, null);
             seq.verify(observer).observe(
-                    (SCMHead) argThat(
+                    argThat(
                             allOf(
                                     instanceOf(SCMHead.class),
                                     hasProperty("name", is("the-name"))
                             )
                     ),
-                    (SCMRevision) argThat(
+                    argThat(
                             allOf(
                                     instanceOf(SCMRevision.class),
                                     hasProperty("head", hasProperty("name", is("the-name"))),
@@ -199,7 +199,7 @@ public class SingleSCMSourceTest {
         when(owner.getDescriptor()).thenReturn(descriptor);
         when(descriptor.isApplicable(any(Descriptor.class))).thenReturn(true);
         assertThat(SingleSCMSource.DescriptorImpl.getSCMDescriptors(owner),
-                (Matcher) hasItem(instanceOf(MockSCM.DescriptorImpl.class)));
+                hasItem(instanceOf(MockSCM.DescriptorImpl.class)));
     }
 
     public interface TopLevelSCMOwner extends TopLevelItem, SCMSourceOwner {
@@ -220,6 +220,7 @@ public class SingleSCMSourceTest {
         @TestExtension
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "SCMSourceBuilder";

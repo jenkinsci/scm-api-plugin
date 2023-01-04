@@ -135,14 +135,14 @@ public class SCMEventTest {
 
     @Test
     public void getPayload() throws Exception {
-        assertThat(new MySCMEvent(SCMEvent.Type.CREATED, this).getPayload(), sameInstance((Object) this));
+        assertThat(new MySCMEvent(SCMEvent.Type.CREATED, this).getPayload(), sameInstance(this));
     }
 
     @Test
     public void equalityContract() throws Exception {
         MySCMEvent a1 = new MySCMEvent(SCMEvent.Type.CREATED, 53L, "foo");
         MySCMEvent a2 = new MySCMEvent(SCMEvent.Type.CREATED, 53L, new String("foo"));
-        MySCMEvent a3 = new MySCMEvent(SCMEvent.Type.CREATED, new Long(53L), new String("foo"));
+        MySCMEvent a3 = new MySCMEvent(SCMEvent.Type.CREATED, Long.valueOf(53L), new String("foo"));
         MySCMEvent b1 = new MySCMEvent(SCMEvent.Type.UPDATED, 53L, "foo");
         MySCMEvent c1 = new MySCMEvent(SCMEvent.Type.CREATED, 54L, "foo");
         MySCMEvent d1 = new MySCMEvent(SCMEvent.Type.CREATED, 53L, "bar");

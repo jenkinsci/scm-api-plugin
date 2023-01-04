@@ -96,6 +96,7 @@ public class MockSCMDiscoverChangeRequests extends SCMSourceTrait {
     @Extension
     public static final class DescriptorImpl extends SCMSourceTraitDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Discover change requests";

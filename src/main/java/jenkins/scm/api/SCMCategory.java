@@ -179,7 +179,7 @@ public abstract class SCMCategory<T> {
         if (categories.size() == 1) {
             return categories.get(0).getDisplayName();
         }
-        List<Localizable> localizables = new ArrayList<Localizable>(categories.size());
+        List<Localizable> localizables = new ArrayList<>(categories.size());
         for (C category : categories) {
             localizables.add(category.getDisplayName());
         }
@@ -214,7 +214,7 @@ public abstract class SCMCategory<T> {
             // the reference locale for Jenkins is english, so we build URLs in english
             return categories.get(0).getName().toLowerCase(Locale.ENGLISH); // force lowercase to align different impls
         }
-        Set<String> urlNames = new TreeSet<String>();
+        Set<String> urlNames = new TreeSet<>();
         for (SCMCategory category : categories) {
             urlNames.add(category.getName().toLowerCase(Locale.ENGLISH)); // force lowercase to align different impls
         }
@@ -245,14 +245,10 @@ public abstract class SCMCategory<T> {
      */
     @NonNull
     public static <T, C extends SCMCategory<T>> Map<String, List<C>> group(@NonNull Iterable<C> categories) {
-        Map<String, List<C>> result = new TreeMap<String, List<C>>();
+        Map<String, List<C>> result = new TreeMap<>();
         for (C c : categories) {
             String name = c.getName();
-            List<C> l = result.get(name);
-            if (l == null) {
-                l = new ArrayList<C>();
-                result.put(name, l);
-            }
+            List<C> l = result.computeIfAbsent(name, k -> new ArrayList<>());
             l.add(c);
         }
         return result;
@@ -363,7 +359,7 @@ public abstract class SCMCategory<T> {
         @Override
         public String toString(final Locale locale) {
             // put them in a set so that where translations overlap we can consolidate the terms
-            Set<Localizable> pronouns = new TreeSet<Localizable>(new LocalizableComparator(locale));
+            Set<Localizable> pronouns = new TreeSet<>(new LocalizableComparator(locale));
             pronouns.addAll(terms);
             Iterator<Localizable> iterator = pronouns.iterator();
             Localizable result = iterator.next();

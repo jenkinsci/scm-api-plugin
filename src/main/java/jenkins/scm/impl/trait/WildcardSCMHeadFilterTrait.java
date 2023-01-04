@@ -138,6 +138,7 @@ public class WildcardSCMHeadFilterTrait extends SCMSourceTrait {
         /**
          * {@inheritDoc}
          */
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.WildcardSCMHeadFilterTrait_DisplayName();

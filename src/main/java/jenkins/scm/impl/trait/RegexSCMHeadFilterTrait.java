@@ -120,6 +120,7 @@ public class RegexSCMHeadFilterTrait extends SCMSourceTrait {
         /**
          * {@inheritDoc}
          */
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.RegexSCMHeadFilterTrait_DisplayName();

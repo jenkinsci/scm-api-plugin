@@ -81,7 +81,7 @@ public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule 
      * @param cmds its arguments
      */
     protected final void run(String tool, String... cmds) throws Exception {
-        List<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<>();
         args.add(tool);
         args.addAll(Arrays.asList(cmds));
         run(false, sampleRepo, args.toArray(new String[0]));
