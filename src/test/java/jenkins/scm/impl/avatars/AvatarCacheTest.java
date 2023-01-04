@@ -243,7 +243,7 @@ public class AvatarCacheTest {
         }
 
         public HttpResponse doIndex() {
-            return HttpResponses.plainText(AvatarCache.buildUrl(url, size));
+            return HttpResponses.text(AvatarCache.buildUrl(url, size));
         }
     }
 
