@@ -61,11 +61,11 @@ import org.kohsuke.stapler.export.ExportedBean;
  * A {@link SCMSource} is responsible for fetching {@link SCMHead} and corresponding {@link SCMRevision} instances from
  * which it can build {@link SCM} instances that are configured to check out the specific {@link SCMHead} at the
  * specified {@link SCMRevision}.
- *
+ * <p>
  * Each {@link SCMSource} is owned by a {@link SCMSourceOwner}, if you need to find all the owners use
  * {@link SCMSourceOwners#all()} to iterate through them, e.g. to notify {@link SCMSource} instances of push
  * notification from the server they source {@link SCMHead}s from.
- *
+ * <p>
  * <strong>NOTE:</strong> This layer does not cache remote calls but can cache intermediary results. For example,
  * with Subversion it is acceptable to cache the last revisions of various directory entries to minimize network
  * round trips, but any of the calls to {@link #fetch(TaskListener)},
@@ -994,7 +994,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
 
     /**
      * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}.
-     *
+     * <p>
      * Public exposed API for {@link #createProbe(SCMHead, SCMRevision)}.
      * @param head the {@link SCMHead}.
      * @param revision the {@link SCMRevision}.
