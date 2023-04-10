@@ -26,7 +26,6 @@ package jenkins.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
-import hudson.model.Cause;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.triggers.SCMTrigger;
@@ -43,12 +42,7 @@ public interface TrustworthyBuild extends ExtensionPoint {
     /**
      * Should this build be trusted to load sensitive source files?
      * If any implementation returns true then it is trusted.
-     */
-    boolean shouldBeTrusted(@NonNull Run<?, ?> build, @NonNull TaskListener listener);
-
-    /**
-     * Convenience for the common case that a particular trigger cause indicates trust.
-     * Examples of causes which should <em>not</em> be registered include:
+     * Examples of build-triggering causes which should <em>not</em> be trusted include:
      * <ul>
      * <li>{@link TimerTrigger.TimerTriggerCause}
      * <li>{@link SCMTrigger.SCMTriggerCause}
@@ -56,8 +50,6 @@ public interface TrustworthyBuild extends ExtensionPoint {
      * <li>{@code BranchEventCause}
      * </ul>
      */
-    static TrustworthyBuild byCause(Class<? extends Cause> causeType) {
-        return (build, listener) -> build.getCause(causeType) != null;
-    }
+    boolean shouldBeTrusted(@NonNull Run<?, ?> build, @NonNull TaskListener listener);
 
 }
