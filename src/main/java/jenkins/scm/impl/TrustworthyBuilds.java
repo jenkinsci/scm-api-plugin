@@ -75,8 +75,15 @@ public class TrustworthyBuilds {
     // TODO until github-checks can declare a dep on a sufficiently new scm-api
     @Extension
     public static TrustworthyBuild byGitHubChecks() {
-        return (build, listener) -> build.getCauses().stream().anyMatch(
-            cause -> cause.getClass().getName().equals("io.jenkins.plugins.checks.github.CheckRunGHEventSubscriber$GitHubChecksRerunActionCause"));
+        return (build, listener) -> {
+            for (Cause cause : build.getCauses()) {
+                if (cause.getClass().getName().equals("io.jenkins.plugins.checks.github.CheckRunGHEventSubscriber$GitHubChecksRerunActionCause")) {
+                    listener.getLogger().println("Trusting build since it was a rerun request through GitHub checks API");
+                    return true;
+                }
+            }
+            return false;
+        };
     }
 
     private TrustworthyBuilds() {}
