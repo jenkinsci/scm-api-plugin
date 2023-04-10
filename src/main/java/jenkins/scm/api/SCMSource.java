@@ -981,7 +981,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
         } else {
             SCMRevision trustedRevision = getTrustedRevision(revision, listener);
             if (trustedRevision.equals(revision)) {
-                LOGGER.fine(() -> build + " was not considered trustworthy, but " + revision + " was trusted anyway");
+                LOGGER.fine(() -> revision + " was trusted anyway so it is irrelevant that " + build + " was not specifically considered trustworthy");
             } else {
                 LOGGER.fine(() -> build + " was not considered trustworthy, so replacing " + revision + " with " + trustedRevision);
             }
