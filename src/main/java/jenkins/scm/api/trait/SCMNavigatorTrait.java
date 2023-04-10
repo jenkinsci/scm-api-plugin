@@ -179,7 +179,7 @@ public abstract class SCMNavigatorTrait extends SCMTrait<SCMNavigatorTrait> {
             @CheckForNull SCMNavigatorDescriptor scmNavigator,
             @CheckForNull Class<? extends SCMNavigatorContext> contextClass,
             @CheckForNull Class<? extends SCMSourceBuilder> builderClass) {
-        List<SCMNavigatorTraitDescriptor> result = new ArrayList<SCMNavigatorTraitDescriptor>();
+        List<SCMNavigatorTraitDescriptor> result = new ArrayList<>();
         if (scmNavigator != null) {
             for (SCMNavigatorTraitDescriptor d : all()) {
                 if ((contextClass == null || d.isApplicableToContext(contextClass))

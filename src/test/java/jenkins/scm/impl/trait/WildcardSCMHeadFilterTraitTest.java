@@ -37,8 +37,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
 
 public class WildcardSCMHeadFilterTraitTest {
     @ClassRule
@@ -52,7 +52,7 @@ public class WildcardSCMHeadFilterTraitTest {
             c.createBranch("foo", "alt");
             MockSCMSource src = new MockSCMSource(c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("master fo*", ""));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
-            Set<String> names = new TreeSet<String>();
+            Set<String> names = new TreeSet<>();
             for (SCMHead h: result.keySet()) {
                 names.add(h.getName());
             }
@@ -68,7 +68,7 @@ public class WildcardSCMHeadFilterTraitTest {
             c.createBranch("foo", "alt");
             MockSCMSource src = new MockSCMSource(c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("*", "fo*"));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
-            Set<String> names = new TreeSet<String>();
+            Set<String> names = new TreeSet<>();
             for (SCMHead h: result.keySet()) {
                 names.add(h.getName());
             }
@@ -84,7 +84,7 @@ public class WildcardSCMHeadFilterTraitTest {
             c.createBranch("foo", "alt");
             MockSCMSource src = new MockSCMSource(c, "foo", new MockSCMDiscoverBranches(), new WildcardSCMHeadFilterTrait("master fo*", "foo"));
             Map<SCMHead, SCMRevision> result = src.fetch(null, SCMHeadObserver.collect(), null, null).result();
-            Set<String> names = new TreeSet<String>();
+            Set<String> names = new TreeSet<>();
             for (SCMHead h: result.keySet()) {
                 names.add(h.getName());
             }

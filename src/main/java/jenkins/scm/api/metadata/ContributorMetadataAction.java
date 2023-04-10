@@ -28,6 +28,8 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.InvisibleAction;
 import hudson.model.TaskListener;
 import java.io.Serializable;
+import java.util.Objects;
+
 import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
@@ -120,17 +122,13 @@ public class ContributorMetadataAction extends InvisibleAction implements Serial
 
         ContributorMetadataAction that = (ContributorMetadataAction) o;
 
-        if (contributor != null ? !contributor.equals(that.contributor) : that.contributor != null) {
+        if (!Objects.equals(contributor, that.contributor)) {
             return false;
         }
-        if (contributorDisplayName != null
-                ? !contributorDisplayName.equals(that.contributorDisplayName)
-                : that.contributorDisplayName != null) {
+        if (!Objects.equals(contributorDisplayName, that.contributorDisplayName)) {
             return false;
         }
-        return contributorEmail != null
-                ? contributorEmail.equals(that.contributorEmail)
-                : that.contributorEmail == null;
+        return Objects.equals(contributorEmail, that.contributorEmail);
     }
 
     /**

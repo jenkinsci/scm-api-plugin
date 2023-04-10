@@ -39,7 +39,6 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -95,12 +94,12 @@ public class AvatarCache implements UnprotectedRootAction {
     /**
      * The cache of entries. Unused entries will be removed over time.
      */
-    private final ConcurrentMap<String, CacheEntry> cache = new ConcurrentHashMap<String, CacheEntry>();
+    private final ConcurrentMap<String, CacheEntry> cache = new ConcurrentHashMap<>();
     /**
      * A background thread pool to refresh images.
      */
     /*package*/ final ThreadPoolExecutor service = new ThreadPoolExecutor(CONCURRENT_REQUEST_LIMIT, CONCURRENT_REQUEST_LIMIT,
-            1L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+            1L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
             new NamingThreadFactory(new DaemonThreadFactory(), getClass().getName())
     );
     /**
@@ -154,16 +153,12 @@ public class AvatarCache implements UnprotectedRootAction {
         String key = Util.getDigestOf(AvatarCache.class.getName() + source.getId());
         // seed the cache
         instance.getCacheEntry(key, source);
-        try {
-            return j.getRootUrlFromRequest()
-                    + instance.getUrlName()
-                    + "/"
-                    + Util.rawEncode(key)
-                    + ".png?size="
-                    + URLEncoder.encode(size, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError("JLS specification mandates support for UTF-8 encoding", e);
-        }
+        return j.getRootUrlFromRequest()
+                + instance.getUrlName()
+                + "/"
+                + Util.rawEncode(key)
+                + ".png?size="
+                + URLEncoder.encode(size, StandardCharsets.UTF_8);
     }
 
     /**

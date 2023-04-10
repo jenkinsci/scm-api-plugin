@@ -181,9 +181,9 @@ public class AvatarCacheTest {
     }
 
     private List<Callable<Void>> fakeWork(final CountDownLatch latch, final CountDownLatch running) {
-        final List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+        final List<Callable<Void>> tasks = new ArrayList<>();
         for (int i = 0; i < AvatarCache.CONCURRENT_REQUEST_LIMIT; i++) {
-            tasks.add(new Callable<Void>() {
+            tasks.add(new Callable<>() {
                 @Override
                 public Void call() throws Exception {
                     running.countDown();
@@ -243,7 +243,7 @@ public class AvatarCacheTest {
         }
 
         public HttpResponse doIndex() {
-            return HttpResponses.plainText(AvatarCache.buildUrl(url, size));
+            return HttpResponses.text(AvatarCache.buildUrl(url, size));
         }
     }
 

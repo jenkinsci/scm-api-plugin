@@ -27,6 +27,8 @@ package jenkins.scm.impl.mock;
 
 import hudson.model.Action;
 
+import java.util.Objects;
+
 public class MockSCMLink implements Action {
     private final String id;
 
@@ -64,7 +66,7 @@ public class MockSCMLink implements Action {
 
         MockSCMLink that = (MockSCMLink) o;
 
-        return id != null ? id.equals(that.id) : that.id == null;
+        return Objects.equals(id, that.id);
 
     }
 

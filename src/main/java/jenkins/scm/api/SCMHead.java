@@ -76,7 +76,7 @@ public class SCMHead implements SCMHeadMixin {
      * @since 2.0
      */
     public static final AlternativeUiTextProvider.Message<SCMHead> PRONOUN
-            = new AlternativeUiTextProvider.Message<SCMHead>();
+            = new AlternativeUiTextProvider.Message<>();
 
     /**
      * Ensure consistent serialization.

@@ -59,7 +59,7 @@ public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule 
      * @param text text to write
      */
     public final void write(String rel, String text) throws IOException {
-        FileUtils.write(new File(sampleRepo, rel), text);
+        FileUtils.write(new File(sampleRepo, rel), text, StandardCharsets.UTF_8);
     }
 
     /**
@@ -81,7 +81,7 @@ public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule 
      * @param cmds its arguments
      */
     protected final void run(String tool, String... cmds) throws Exception {
-        List<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<>();
         args.add(tool);
         args.addAll(Arrays.asList(cmds));
         run(false, sampleRepo, args.toArray(new String[0]));
@@ -91,7 +91,7 @@ public abstract class AbstractSampleDVCSRepoRule extends AbstractSampleRepoRule 
      * Like {@link #fileUrl} but expressed only as a path, not a URL with protocol.
      */
     public final String bareUrl() throws UnsupportedEncodingException {
-        return URLEncoder.encode(toString(), StandardCharsets.UTF_8.name());
+        return URLEncoder.encode(toString(), StandardCharsets.UTF_8);
     }
 
     /**

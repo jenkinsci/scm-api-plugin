@@ -26,15 +26,9 @@ package jenkins.scm.impl.mock;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Extension;
-import hudson.model.Item;
-import hudson.scm.SCM;
-import hudson.scm.SCMDescriptor;
 import jenkins.scm.api.SCMFile;
 import jenkins.scm.api.SCMFileSystem;
 import jenkins.scm.api.SCMRevision;
-import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.SCMSourceDescriptor;
 
 import java.io.IOException;
 

@@ -34,6 +34,7 @@ import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -104,13 +105,13 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
      */
     @GuardedBy("lock")
     private static final Map<ClassLoader, SCMHeadMixinEqualityGenerator> generators
-            = new WeakHashMap<ClassLoader, SCMHeadMixinEqualityGenerator>();
+            = new WeakHashMap<>();
     /**
      * Weak hashmap of the {@link SCMHeadMixin.Equality} instances keyed by the concrete type that requires them.
      */
     @GuardedBy("lock")
     private static final WeakHashMap<Class<? extends SCMHead>, SCMHeadMixin.Equality> mixinEqualities
-            = new WeakHashMap<Class<? extends SCMHead>, SCMHeadMixin.Equality>();
+            = new WeakHashMap<>();
 
     /**
      * Get the {@link SCMHeadMixin.Equality} instance to use.
@@ -140,7 +141,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
             SCMHeadMixinEqualityGenerator generator;
             generator = generators.get(loader);
             if (generator == null) {
-                generator = AccessController.doPrivileged(new PrivilegedAction<SCMHeadMixinEqualityGenerator>() {
+                generator = AccessController.doPrivileged(new PrivilegedAction<>() {
                     @Override
                     public SCMHeadMixinEqualityGenerator run() {
                         return new SCMHeadMixinEqualityGenerator(loader);
@@ -173,7 +174,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
      */
     @NonNull
     private SCMHeadMixin.Equality create(@NonNull Class<? extends SCMHead> type) {
-        Map<String, Method> properties = new TreeMap<String, Method>();
+        Map<String, Method> properties = new TreeMap<>();
         for (Class clazz : (List<Class>) ClassUtils.getAllInterfaces(type)) {
             if (!SCMHeadMixin.class.isAssignableFrom(clazz)) {
                 // not a mix-in
@@ -243,8 +244,8 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
                 SCMHeadMixin.Equality.class);
 
         try {
-            return c.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return c.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             // fallback to reflection
         }
         return new ReflectiveEquality(properties.values().toArray(new Method[0]));
@@ -488,7 +489,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
                     // should not happen as these are supposed to be public methods and they worked on o1
                     return false;
                 }
-                if (p1 == null ? p2 != null : !p1.equals(p2)) {
+                if (!Objects.equals(p1, p2)) {
                     return false;
                 }
             }

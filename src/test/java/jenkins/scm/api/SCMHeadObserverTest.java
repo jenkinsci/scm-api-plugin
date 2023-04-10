@@ -25,10 +25,10 @@
 
 package jenkins.scm.api;
 
-import java.util.Map;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasEntry;
@@ -36,7 +36,6 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -81,7 +80,7 @@ public class SCMHeadObserverTest {
         assertThat("Still observing", instance.isObserving(), is(true));
         instance.observe(head2, revision2);
         assertThat("Still observing", instance.isObserving(), is(true));
-        assertThat(instance.result(), Matchers.<Map<SCMHead,SCMRevision>>allOf(hasEntry(head1, revision1), hasEntry(head2, revision2)));
+        assertThat(instance.result(), Matchers.allOf(hasEntry(head1, revision1), hasEntry(head2, revision2)));
 
     }
 

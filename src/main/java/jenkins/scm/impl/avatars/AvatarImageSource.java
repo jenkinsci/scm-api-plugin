@@ -26,7 +26,7 @@ package jenkins.scm.impl.avatars;
 /**
  *
  * Interface for Avatar Cache Item Source
- * 
+ * <p>
  * This defines a source for avatar to be ached and implementation to fetch it
  */
 public interface AvatarImageSource {

@@ -57,14 +57,14 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 public class MockSCMController implements Closeable {
 
-    private static Map<String, MockSCMController> instances = new WeakHashMap<String, MockSCMController>();
+    private static Map<String, MockSCMController> instances = new WeakHashMap<>();
 
     private final String id;
 
-    private Map<String, Repository> repositories = new TreeMap<String, Repository>();
-    private List<MockFailure> faults = new ArrayList<MockFailure>();
-    private List<MockSCMNavigatorSaveListener> navigatorSaveListeners = new ArrayList<MockSCMNavigatorSaveListener>();
-    private List<MockSCMSourceSaveListener> sourceSaveListeners = new ArrayList<MockSCMSourceSaveListener>();
+    private Map<String, Repository> repositories = new TreeMap<>();
+    private List<MockFailure> faults = new ArrayList<>();
+    private List<MockSCMNavigatorSaveListener> navigatorSaveListeners = new ArrayList<>();
+    private List<MockSCMSourceSaveListener> sourceSaveListeners = new ArrayList<>();
     @NonNull
     private MockLatency latency = MockLatency.none();
     private String displayName;
@@ -130,7 +130,7 @@ public class MockSCMController implements Closeable {
 
     public static List<MockSCMController> all() {
         synchronized (instances) {
-            return new ArrayList<MockSCMController>(instances.values());
+            return new ArrayList<>(instances.values());
         }
     }
 
@@ -213,7 +213,7 @@ public class MockSCMController implements Closeable {
             throws IOException, InterruptedException {
         List<MockFailure> faults;
         synchronized (this) {
-            faults = new ArrayList<MockFailure>(this.faults);
+            faults = new ArrayList<>(this.faults);
         }
         for (MockFailure fault: faults) {
             fault.check(repository, branch, revision, actions);
@@ -230,7 +230,7 @@ public class MockSCMController implements Closeable {
     }
 
     public synchronized List<String> listRepositories() throws IOException {
-        return new ArrayList<String>(repositories.keySet());
+        return new ArrayList<>(repositories.keySet());
     }
 
     public String getDescription(String repository) throws IOException {
@@ -345,15 +345,15 @@ public class MockSCMController implements Closeable {
     }
 
     public synchronized List<String> listBranches(String repository) throws IOException {
-        return new ArrayList<String>(resolve(repository).heads.keySet());
+        return new ArrayList<>(resolve(repository).heads.keySet());
     }
 
     public synchronized List<String> listTags(String repository) throws IOException {
-        return new ArrayList<String>(resolve(repository).tags.keySet());
+        return new ArrayList<>(resolve(repository).tags.keySet());
     }
 
     public synchronized List<Integer> listChangeRequests(String repository) throws IOException {
-        return new ArrayList<Integer>(resolve(repository).changes.keySet());
+        return new ArrayList<>(resolve(repository).changes.keySet());
     }
 
     public synchronized String getRevision(String repository, String branch) throws IOException {
@@ -385,7 +385,7 @@ public class MockSCMController implements Closeable {
             crNum = null;
         }
         State base = repo.revisions.get(hash);
-        State state = new State(base, message, Collections.singletonMap(path, content), Collections.<String>emptySet());
+        State state = new State(base, message, Collections.singletonMap(path, content), Collections.emptySet());
         repo.revisions.put(state.getHash(), state);
         if (branchName != null) {
             repo.heads.put(branchName, state.getHash());
@@ -421,7 +421,7 @@ public class MockSCMController implements Closeable {
         }
         State base = repo.revisions.get(hash);
         State state =
-                new State(base, message, Collections.<String, byte[]>emptyMap(), Collections.<String>singleton(path));
+                new State(base, message, Collections.emptyMap(), Collections.singleton(path));
         repo.revisions.put(state.getHash(), state);
         if (branchName != null) {
             repo.heads.put(branchName, state.getHash());
@@ -491,7 +491,7 @@ public class MockSCMController implements Closeable {
 
     public synchronized List<LogEntry> log(String repository, String identifier) throws IOException {
         State state = resolve(repository, identifier);
-        List<LogEntry> result = new ArrayList<LogEntry>();
+        List<LogEntry> result = new ArrayList<>();
         while (state != null) {
             result.add(new LogEntry(state.getHash(), state.timestamp, state.message, state.files.keySet()));
             state = state.parent;
@@ -534,7 +534,7 @@ public class MockSCMController implements Closeable {
         }
         Long date = repo.tagDates.get(tag);
         if (tag == null) {
-            throw new IOException("Unknown tag: " + tag + " in repository " + repository);
+            throw new IOException("Unknown tag: null in repository " + repository);
         }
         return date;
     }
@@ -552,13 +552,13 @@ public class MockSCMController implements Closeable {
     }
 
     private static class Repository {
-        private Map<String, State> revisions = new TreeMap<String, State>();
-        private Map<String, String> heads = new TreeMap<String, String>();
-        private Map<String, String> tags = new TreeMap<String, String>();
-        private Map<String, Long> tagDates = new TreeMap<String, Long>();
-        private Map<Integer, String> changes = new TreeMap<Integer, String>();
-        private Map<Integer, Set<MockChangeRequestFlags>> changeFlags = new TreeMap<Integer, Set<MockChangeRequestFlags>>();
-        private Map<Integer, String> changeBaselines = new TreeMap<Integer, String>();
+        private Map<String, State> revisions = new TreeMap<>();
+        private Map<String, String> heads = new TreeMap<>();
+        private Map<String, String> tags = new TreeMap<>();
+        private Map<String, Long> tagDates = new TreeMap<>();
+        private Map<Integer, String> changes = new TreeMap<>();
+        private Map<Integer, Set<MockChangeRequestFlags>> changeFlags = new TreeMap<>();
+        private Map<Integer, String> changeBaselines = new TreeMap<>();
         private int lastChangeRequest;
         private String description;
         private String displayName;
@@ -568,7 +568,7 @@ public class MockSCMController implements Closeable {
 
         private Repository(MockRepositoryFlags... flags) {
             this.flags = flags.length == 0
-                    ? Collections.<MockRepositoryFlags>emptySet()
+                    ? Collections.emptySet()
                     : EnumSet.copyOf(Arrays.asList(flags));
         }
     }
@@ -584,7 +584,7 @@ public class MockSCMController implements Closeable {
             this.parent = null;
             this.message = null;
             this.timestamp = System.currentTimeMillis();
-            this.files = new TreeMap<String, byte[]>();
+            this.files = new TreeMap<>();
         }
 
         public State(State parent, String message, Map<String, byte[]> added, Set<String> removed) {
@@ -592,8 +592,8 @@ public class MockSCMController implements Closeable {
             this.message = message;
             this.timestamp = System.currentTimeMillis();
             Map<String, byte[]> files = parent != null
-                    ? new TreeMap<String, byte[]>(parent.files)
-                    : new TreeMap<String, byte[]>();
+                    ? new TreeMap<>(parent.files)
+                    : new TreeMap<>();
             files.keySet().removeAll(removed);
             files.putAll(added);
             this.files = files;

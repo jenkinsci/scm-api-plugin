@@ -203,7 +203,7 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
      * @return the wrapped delegate.
      */
     public <O extends SCMHeadObserver> SCMHeadObserver.Wrapped<O> filter(@NonNull SCMSource source, O delegate) {
-        return new Validated<O>(delegate, source);
+        return new Validated<>(delegate, source);
     }
 
     /**
@@ -274,13 +274,13 @@ public abstract class SCMHeadEvent<P> extends SCMEvent<P> {
          */
         private Validated(O delegate, SCMSource source) {
             super(delegate);
-            untrusted = new HashMap<SCMHead, SCMRevision>(SCMHeadEvent.this.heads(source));
+            untrusted = new HashMap<>(SCMHeadEvent.this.heads(source));
             Set<SCMHead> i = super.getIncludes();
             if (i != null) {
                 untrusted.keySet().retainAll(i);
             }
-            includes = new HashSet<SCMHead>(untrusted.keySet()); // copy now because we use untrusted to track progress
-            trusted = new HashMap<SCMHead, SCMRevision>(untrusted.size());
+            includes = new HashSet<>(untrusted.keySet()); // copy now because we use untrusted to track progress
+            trusted = new HashMap<>(untrusted.size());
         }
 
         /**

@@ -39,7 +39,7 @@ public class MockSCMChangeLogSet extends ChangeLogSet<MockSCMChangeLogEntry> {
     public MockSCMChangeLogSet(Run<?, ?> build, RepositoryBrowser<?> browser,
                                List<MockSCMController.LogEntry> entries) {
         super(build, browser);
-        this.entries = new ArrayList<MockSCMChangeLogEntry>(entries.size());
+        this.entries = new ArrayList<>(entries.size());
         for (MockSCMController.LogEntry e : entries) {
             MockSCMChangeLogEntry entry = new MockSCMChangeLogEntry(e);
             entry.setParent(this);

@@ -43,7 +43,6 @@ import hudson.util.LogTaskListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,11 +60,11 @@ import org.kohsuke.stapler.export.ExportedBean;
  * A {@link SCMSource} is responsible for fetching {@link SCMHead} and corresponding {@link SCMRevision} instances from
  * which it can build {@link SCM} instances that are configured to check out the specific {@link SCMHead} at the
  * specified {@link SCMRevision}.
- *
+ * <p>
  * Each {@link SCMSource} is owned by a {@link SCMSourceOwner}, if you need to find all the owners use
  * {@link SCMSourceOwners#all()} to iterate through them, e.g. to notify {@link SCMSource} instances of push
  * notification from the server they source {@link SCMHead}s from.
- *
+ * <p>
  * <strong>NOTE:</strong> This layer does not cache remote calls but can cache intermediary results. For example,
  * with Subversion it is acceptable to cache the last revisions of various directory entries to minimize network
  * round trips, but any of the calls to {@link #fetch(TaskListener)},
@@ -84,7 +83,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @since 2.0
      */
     public static final AlternativeUiTextProvider.Message<SCMSource> PRONOUN
-            = new AlternativeUiTextProvider.Message<SCMSource>();
+            = new AlternativeUiTextProvider.Message<>();
     /**
      * This thread local allows us to refactor the {@link SCMSource} API so that there are now implementations that
      * explicitly pass the {@link SCMSourceCriteria} while legacy implementations can still continue to work
@@ -92,7 +91,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      *
      * @since 2.0
      */
-    private static final ThreadLocal<SCMSourceCriteria> compatibilityHack = new ThreadLocal<SCMSourceCriteria>();
+    private static final ThreadLocal<SCMSourceCriteria> compatibilityHack = new ThreadLocal<>();
     /**
      * A special marker value used by {@link #getCriteria()} and stored in {@link #compatibilityHack} to signal
      * that {@link #getCriteria()} should return {@code null}.
@@ -733,7 +732,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
         if (Util.isOverridden(SCMSource.class, getClass(), "retrieveRevisions", TaskListener.class, Item.class)) {
             return retrieveRevisions(listener, getOwner());
         }
-        Set<String> revisions = new HashSet<String>();
+        Set<String> revisions = new HashSet<>();
         for (SCMHead head : retrieve(listener)) {
             revisions.add(head.getName());
         }
@@ -1020,7 +1019,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
 
     /**
      * Creates a {@link SCMProbe} for the specified {@link SCMHead} and {@link SCMRevision}.
-     *
+     * <p>
      * Public exposed API for {@link #createProbe(SCMHead, SCMRevision)}.
      * @param head the {@link SCMHead}.
      * @param revision the {@link SCMRevision}.
@@ -1201,13 +1200,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             // if result has only one entry then it must be the default, so will never be filtered
             // if we didn't override the category enabled check, then none will be disabled
             result = new LinkedHashSet<SCMHeadCategory>(result);
-            for (Iterator<? extends SCMHeadCategory> iterator = result.iterator(); iterator.hasNext(); ) {
-                SCMHeadCategory category = iterator.next();
-                if (!category.isUncategorized() && !isCategoryEnabled(category)) {
-                    // only keep the enabled non-default categories
-                    iterator.remove();
-                }
-            }
+            // only keep the enabled non-default categories
+            result.removeIf(category -> !category.isUncategorized() && !isCategoryEnabled(category));
         }
         return result;
     }

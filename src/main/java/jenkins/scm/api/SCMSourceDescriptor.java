@@ -152,7 +152,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
     @SuppressWarnings("unused") // used by stapler
     public static List<SCMSourceDescriptor> forOwner(Class<? extends SCMSourceOwner> clazz,
                                                      boolean onlyUserInstantiable) {
-        List<SCMSourceDescriptor> result = new ArrayList<SCMSourceDescriptor>();
+        List<SCMSourceDescriptor> result = new ArrayList<>();
         for (SCMSourceDescriptor descriptor : ExtensionList.lookup(SCMSourceDescriptor.class)) {
             if (descriptor.isApplicable(clazz) && (!onlyUserInstantiable || descriptor.isUserInstantiable())) {
                 result.add(descriptor);
@@ -191,7 +191,7 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
     @NonNull
     public synchronized final Set<SCMHeadCategory> getCategories() {
         if (categories == null) {
-            Set<SCMHeadCategory> categories = new LinkedHashSet<SCMHeadCategory>();
+            Set<SCMHeadCategory> categories = new LinkedHashSet<>();
             boolean haveDefault = false;
             for (SCMHeadCategory c : createCategories()) {
                 if (c.isUncategorized()) {
