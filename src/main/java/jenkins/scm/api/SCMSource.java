@@ -40,7 +40,9 @@ import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.LogTaskListener;
+import hudson.util.StreamTaskListener;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -974,15 +976,22 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     @NonNull
     public final SCMRevision getTrustedRevisionForBuild(@NonNull SCMRevision revision, @NonNull TaskListener listener, @NonNull Run<?, ?> build)
             throws IOException, InterruptedException {
-        if (ExtensionList.lookup(TrustworthyBuild.class).stream().anyMatch(tb -> tb.shouldBeTrusted(build, listener))) {
+        // Cheaper to check TrustworthyBuild than to call some getTrustedRevision impls, so try that first,
+        // but defer printing resulting messages if possible.
+        StringWriter buffer = new StringWriter();
+        TaskListener bufferedListener = new StreamTaskListener(buffer);
+        if (ExtensionList.lookup(TrustworthyBuild.class).stream().anyMatch(tb -> tb.shouldBeTrusted(build, bufferedListener))) {
             LOGGER.fine(() -> build + " with " + build.getCauses() + " was considered trustworthy, so using " + revision + " as is");
+            listener.getLogger().print(buffer.toString());
             return revision;
         } else {
             SCMRevision trustedRevision = getTrustedRevision(revision, listener);
-            if (trustedRevision.equals(revision)) {
-                LOGGER.fine(() -> revision + " was trusted anyway so it is irrelevant that " + build + " was not specifically considered trustworthy");
+            if (trustedRevision.equals(revision)) { // common case
+                LOGGER.fine(() -> revision + " was trusted anyway so it is irrelevant that " + build + " was not specifically considered trustworthy\n" + buffer);
             } else {
                 LOGGER.fine(() -> build + " was not considered trustworthy, so replacing " + revision + " with " + trustedRevision);
+                listener.getLogger().print(buffer.toString());
+                listener.getLogger().println(build + " was not considered trustworthy, so replacing " + revision + " with " + trustedRevision);
             }
             return trustedRevision;
         }
