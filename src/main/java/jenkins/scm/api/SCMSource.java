@@ -991,7 +991,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
             } else {
                 LOGGER.fine(() -> build + " was not considered trustworthy, so replacing " + revision + " with " + trustedRevision);
                 listener.getLogger().print(buffer.toString());
-                listener.getLogger().println(build + " was not considered trustworthy, so replacing " + revision + " with " + trustedRevision);
+                listener.getLogger().printf("This build was not considered trustworthy, so replacing %s with %s for sensitive files.%n", revision, trustedRevision);
+                listener.getLogger().printf("(To retest using %s, trigger a new build explicitly, for example using Replay.)%n", revision);
             }
             return trustedRevision;
         }
