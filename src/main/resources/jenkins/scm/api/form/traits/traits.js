@@ -1,36 +1,34 @@
 (function () {
     var traitSectionRule = function (e) {
-        e = $(e);
-        var p = $(e.previousSibling);
-        var n = $(e.nextSibling);
-        var empty = (!n || n.hasClassName("trait-section") || n.hasClassName("repeatable-insertion-point"));
+        var p = e.previousSibling;
+        var n = e.nextSibling;
+        var empty = (!n || n.classList.contains("trait-section") || n.classList.contains("repeatable-insertion-point"));
         // find any previous entries
-        while (p && p.hasClassName("trait-section")) {
-            p = $(p.previousSibling);
+        while (p && p.classList.contains("trait-section")) {
+            p = p.previousSibling;
         }
         if (!empty) {
             // skip our entries
-            while (n && !n.hasClassName("trait-section") && !n.hasClassName("repeatable-insertion-point")) {
-                n = $(n.nextSibling);
+            while (n && !n.classList.contains("trait-section") && !n.classList.contains("repeatable-insertion-point")) {
+                n = n.nextSibling;
             }
         }
         // find next section entries
-        while (n && n.hasClassName("trait-section") && !n.hasClassName("repeatable-insertion-point")) {
-            n = $(n.nextSibling);
+        while (n && n.classList.contains("trait-section") && !n.classList.contains("repeatable-insertion-point")) {
+            n = n.nextSibling;
         }
-        if ((!p && n.hasClassName("repeatable-insertion-point")) || empty) {
-            e.addClassName("trait-section-empty");
+        if ((!p && n.classList.contains("repeatable-insertion-point")) || empty) {
+            e.classList.add("trait-section-empty");
         } else {
-            e.removeClassName("trait-section-empty");
+            e.classList.remove("trait-section-empty");
         }
     };
     Behaviour.specify("DIV.trait-container", 'traits', -50, function (e) {
-        e = $(e);
         if (isInsideRemovable(e)) {
             return;
         }
         layoutUpdateCallback.add(function () {
-            findElementsBySelector(e, ".trait-section").each(traitSectionRule);
+            e.querySelectorAll(".trait-section").forEach(traitSectionRule);
         })
     });
     Behaviour.specify(".repeatable-delete", 'traits', 500, function (e) {
@@ -40,7 +38,7 @@
             if (btn) {
                 btn.on("click", function () {
                     window.setTimeout(function () {
-                        findElementsBySelector(c, ".trait-section").each(traitSectionRule);
+                        c.querySelectorAll(".trait-section").forEach(traitSectionRule);
                     }, 250);
                 });
             }
