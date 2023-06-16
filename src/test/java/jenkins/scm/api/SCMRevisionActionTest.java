@@ -1,6 +1,9 @@
 package jenkins.scm.api;
 
+import hudson.model.Action;
 import hudson.model.Actionable;
+import java.util.List;
+import java.util.stream.Collectors;
 import jenkins.scm.impl.mock.MockSCMController;
 import jenkins.scm.impl.mock.MockSCMDiscoverBranches;
 import jenkins.scm.impl.mock.MockSCMHead;
@@ -76,6 +79,12 @@ public class SCMRevisionActionTest {
         @Override
         public String getSearchUrl() {
             return null;
+        }
+
+        @SuppressWarnings("deprecation") // avoid TransientActionFactory
+        @Override
+        public <T extends Action> List<T> getActions(Class<T> type) {
+            return getActions().stream().filter(type::isInstance).map(type::cast).collect(Collectors.toList());
         }
     }
 }
