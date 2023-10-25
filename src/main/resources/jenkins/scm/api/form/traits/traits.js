@@ -36,7 +36,7 @@
         if (c) {
             var btn = YAHOO.widget.Button.getButton(e.id);
             if (btn) {
-                btn.on("click", function () {
+                btn.addEventListener("click", function () {
                     window.setTimeout(function () {
                         c.querySelectorAll(".trait-section").forEach(traitSectionRule);
                     }, 250);
