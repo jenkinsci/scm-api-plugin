@@ -32,7 +32,7 @@
         })
     });
     Behaviour.specify(".repeatable-delete", 'traits', 500, function (e) {
-        var c = findAncestorClass(e, "trait-container");
+        var c = e.closest(".trait-container");
         if (c) {
             var btn = YAHOO.widget.Button.getButton(e.id);
             if (btn) {
