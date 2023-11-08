@@ -130,7 +130,6 @@ THE SOFTWARE.
     </d:tag>
   </d:taglib>
 
-  <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
   <st:adjunct includes="jenkins.scm.api.form.traits.traits"/>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
