@@ -33,6 +33,7 @@ import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceEvent;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Identifies a {@link SCMHead} / {@link SCMSource} as being a primary instance. Some examples of how this metadata is
@@ -70,6 +71,7 @@ import jenkins.scm.api.SCMSourceEvent;
  *
  * @since 2.0.1
  */
+@ExportedBean
 public class PrimaryInstanceMetadataAction extends InvisibleAction implements Serializable {
     /**
      * Ensure consistent serialization.
