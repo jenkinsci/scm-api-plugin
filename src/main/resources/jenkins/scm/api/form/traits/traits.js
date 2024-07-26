@@ -31,17 +31,4 @@
             e.querySelectorAll(".trait-section").forEach(traitSectionRule);
         })
     });
-    Behaviour.specify(".repeatable-delete", 'traits', 500, function (e) {
-        var c = e.closest(".trait-container");
-        if (c) {
-            var btn = YAHOO.widget.Button.getButton(e.id);
-            if (btn) {
-                btn.on("click", function () {
-                    window.setTimeout(function () {
-                        c.querySelectorAll(".trait-section").forEach(traitSectionRule);
-                    }, 250);
-                });
-            }
-        }
-    });
 })();
