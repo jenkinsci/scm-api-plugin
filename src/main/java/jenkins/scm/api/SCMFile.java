@@ -418,11 +418,7 @@ public abstract class SCMFile {
 
         WebApp webApp = WebApp.getCurrent();
 
-        String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
-        String mimeType = webApp.mimeTypes.get(extension);
-        if (mimeType == null) {
-            mimeType = webApp.context.getMimeType(fileName);
-        }
+        String mimeType = webApp.context.getMimeType(fileName);
         if (mimeType == null) {
             mimeType = "application/octet-stream";
         }
