@@ -25,19 +25,19 @@
 
 package jenkins.scm.api;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.mixin.SCMHeadMixin;
-import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
-import org.junit.Test;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
-public class SCMHeadTest {
+import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.scm.api.mixin.SCMHeadMixin;
+import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
+import org.junit.jupiter.api.Test;
+
+class SCMHeadTest {
 
     @Test
-    public void equality() {
+    void equality() {
         SCMHead h1 = new SCMHead("h1");
         SCMHead h2 = new SCMHead("h1");
         SCMHead x = new SCMHead("h2");
@@ -48,7 +48,7 @@ public class SCMHeadTest {
     }
 
     @Test
-    public void mixinEquality() {
+    void mixinEquality() {
         SCMHead h1 = new MockChangeRequestSCMHead(1, "h1");
         SCMHead h2 = new MockChangeRequestSCMHead(1, "h1");
         SCMHead x = new MockChangeRequestSCMHead(1, "h2");
@@ -63,8 +63,8 @@ public class SCMHeadTest {
     }
 
     @Test
-    public void crazyMixinEquality() {
-        SCMHead h1 = new CrazyHead("crazy", true, (byte)0, 'a', 0.1, 0.2f, 3, 4L, (short)5, "String");
+    void crazyMixinEquality() {
+        SCMHead h1 = new CrazyHead("crazy", true, (byte) 0, 'a', 0.1, 0.2f, 3, 4L, (short) 5, "String");
         SCMHead h2 = new CrazyHead("crazy", true, (byte) 0, 'a', 0.1, 0.2f, 3, 4L, (short) 5, "String");
         SCMHead x0 = new CrazyHead("crazy", false, (byte) 0, 'a', 0.1, 0.2f, 3, 4L, (short) 5, "String");
         SCMHead x1 = new CrazyHead("crazy", true, (byte) 1, 'a', 0.1, 0.2f, 3, 4L, (short) 5, "String");
@@ -122,8 +122,17 @@ public class SCMHeadTest {
         private final short aShort;
         private final Object anObject;
 
-        public CrazyHead(@NonNull String name, boolean aBoolean, byte aByte, char aChar, double aDouble, float aFloat,
-                         int anInt, long aLong, short aShort, Object anObject) {
+        public CrazyHead(
+                @NonNull String name,
+                boolean aBoolean,
+                byte aByte,
+                char aChar,
+                double aDouble,
+                float aFloat,
+                int anInt,
+                long aLong,
+                short aShort,
+                Object anObject) {
             super(name);
             this.aBoolean = aBoolean;
             this.aByte = aByte;
@@ -181,5 +190,4 @@ public class SCMHeadTest {
             return anObject;
         }
     }
-
 }
