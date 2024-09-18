@@ -25,29 +25,31 @@
 
 package jenkins.scm.impl;
 
-import jenkins.scm.api.SCMSource;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
-@RunWith(Theories.class)
-public class UncategorizedSCMSourceCategoryTest {
+import java.util.stream.Stream;
+import jenkins.scm.api.SCMSource;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-    @DataPoint
-    public static UncategorizedSCMSourceCategory defInstance = UncategorizedSCMSourceCategory.DEFAULT;
+class UncategorizedSCMSourceCategoryTest {
 
-    @DataPoint
-    public static UncategorizedSCMSourceCategory custInstance = new UncategorizedSCMSourceCategory(Messages._UncategorizedSCMSourceCategory_DisplayName());
+    static Stream<Arguments> instance() {
+        return Stream.of(
+                Arguments.of(Named.of("default", UncategorizedSCMSourceCategory.DEFAULT)),
+                Arguments.of(Named.of(
+                        "custom",
+                        new UncategorizedSCMSourceCategory(Messages._UncategorizedSCMSourceCategory_DisplayName()))));
+    }
 
-    @Theory
-    public void given_source_when_isMatch_then_confirmMatch(UncategorizedSCMSourceCategory instance) throws Exception {
+    @ParameterizedTest
+    @MethodSource("instance")
+    void given_source_when_isMatch_then_confirmMatch(UncategorizedSCMSourceCategory instance) {
         SCMSource mock = mock(SCMSource.class);
         assertThat(instance.isMatch(mock), is(true));
     }
-
 }

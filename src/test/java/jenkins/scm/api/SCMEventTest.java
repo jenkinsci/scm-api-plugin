@@ -25,17 +25,6 @@
 
 package jenkins.scm.api;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import jakarta.servlet.http.HttpServletRequest;
-import org.junit.Test;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-import org.kohsuke.stapler.StaplerRequest2;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -48,22 +37,25 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.*;
 
-@RunWith(Theories.class)
-public class SCMEventTest {
+import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import javax.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.kohsuke.stapler.StaplerRequest2;
 
-    @DataPoints
-    public static SCMEvent.Type[] types() {
-        return SCMEvent.Type.values();
-    }
+class SCMEventTest {
 
     @Test
-    public void executorService() throws Exception {
+    void executorService() {
         assertThat(SCMEvent.executorService(), notNullValue());
         assertThat(SCMEvent.executorService().isShutdown(), is(false));
     }
 
     @Test
-    public void eventProcessingMetricsReturnsZeroWhenNoEvents() throws Exception {
+    void eventProcessingMetricsReturnsZeroWhenNoEvents() {
         SCMEvent.EventQueueMetrics eventProcessingMetrics = SCMEvent.getEventProcessingMetrics();
         assertThat(eventProcessingMetrics, notNullValue());
         assertThat(eventProcessingMetrics.getPoolSize(), is(0));
@@ -73,7 +65,7 @@ public class SCMEventTest {
     }
 
     @Test
-    public void eventProcessingMetrics() throws Exception {
+    void eventProcessingMetrics() {
 
         ThreadPoolExecutor executor = mock(ThreadPoolExecutor.class);
         when(executor.getPoolSize()).thenReturn(20);
@@ -87,7 +79,6 @@ public class SCMEventTest {
         when(executor.getQueue()).thenReturn(queue);
         when(executor.getCompletedTaskCount()).thenReturn(1000L);
 
-
         SCMEvent.EventQueueMetrics eventProcessingMetrics = new SCMEvent.EventQueueMetrics(executor);
         assertThat(eventProcessingMetrics, notNullValue());
         assertThat(eventProcessingMetrics.getPoolSize(), is(20));
@@ -96,13 +87,14 @@ public class SCMEventTest {
         assertThat(eventProcessingMetrics.getCompletedTasks(), is(1000L));
     }
 
-    @Theory
-    public void getType(SCMEvent.Type type) throws Exception {
+    @ParameterizedTest
+    @EnumSource(SCMEvent.Type.class)
+    void getType(SCMEvent.Type type) {
         assertThat(new MySCMEvent(type, new Object()).getType(), is(type));
     }
 
     @Test
-    public void getTimestamp() throws Exception {
+    void getTimestamp() {
         long before = System.currentTimeMillis();
         long after;
         MySCMEvent instance;
@@ -115,14 +107,14 @@ public class SCMEventTest {
     }
 
     @Test
-    public void getTimestamp2() throws Exception {
+    void getTimestamp2() {
         MySCMEvent instance;
         instance = new MySCMEvent(SCMEvent.Type.CREATED, 53L, new Object());
         assertThat(instance.getTimestamp(), is(53L));
     }
 
     @Test
-    public void getDate() throws Exception {
+    void getDate() {
         long before = System.currentTimeMillis();
         long after;
         MySCMEvent instance;
@@ -135,12 +127,12 @@ public class SCMEventTest {
     }
 
     @Test
-    public void getPayload() throws Exception {
+    void getPayload() {
         assertThat(new MySCMEvent(SCMEvent.Type.CREATED, this).getPayload(), sameInstance(this));
     }
 
     @Test
-    public void equalityContract() throws Exception {
+    void equalityContract() {
         MySCMEvent a1 = new MySCMEvent(SCMEvent.Type.CREATED, 53L, "foo");
         MySCMEvent a2 = new MySCMEvent(SCMEvent.Type.CREATED, 53L, new String("foo"));
         MySCMEvent a3 = new MySCMEvent(SCMEvent.Type.CREATED, Long.valueOf(53L), new String("foo"));
@@ -160,22 +152,22 @@ public class SCMEventTest {
     }
 
     @Test
-    public void usefulToString() throws Exception {
-        assertThat(new MySCMEvent(SCMEvent.Type.REMOVED, 1479764915000L, "{\"name\":\"value\"}").toString(),
-                allOf(containsString(String.format("%tc", 1479764915000L)),
+    void usefulToString() {
+        assertThat(
+                new MySCMEvent(SCMEvent.Type.REMOVED, 1479764915000L, "{\"name\":\"value\"}").toString(),
+                allOf(
+                        containsString(String.format("%tc", 1479764915000L)),
                         containsString("REMOVED"),
-                        containsString("{\"name\":\"value\"}")
-                )
-        );
+                        containsString("{\"name\":\"value\"}")));
     }
 
     @Test
-    public void originOfNull() throws Exception {
+    void originOfNull() {
         assertThat(SCMEvent.originOf((StaplerRequest2) null), is(nullValue()));
     }
 
     @Test
-    public void originOfSimpleRequest() throws Exception {
+    void originOfSimpleRequest() {
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getScheme()).thenReturn("http");
         when(req.getServerName()).thenReturn("jenkins.example.com");
@@ -183,11 +175,12 @@ public class SCMEventTest {
         when(req.getLocalPort()).thenReturn(80);
         when(req.getRemoteHost()).thenReturn("scm.example.com");
         when(req.getRemoteAddr()).thenReturn("203.0.113.1");
-        assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ http://jenkins.example.com/jenkins/notify"));
+        assertThat(
+                SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ http://jenkins.example.com/jenkins/notify"));
     }
 
     @Test
-    public void originOfSimpleTLSRequest() throws Exception {
+    void originOfSimpleTLSRequest() {
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getScheme()).thenReturn("https");
         when(req.getServerName()).thenReturn("jenkins.example.com");
@@ -195,11 +188,12 @@ public class SCMEventTest {
         when(req.getLocalPort()).thenReturn(443);
         when(req.getRemoteHost()).thenReturn("scm.example.com");
         when(req.getRemoteAddr()).thenReturn("203.0.113.1");
-        assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
+        assertThat(
+                SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
     }
 
     @Test
-    public void originOfSimpleRequestNonStdPort() throws Exception {
+    void originOfSimpleRequestNonStdPort() {
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getScheme()).thenReturn("http");
         when(req.getServerName()).thenReturn("jenkins.example.com");
@@ -207,11 +201,13 @@ public class SCMEventTest {
         when(req.getLocalPort()).thenReturn(8080);
         when(req.getRemoteHost()).thenReturn("scm.example.com");
         when(req.getRemoteAddr()).thenReturn("203.0.113.1");
-        assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ http://jenkins.example.com:8080/jenkins/notify"));
+        assertThat(
+                SCMEvent.originOf(req),
+                is("scm.example.com/203.0.113.1 ⇒ http://jenkins.example.com:8080/jenkins/notify"));
     }
 
     @Test
-    public void originOfSimpleTLSRequestNonStdPort() throws Exception {
+    void originOfSimpleTLSRequestNonStdPort() {
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getScheme()).thenReturn("https");
         when(req.getServerName()).thenReturn("jenkins.example.com");
@@ -219,11 +215,13 @@ public class SCMEventTest {
         when(req.getLocalPort()).thenReturn(8443);
         when(req.getRemoteHost()).thenReturn("scm.example.com");
         when(req.getRemoteAddr()).thenReturn("203.0.113.1");
-        assertThat(SCMEvent.originOf(req), is("scm.example.com/203.0.113.1 ⇒ https://jenkins.example.com:8443/jenkins/notify"));
+        assertThat(
+                SCMEvent.originOf(req),
+                is("scm.example.com/203.0.113.1 ⇒ https://jenkins.example.com:8443/jenkins/notify"));
     }
 
     @Test
-    public void originOfForwardedRequestSingleHop() throws Exception {
+    void originOfForwardedRequestSingleHop() {
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getScheme()).thenReturn("http");
         when(req.getServerName()).thenReturn("jenkins.example.com");
@@ -234,11 +232,13 @@ public class SCMEventTest {
         when(req.getLocalPort()).thenReturn(8080);
         when(req.getRemoteHost()).thenReturn("proxy.example.com");
         when(req.getRemoteAddr()).thenReturn("203.0.113.1");
-        assertThat(SCMEvent.originOf(req), is("scm.example.com → proxy.example.com/203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
+        assertThat(
+                SCMEvent.originOf(req),
+                is("scm.example.com → proxy.example.com/203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
     }
 
     @Test
-    public void originOfForwardedRequestMultiHop() throws Exception {
+    void originOfForwardedRequestMultiHop() {
         HttpServletRequest req = mock(HttpServletRequest.class);
         when(req.getScheme()).thenReturn("http");
         when(req.getServerName()).thenReturn("jenkins.example.com");
@@ -249,7 +249,10 @@ public class SCMEventTest {
         when(req.getRemotePort()).thenReturn(8080);
         when(req.getRemoteHost()).thenReturn(null);
         when(req.getRemoteAddr()).thenReturn("203.0.113.1");
-        assertThat(SCMEvent.originOf(req), is("scm.example.com → gateway.example.com → proxy.example.com → 203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
+        assertThat(
+                SCMEvent.originOf(req),
+                is(
+                        "scm.example.com → gateway.example.com → proxy.example.com → 203.0.113.1 ⇒ https://jenkins.example.com/jenkins/notify"));
     }
 
     public static class MySCMEvent extends SCMEvent<Object> {
@@ -278,5 +281,4 @@ public class SCMEventTest {
             return this;
         }
     }
-
 }
