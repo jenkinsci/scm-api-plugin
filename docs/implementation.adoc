@@ -1393,7 +1393,7 @@ public class MySCMWebHook implements UnprotectedRootAction {
     }
 
     @RequirePOST
-    public HttpResponse doNotify(StaplerRequest req) {
+    public HttpResponse doNotify(StaplerRequest2 req) {
         // check if the event payload at least provides some proof of origin
         // this may be a query parameter or a HTTP header
         // if the proof of origin is missing, drop the event on the floor and return
