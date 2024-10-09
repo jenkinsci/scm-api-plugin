@@ -40,7 +40,7 @@ import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -133,7 +133,7 @@ public abstract class AvatarMetadataAction extends InvisibleAction implements Se
                 Icon icon = IconSet.icons.getIconByClassSpec(iconClassName + " " + spec);
                 if (icon != null) {
                     JellyContext ctx = new JellyContext();
-                    StaplerRequest currentRequest = Stapler.getCurrentRequest();
+                    StaplerRequest2 currentRequest = Stapler.getCurrentRequest2();
                     if (currentRequest == null) {
                         throw new IllegalStateException(
                                 "cannot call avatarIconClassNameImageOf from outside a request handling thread"

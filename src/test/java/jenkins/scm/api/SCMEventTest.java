@@ -28,12 +28,13 @@ package jenkins.scm.api;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -170,7 +171,7 @@ public class SCMEventTest {
 
     @Test
     public void originOfNull() throws Exception {
-        assertThat(SCMEvent.originOf(null), is(nullValue()));
+        assertThat(SCMEvent.originOf((StaplerRequest2) null), is(nullValue()));
     }
 
     @Test

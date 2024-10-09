@@ -45,7 +45,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.servlet.http.HttpServletRequest;
+import io.jenkins.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jenkins.security.ImpersonatingScheduledExecutorService;
 import jenkins.util.SystemProperties;
 import org.apache.commons.lang.StringUtils;
@@ -151,7 +152,7 @@ public abstract class SCMEvent<P> {
      */
     @Deprecated
     public SCMEvent(@NonNull Type type, long timestamp, @NonNull P payload) {
-        this(type, timestamp, payload, originOf(Stapler.getCurrentRequest()));
+        this(type, timestamp, payload, originOf(Stapler.getCurrentRequest2()));
     }
 
     /**
@@ -398,9 +399,9 @@ public abstract class SCMEvent<P> {
      * {@code →} followed by a {@code ⇒} and finally the requested URL (omitting the query portion of the URL).
      *
      * @param req the {@link HttpServletRequest} or {@code null} (this is to allow passing
-     *            {@link Stapler#getCurrentRequest()} without having to check for {@code null})
+     *            {@link Stapler#getCurrentRequest2()} without having to check for {@code null})
      * @return the origin of the event or {@code null} if the {@link HttpServletRequest} is null.
-     * @since 2.0.3
+     * @since TODO
      */
     @CheckForNull
     public static String originOf(@CheckForNull HttpServletRequest req) {
@@ -458,6 +459,16 @@ public abstract class SCMEvent<P> {
         result.append(req.getRequestURI());
         // omit query as may contain "secrets"
         return result.toString();
+    }
+
+    /**
+     * @deprecated use {@link #originOf(HttpServletRequest)}
+     * @since 2.0.3
+     */
+    @CheckForNull
+    @Deprecated
+    public static String originOf(@CheckForNull javax.servlet.http.HttpServletRequest req) {
+        return req != null ? originOf(HttpServletRequestWrapper.toJakartaHttpServletRequest(req)) : null;
     }
 
     /**
