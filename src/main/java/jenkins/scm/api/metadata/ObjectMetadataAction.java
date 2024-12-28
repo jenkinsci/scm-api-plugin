@@ -30,6 +30,7 @@ import hudson.model.InvisibleAction;
 import java.io.Serializable;
 import java.util.Objects;
 
+import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMRevision;
@@ -53,6 +54,11 @@ import org.kohsuke.stapler.export.ExportedBean;
  *     {@link #getObjectUrl()} to point to the pull request on GitHub, the {@link #getObjectDisplayName()} to provide
  *     the title of the pull request and {@link #getObjectDescription()} to provide the description of the pull request
  *     </li>
+ *     <li>An external {@link SCMSource} implementation that corresponds to a Gitea repository could use the
+ *     {@link #getObjectUrl()} to point to the Gitea repository URL, the {@link #getObjectDisplayName()} to provide
+ *     the repository name, the {@link #getObjectDescription()} to provide the description of repository, and the
+ *     the optional {@link #getHtmlObjectDescription()} to provide the displayed repository description.
+ *     </li>
  * </ul>
  *
  * @since 2.0
@@ -70,13 +76,25 @@ public class ObjectMetadataAction extends InvisibleAction implements Serializabl
     private final String objectDescription;
     @CheckForNull
     private final String objectUrl;
+    @CheckForNull
+    private final String htmlObjectDescription;
 
     public ObjectMetadataAction(@CheckForNull String objectDisplayName,
                                 @CheckForNull String objectDescription,
                                 @CheckForNull String objectUrl) {
+        // [JENKINS-75069] Default htmlObjectDescription set to null in order to keep the initial constructor
+        // to prevent an interface disruption
+        this(objectDisplayName, objectDescription, objectUrl, null);
+    }
+
+    public ObjectMetadataAction(@CheckForNull String objectDisplayName,
+                                @CheckForNull String objectDescription,
+                                @CheckForNull String objectUrl,
+                                @CheckForNull String htmlObjectDescription) {
         this.objectDisplayName = objectDisplayName;
         this.objectDescription = objectDescription;
         this.objectUrl = objectUrl;
+        this.htmlObjectDescription = htmlObjectDescription;
     }
 
     /**
@@ -117,6 +135,21 @@ public class ObjectMetadataAction extends InvisibleAction implements Serializabl
     }
 
     /**
+     * Returns the description of the object or {@code null} for the HTML content. Consumers should assume the content
+     * is valid HTML or plain text that needs to be formatted with {@link Jenkins#getMarkupFormatter()}
+     * or escaped with {@link Util#escape(String)} when being included in HTML output.
+     * Note: If this value is {@code null}, Consumers should get the default object description with
+     * {@link #getObjectDescription()}.
+     *
+     * @return the description of the object for the HTML content or {@code null}.
+     */
+    @Exported
+    @CheckForNull
+    public String getHtmlObjectDescription() {
+        return this.htmlObjectDescription;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -136,6 +169,9 @@ public class ObjectMetadataAction extends InvisibleAction implements Serializabl
         if (!Objects.equals(objectDescription, that.objectDescription)) {
             return false;
         }
+        if (!Objects.equals(htmlObjectDescription, that.htmlObjectDescription)) {
+            return false;
+        }
         return Objects.equals(objectUrl, that.objectUrl);
     }
 
@@ -147,6 +183,7 @@ public class ObjectMetadataAction extends InvisibleAction implements Serializabl
         int result = objectDisplayName != null ? objectDisplayName.hashCode() : 0;
         result = 31 * result + (objectDescription != null ? objectDescription.hashCode() : 0);
         result = 31 * result + (objectUrl != null ? objectUrl.hashCode() : 0);
+        result = 31 * result + (htmlObjectDescription != null ? htmlObjectDescription.hashCode() : 0);
         return result;
     }
 
@@ -159,6 +196,7 @@ public class ObjectMetadataAction extends InvisibleAction implements Serializabl
                 "objectDisplayName='" + objectDisplayName + '\'' +
                 ", objectDescription='" + objectDescription + '\'' +
                 ", objectUrl='" + objectUrl + '\'' +
+                ", htmlObjectDescription='" + htmlObjectDescription + '\'' +
                 '}';
     }
 }
