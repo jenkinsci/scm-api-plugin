@@ -61,56 +61,25 @@ THE SOFTWARE.
         The wrapper will be a `table` tag on Jenkins Core less than ~2.237, and a `div` tag after that
       </st:documentation>
 
-      <j:choose>
-        <j:when test="${divBasedFormLayout}">
-          <div>
-            <d:invokeBody/>
-          </div>
-        </j:when>
-        <j:otherwise>
-          <table style="width:100%">
-            <d:invokeBody/>
-          </table>
-        </j:otherwise>
-      </j:choose>
+      <div>
+        <d:invokeBody/>
+      </div>
     </d:tag>
     <d:tag name="row">
-      <j:choose>
-        <j:when test="${divBasedFormLayout}">
-          <div class="tr">
-            <d:invokeBody/>
-          </div>
-        </j:when>
-        <j:otherwise>
-          <tr>
-            <d:invokeBody/>
-          </tr>
-        </j:otherwise>
-      </j:choose>
+      <div class="repeated-chunk__header">
+        <d:invokeBody/>
+      </div>
     </d:tag>
     <d:tag name="td">
-      <j:choose>
-        <j:when test="${divBasedFormLayout}">
-          <div>
-            <d:invokeBody/>
-          </div>
-        </j:when>
-        <j:otherwise>
-          <td colspan="3">
-            <d:invokeBody/>
-          </td>
-        </j:otherwise>
-      </j:choose>
+      <div>
+        <d:invokeBody/>
+      </div>
     </d:tag>
     <d:tag name="body">
       <local:blockWrapper>
         <j:set var="help" value="${descriptor.helpFile}"/>
           <local:row>
-            <local:td>
-              <div>
-                <b>${descriptor.displayName}</b>
-              </div>
-            </local:td>
+            ${descriptor.displayName}
             <f:helpLink url="${help}"/>
           </local:row>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
@@ -121,11 +90,7 @@ THE SOFTWARE.
         <d:invokeBody/>
 
         <f:class-entry descriptor="${descriptor}"/>
-        <f:block>
-          <div align="right">
-            <f:repeatableDeleteButton value="${attrs.deleteCaption}"/>
-          </div>
-        </f:block>
+        <f:repeatableDeleteButton value="${attrs.deleteCaption}"/>
       </local:blockWrapper>
     </d:tag>
   </d:taglib>
