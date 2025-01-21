@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:f="/lib/form" xmlns:local="local" xmlns:si="/jenkins/scm/internal/form">
+         xmlns:f="/lib/form" xmlns:local="local">
   <!-- TODO switch to hetero-list or repeatableHeteroProperty once the dd-handle class can be removed -->
   <st:documentation>
     Data-bound only version of &lt;f:hetero-list&gt; specialized for traits.
@@ -87,7 +87,9 @@ THE SOFTWARE.
             <f:helpArea/>
           </j:if>
 
-        <d:invokeBody/>
+        <div class="jenkins-repeated-chunk__content">
+          <d:invokeBody/>
+        </div>
 
         <f:class-entry descriptor="${descriptor}"/>
         <f:repeatableDeleteButton value="${attrs.deleteCaption}"/>
@@ -161,7 +163,7 @@ THE SOFTWARE.
                  descriptorId="${descriptor.id}">
               <j:set var="capture" value="${attrs.capture?:''}"/>
               <local:body deleteCaption="${attrs.deleteCaption}">
-                <l:renderOnDemand tag="${divBasedFormLayout ? 'div' : 'tr'}" clazz="config-page" capture="descriptor,it,instance,${capture}">
+                <l:renderOnDemand tag="div" clazz="config-page" capture="descriptor,it,instance,${capture}">
                   <l:ajax>
                     <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
                   </l:ajax>
