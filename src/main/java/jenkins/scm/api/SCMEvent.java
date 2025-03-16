@@ -45,7 +45,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import io.jenkins.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jenkins.security.ImpersonatingScheduledExecutorService;
 import jenkins.util.SystemProperties;
@@ -401,7 +400,7 @@ public abstract class SCMEvent<P> {
      * @param req the {@link HttpServletRequest} or {@code null} (this is to allow passing
      *            {@link Stapler#getCurrentRequest2()} without having to check for {@code null})
      * @return the origin of the event or {@code null} if the {@link HttpServletRequest} is null.
-     * @since TODO
+     * @since 698.v8e3b_c788f0a_6
      */
     @CheckForNull
     public static String originOf(@CheckForNull HttpServletRequest req) {
@@ -459,16 +458,6 @@ public abstract class SCMEvent<P> {
         result.append(req.getRequestURI());
         // omit query as may contain "secrets"
         return result.toString();
-    }
-
-    /**
-     * @deprecated use {@link #originOf(HttpServletRequest)}
-     * @since 2.0.3
-     */
-    @CheckForNull
-    @Deprecated
-    public static String originOf(@CheckForNull javax.servlet.http.HttpServletRequest req) {
-        return req != null ? originOf(HttpServletRequestWrapper.toJakartaHttpServletRequest(req)) : null;
     }
 
     /**
