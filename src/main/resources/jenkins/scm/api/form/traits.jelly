@@ -105,18 +105,18 @@ THE SOFTWARE.
     <d:tag name="body">
       <local:blockWrapper>
         <j:set var="help" value="${descriptor.helpFile}"/>
+        <div class="help-sibling" style="width:100%">
           <local:row>
             <local:td>
-              <div>
-                <b>${descriptor.displayName}</b>
-              </div>
+              <b>${descriptor.displayName}</b>
+              <f:helpLink url="${help}"/>
             </local:td>
-            <f:helpLink url="${help}"/>
           </local:row>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
             <f:helpArea/>
           </j:if>
+        </div>
 
         <d:invokeBody/>
 
