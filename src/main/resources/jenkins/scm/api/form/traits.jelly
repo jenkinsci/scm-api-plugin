@@ -66,12 +66,7 @@ THE SOFTWARE.
       </div>
     </d:tag>
     <d:tag name="row">
-      <div class="repeated-chunk__header">
-        <d:invokeBody/>
-      </div>
-    </d:tag>
-    <d:tag name="td">
-      <div>
+      <div class="repeated-chunk__header repeated-chunk__header--no-handle">
         <d:invokeBody/>
       </div>
     </d:tag>
@@ -121,12 +116,12 @@ THE SOFTWARE.
           thus we get the section headers in the menu (but disabled) and the entries are added to their respective
           sections
         -->
-        <div name="${attrs.field}" class="repeated-chunk trait-section"
+        <template name="${attrs.field}" class="repeated-chunk trait-section"
              descriptorId="!fake@section/[${descriptorsLoop.index}]">
           <span class="trait-section-header">
             <span>${descriptors.getName()}</span>
           </span>
-        </div>
+        </template>
       </j:if>
       <j:forEach var="i" items="${instances}">
         <j:if test="${descriptors.contains(i.descriptor)}">
@@ -141,7 +136,7 @@ THE SOFTWARE.
       </j:forEach>
     </j:forEach>
 
-    <div class="repeatable-insertion-point"/>
+    <template class="repeatable-insertion-point"/>
 
     <div class="prototypes to-be-removed">
       <j:forEach var="descriptors" items="${descriptorLists}" varStatus="descriptorsLoop">
@@ -175,10 +170,8 @@ THE SOFTWARE.
       </j:forEach>
     </div>
 
-    <div>
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add trait-add"
-             menualign="${attrs.menuAlign}"
-             suffix="${attrs.field}"/>
-    </div>
+    <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add trait-add"
+           menualign="${attrs.menuAlign}"
+           suffix="${attrs.field}"/>
   </div>
 </j:jelly>
