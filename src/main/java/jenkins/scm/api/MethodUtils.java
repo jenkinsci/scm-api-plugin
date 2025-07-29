@@ -30,8 +30,8 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Helper to identify methods that have not been implemented / overridden.

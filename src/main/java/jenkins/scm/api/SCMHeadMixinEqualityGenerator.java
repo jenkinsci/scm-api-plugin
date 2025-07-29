@@ -41,7 +41,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import jenkins.scm.api.mixin.SCMHeadMixin;
 import net.jcip.annotations.GuardedBy;
-import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -175,7 +175,7 @@ class SCMHeadMixinEqualityGenerator extends ClassLoader {
     @NonNull
     private SCMHeadMixin.Equality create(@NonNull Class<? extends SCMHead> type) {
         Map<String, Method> properties = new TreeMap<>();
-        for (Class clazz : (List<Class>) ClassUtils.getAllInterfaces(type)) {
+        for (Class clazz : ClassUtils.getAllInterfaces(type)) {
             if (!SCMHeadMixin.class.isAssignableFrom(clazz)) {
                 // not a mix-in
                 continue;

@@ -52,7 +52,7 @@ import jenkins.scm.api.SCMFile;
 import jenkins.scm.api.SCMNavigatorOwner;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 public class MockSCMController implements Closeable {
