@@ -4,6 +4,10 @@ DIV.repeated-chunk.trait-section {
     margin: 0;
     padding: 0.1em;
     border: 0 !important;
+
+    &::after {
+        display: none;
+    }
 }
 
 DIV.repeated-chunk.trait-section.trait-section-empty {
