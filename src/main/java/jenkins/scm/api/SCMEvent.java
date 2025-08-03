@@ -49,7 +49,7 @@ import io.jenkins.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jenkins.security.ImpersonatingScheduledExecutorService;
 import jenkins.util.SystemProperties;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
