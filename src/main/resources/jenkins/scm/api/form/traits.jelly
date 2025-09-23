@@ -55,23 +55,13 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
-    <d:tag name="blockWrapper">
-      <st:documentation>
-        This adds a wrapper for a group of fields
-        The wrapper will be a `table` tag on Jenkins Core less than ~2.237, and a `div` tag after that
-      </st:documentation>
-
-      <div>
-        <d:invokeBody/>
-      </div>
-    </d:tag>
     <d:tag name="row">
       <div class="repeated-chunk__header repeated-chunk__header--no-handle">
         <d:invokeBody/>
       </div>
     </d:tag>
     <d:tag name="body">
-      <local:blockWrapper>
+      <div>
         <j:set var="help" value="${descriptor.helpFile}"/>
           <local:row>
             ${descriptor.displayName}
@@ -88,7 +78,7 @@ THE SOFTWARE.
 
         <f:class-entry descriptor="${descriptor}"/>
         <f:repeatableDeleteButton value="${attrs.deleteCaption}"/>
-      </local:blockWrapper>
+      </div>
     </d:tag>
   </d:taglib>
 
