@@ -63,12 +63,10 @@ THE SOFTWARE.
     <d:tag name="body">
       <div>
         <j:set var="help" value="${descriptor.helpFile}"/>
-        <div class="help-sibling" style="width:100%">
+        <div class="help-sibling">
           <local:row>
-            <local:td>
-              <b>${descriptor.displayName}</b>
-              <f:helpLink url="${help}"/>
-            </local:td>
+            <b>${descriptor.displayName}</b>
+            <f:helpLink url="${help}"/>
           </local:row>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
