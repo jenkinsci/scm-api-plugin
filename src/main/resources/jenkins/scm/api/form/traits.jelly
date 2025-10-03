@@ -65,7 +65,7 @@ THE SOFTWARE.
         <j:set var="help" value="${descriptor.helpFile}"/>
         <div class="help-sibling">
           <local:row>
-            <b>${descriptor.displayName}</b>
+            ${descriptor.displayName}
             <f:helpLink url="${help}"/>
           </local:row>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
