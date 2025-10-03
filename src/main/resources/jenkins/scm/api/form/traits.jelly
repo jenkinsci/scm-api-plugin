@@ -63,6 +63,7 @@ THE SOFTWARE.
     <d:tag name="body">
       <div>
         <j:set var="help" value="${descriptor.helpFile}"/>
+        <div class="help-sibling">
           <local:row>
             ${descriptor.displayName}
             <f:helpLink url="${help}"/>
@@ -71,6 +72,7 @@ THE SOFTWARE.
           <j:if test="${help!=null}">
             <f:helpArea/>
           </j:if>
+        </div>
 
         <div class="jenkins-repeated-chunk__content">
           <d:invokeBody/>
