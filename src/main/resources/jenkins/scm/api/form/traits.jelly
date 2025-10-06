@@ -160,8 +160,10 @@ THE SOFTWARE.
       </j:forEach>
     </div>
 
-    <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add trait-add"
-           menualign="${attrs.menuAlign}"
-           suffix="${attrs.field}"/>
+    <div>
+      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add trait-add"
+             menualign="${attrs.menuAlign}"
+             suffix="${attrs.field}"/>
+    </div>
   </div>
 </j:jelly>
