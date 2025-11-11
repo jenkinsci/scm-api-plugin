@@ -25,33 +25,36 @@
 
 package jenkins.scm.impl;
 
-import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
-import jenkins.scm.impl.mock.MockSCMHead;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@RunWith(Theories.class)
-public class ChangeRequestSCMHeadCategoryTest {
+import java.util.stream.Stream;
+import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
+import jenkins.scm.impl.mock.MockSCMHead;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-    @DataPoint
-    public static ChangeRequestSCMHeadCategory defInstance = ChangeRequestSCMHeadCategory.DEFAULT;
+class ChangeRequestSCMHeadCategoryTest {
 
-    @DataPoint
-    public static ChangeRequestSCMHeadCategory custInstance = new ChangeRequestSCMHeadCategory(Messages._ChangeRequestSCMHeadCategory_DisplayName());
+    static Stream<Arguments> instance() {
+        return Stream.of(
+                Arguments.of(Named.of("default", ChangeRequestSCMHeadCategory.DEFAULT)),
+                Arguments.of(Named.of(
+                        "custom",
+                        new ChangeRequestSCMHeadCategory(Messages._ChangeRequestSCMHeadCategory_DisplayName()))));
+    }
 
-    @Theory
-    public void given_changeRequestHead_when_isMatch_then_confirmMatch(ChangeRequestSCMHeadCategory instance) throws Exception {
+    @ParameterizedTest
+    @MethodSource("instance")
+    void given_changeRequestHead_when_isMatch_then_confirmMatch(ChangeRequestSCMHeadCategory instance) {
         assertThat(instance.isMatch(new MockChangeRequestSCMHead(1, "master")), is(true));
     }
 
-    @Theory
-    public void given_regularHead_when_isMatch_then_rejectMatch(ChangeRequestSCMHeadCategory instance) throws Exception {
+    @ParameterizedTest
+    @MethodSource("instance")
+    void given_regularHead_when_isMatch_then_rejectMatch(ChangeRequestSCMHeadCategory instance) {
         assertThat(instance.isMatch(new MockSCMHead("master")), is(false));
     }
-
 }

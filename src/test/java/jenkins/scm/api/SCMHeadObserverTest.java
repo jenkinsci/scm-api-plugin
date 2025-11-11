@@ -25,9 +25,6 @@
 
 package jenkins.scm.api;
 
-import org.hamcrest.Matchers;
-import org.junit.Test;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -39,9 +36,13 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SCMHeadObserverTest {
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
+class SCMHeadObserverTest {
+
     @Test
-    public void allOf() throws Exception {
+    void allOf() throws Exception {
         SCMHead head1 = new SCMHead("bar");
         SCMRevision revision1 = mock(SCMRevision.class);
         SCMHead head2 = new SCMHead("foo");
@@ -57,7 +58,7 @@ public class SCMHeadObserverTest {
     }
 
     @Test
-    public void first() throws Exception {
+    void first() throws Exception {
         SCMHeadObserver.OneFinished instance = SCMHeadObserver.first(SCMHeadObserver.collect(), SCMHeadObserver.any());
         SCMHead head1 = new SCMHead("bar");
         SCMRevision revision1 = mock(SCMRevision.class);
@@ -68,7 +69,7 @@ public class SCMHeadObserverTest {
     }
 
     @Test
-    public void collect() throws Exception {
+    void collect() {
         SCMHead head1 = new SCMHead("bar");
         SCMRevision revision1 = mock(SCMRevision.class);
         SCMHead head2 = new SCMHead("foo");
@@ -81,11 +82,10 @@ public class SCMHeadObserverTest {
         instance.observe(head2, revision2);
         assertThat("Still observing", instance.isObserving(), is(true));
         assertThat(instance.result(), Matchers.allOf(hasEntry(head1, revision1), hasEntry(head2, revision2)));
-
     }
 
     @Test
-    public void select() throws Exception {
+    void select() {
         SCMHead head1 = new SCMHead("bar");
         SCMRevision revision1 = mock(SCMRevision.class);
         SCMHead head2 = new SCMHead("foo");
@@ -101,26 +101,25 @@ public class SCMHeadObserverTest {
     }
 
     @Test
-    public void filter() throws Exception {
+    void filter() throws Exception {
         SCMHead head1 = new SCMHead("bar");
         SCMRevision revision1 = mock(SCMRevision.class);
         SCMHead head2 = new SCMHead("foo");
         SCMRevision revision2 = mock(SCMRevision.class);
-        SCMHeadObserver.Filter<SCMHeadObserver.Collector>
-                instance = SCMHeadObserver.filter(SCMHeadObserver.collect(), head2);
+        SCMHeadObserver.Filter<SCMHeadObserver.Collector> instance =
+                SCMHeadObserver.filter(SCMHeadObserver.collect(), head2);
         assertThat("Observing from the start", instance.isObserving(), is(true));
         assertThat("Wants only selected head", instance.getIncludes(), contains(head2));
         instance.observe(head1, revision1);
         assertThat("Still observing before match", instance.isObserving(), is(true));
         instance.observe(head2, revision2);
         assertThat("Stops observing after selected observation", instance.isObserving(), is(false));
-        assertThat(instance.unwrap().result(), hasEntry(head2,revision2));
+        assertThat(instance.unwrap().result(), hasEntry(head2, revision2));
         assertThat(instance.unwrap().result(), not(hasKey(head1)));
-
     }
 
     @Test
-    public void named() throws Exception {
+    void named() {
         SCMHeadObserver.Named instance = SCMHeadObserver.named("foo");
         assertThat("Observing from the start", instance.isObserving(), is(true));
         assertThat("Wants everything", instance.getIncludes(), nullValue());
@@ -138,7 +137,7 @@ public class SCMHeadObserverTest {
     }
 
     @Test
-    public void any() throws Exception {
+    void any() {
         SCMHeadObserver.Any instance = SCMHeadObserver.any();
         assertThat("Observing from the start", instance.isObserving(), is(true));
         assertThat("Wants everything", instance.getIncludes(), nullValue());
@@ -148,5 +147,4 @@ public class SCMHeadObserverTest {
         assertThat("Stops observing after first observation", instance.isObserving(), is(false));
         assertThat(instance.result(), is(revision));
     }
-
 }
