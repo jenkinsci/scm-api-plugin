@@ -47,7 +47,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.TransientActionFactory;
@@ -136,7 +135,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @Deprecated
     protected SCMSource(@CheckForNull String id) {
-        this.id = id == null ? UUID.randomUUID().toString() : id;
+        this.id = id == null ? "" : id;
     }
 
     /**
@@ -148,10 +147,8 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     /**
      * Sets the ID that is used to ensure this {@link SCMSource} can be retrieved from its {@link SCMSourceOwner}
      * provided that this {@link SCMSource} does not already {@link #hasId()}.
-     * <p>
-     * Note this is a <strong>one-shot</strong> setter. If {@link #getId()} is called first, then its value will stick,
-     * otherwise the first call to {@link #setId(String)} will stick.
-     *
+     * This should be called from the {@link SCMSourceOwner} when saving the list of {@link SCMSource}s,
+     * though for compatibility reasons it may also be called directly.
      * @param id the ID, this is an opaque token expected to be unique within any one {@link SCMSourceOwner}.
      * @see #hasId()
      * @see #getId()
@@ -159,7 +156,7 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      */
     @DataBoundSetter
     public final synchronized void setId(@CheckForNull String id) {
-        if (this.id == null) {
+        if (this.id == null || this.id.isEmpty()) {
             this.id = id;
         } else if (!this.id.equals(id)) {
             throw new IllegalStateException("The ID cannot be changed after it has been set.");
@@ -186,20 +183,19 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
      * @since 2.2.0
      */
     public final synchronized boolean hasId() {
-        return this.id != null;
+        return this.id != null && !this.id.isEmpty();
     }
     /**
-     * The ID of this source. The ID is not related to anything at all. If this {@link SCMSource} does not have an ID
-     * then one will be generated.
+     * The ID of this source.
      *
-     * @return the ID of this source.
+     * @return the ID of this source; the empty string until assigned
      * @see #setId(String)
      * @see #hasId()
      */
     @NonNull
     public final synchronized String getId() {
         if (id == null) {
-            id = UUID.randomUUID().toString();
+            id = "";
         }
         return id;
     }

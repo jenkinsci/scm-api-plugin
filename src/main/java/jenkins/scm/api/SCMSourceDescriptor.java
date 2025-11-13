@@ -39,7 +39,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * A {@link Descriptor} for {@link SCMSource}s.
@@ -59,12 +58,12 @@ public abstract class SCMSourceDescriptor extends Descriptor<SCMSource> implemen
      * Return or generate the ID for a source instance.
      *
      * @param source the source or {@code null} if a new source.
-     * @return the ID of the supplied source or a newly generated ID to use for a new source instance.
+     * @return the ID of the supplied source or the empty string
      */
     @NonNull
     @SuppressWarnings("unused") // use by stapler as well as elsewhere
     public String getId(@CheckForNull SCMSource source) {
-        return source == null ? UUID.randomUUID().toString() : source.getId();
+        return source == null ? "" : source.getId();
     }
 
     /**

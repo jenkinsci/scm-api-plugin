@@ -94,7 +94,6 @@ public class SymbolAnnotationsTest {
             ));
             assertThat(DescribableModel.uninstantiate2_(instance).toString(), is("@mockScm("
                     + "controllerId=" + c.getId() + ","
-                    + "id=" + instance.getId() + ","
                     + "repository=test,"
                     + "traits=["
                     + "@discoverBranches$MockSCMDiscoverBranches(), "
@@ -158,7 +157,6 @@ public class SymbolAnnotationsTest {
             assertThat(DescribableModel.uninstantiate2_(instance).toString(), is("@fromSource(name=foo,"
                     + "sources=[@mockScm$MockSCMSource("
                     + "controllerId=" + c.getId() + ","
-                    + "id=" + instance.getSources().get(0).getId() + ","
                     + "repository=test,"
                     + "traits=[]"
                     + ")"
