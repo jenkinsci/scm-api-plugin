@@ -86,36 +86,27 @@ class SymbolAnnotationsTest {
     void given__mockScmSource__when__uninstantiating__then__noRaw$class(JenkinsRule r) throws Exception {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("test");
-            MockSCMSource instance = new MockSCMSource(
-                    c,
-                    "test",
-                    new MockSCMDiscoverBranches(),
-                    new MockSCMDiscoverChangeRequests(),
-                    new MockSCMDiscoverTags(),
-                    new WildcardSCMHeadFilterTrait("*", "ignore"),
-                    new RegexSCMHeadFilterTrait("i.*"));
-            assertThat(
-                    DescribableModel.uninstantiate2_(instance).toString(),
-                    allOf(
-                            startsWith("@"),
-                            not(containsString(", $")),
-                            not(containsString("=$")),
-                            not(containsString("[$")),
-                            not(containsString("{$"))));
-            assertThat(
-                    DescribableModel.uninstantiate2_(instance).toString(),
-                    is("@mockScm("
-                            + "controllerId=" + c.getId() + ","
-                            + "id=" + instance.getId() + ","
-                            + "repository=test,"
-                            + "traits=["
-                            + "@discoverBranches$MockSCMDiscoverBranches(), "
-                            + "@discoverChangeRequests$MockSCMDiscoverChangeRequests(strategiesStr=HEAD, ), "
-                            + "@discoverTags$MockSCMDiscoverTags(), "
-                            + "@headWildcardFilter$WildcardSCMHeadFilterTrait(excludes=ignore,includes=*), "
-                            + "@headRegexFilter$RegexSCMHeadFilterTrait(regex=i.*)"
-                            + "]"
-                            + ")"));
+            MockSCMSource instance = new MockSCMSource(c, "test", new MockSCMDiscoverBranches(),
+                    new MockSCMDiscoverChangeRequests(), new MockSCMDiscoverTags(),
+                    new WildcardSCMHeadFilterTrait("*", "ignore"), new RegexSCMHeadFilterTrait("i.*"));
+            assertThat(DescribableModel.uninstantiate2_(instance).toString(), allOf(
+                    startsWith("@"),
+                    not(containsString(", $")),
+                    not(containsString("=$")),
+                    not(containsString("[$")),
+                    not(containsString("{$"))
+            ));
+            assertThat(DescribableModel.uninstantiate2_(instance).toString(), is("@mockScm("
+                    + "controllerId=" + c.getId() + ","
+                    + "repository=test,"
+                    + "traits=["
+                    + "@discoverBranches$MockSCMDiscoverBranches(), "
+                    + "@discoverChangeRequests$MockSCMDiscoverChangeRequests(strategiesStr=HEAD, ), "
+                    + "@discoverTags$MockSCMDiscoverTags(), "
+                    + "@headWildcardFilter$WildcardSCMHeadFilterTrait(excludes=ignore,includes=*), "
+                    + "@headRegexFilter$RegexSCMHeadFilterTrait(regex=i.*)"
+                    + "]"
+                    + ")"));
         }
     }
 
@@ -160,27 +151,24 @@ class SymbolAnnotationsTest {
     void given__singleScmNavigator__when__uninstantiating__then__noRaw$class(JenkinsRule r) throws Exception {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("test");
-            SingleSCMNavigator instance =
-                    new SingleSCMNavigator("foo", Collections.singletonList(new MockSCMSource(c, "test")));
-            assertThat(
-                    DescribableModel.uninstantiate2_(instance).toString(),
-                    allOf(
-                            startsWith("@"),
-                            not(containsString(", $")),
-                            not(containsString("=$")),
-                            not(containsString("[$")),
-                            not(containsString("{$"))));
-            assertThat(
-                    DescribableModel.uninstantiate2_(instance).toString(),
-                    is("@fromSource(name=foo,"
-                            + "sources=[@mockScm$MockSCMSource("
-                            + "controllerId=" + c.getId() + ","
-                            + "id=" + instance.getSources().get(0).getId() + ","
-                            + "repository=test,"
-                            + "traits=[]"
-                            + ")"
-                            + "]"
-                            + ")"));
+            SingleSCMNavigator instance = new SingleSCMNavigator("foo",
+                    Collections.singletonList(new MockSCMSource(c, "test"))
+            );
+            assertThat(DescribableModel.uninstantiate2_(instance).toString(), allOf(
+                    startsWith("@"),
+                    not(containsString(", $")),
+                    not(containsString("=$")),
+                    not(containsString("[$")),
+                    not(containsString("{$"))
+            ));
+            assertThat(DescribableModel.uninstantiate2_(instance).toString(), is("@fromSource(name=foo,"
+                    + "sources=[@mockScm$MockSCMSource("
+                    + "controllerId=" + c.getId() + ","
+                    + "repository=test,"
+                    + "traits=[]"
+                    + ")"
+                    + "]"
+                    + ")"));
         }
     }
 

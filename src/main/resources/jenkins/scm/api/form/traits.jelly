@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:f="/lib/form" xmlns:local="local" xmlns:si="/jenkins/scm/internal/form">
+         xmlns:f="/lib/form" xmlns:local="local">
   <!-- TODO switch to hetero-list or repeatableHeteroProperty once the dd-handle class can be removed -->
   <st:documentation>
     Data-bound only version of &lt;f:hetero-list&gt; specialized for traits.
@@ -55,78 +55,32 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
-    <d:tag name="blockWrapper">
-      <st:documentation>
-        This adds a wrapper for a group of fields
-        The wrapper will be a `table` tag on Jenkins Core less than ~2.237, and a `div` tag after that
-      </st:documentation>
-
-      <j:choose>
-        <j:when test="${divBasedFormLayout}">
-          <div>
-            <d:invokeBody/>
-          </div>
-        </j:when>
-        <j:otherwise>
-          <table style="width:100%">
-            <d:invokeBody/>
-          </table>
-        </j:otherwise>
-      </j:choose>
-    </d:tag>
     <d:tag name="row">
-      <j:choose>
-        <j:when test="${divBasedFormLayout}">
-          <div class="tr">
-            <d:invokeBody/>
-          </div>
-        </j:when>
-        <j:otherwise>
-          <tr>
-            <d:invokeBody/>
-          </tr>
-        </j:otherwise>
-      </j:choose>
-    </d:tag>
-    <d:tag name="td">
-      <j:choose>
-        <j:when test="${divBasedFormLayout}">
-          <div>
-            <d:invokeBody/>
-          </div>
-        </j:when>
-        <j:otherwise>
-          <td colspan="3">
-            <d:invokeBody/>
-          </td>
-        </j:otherwise>
-      </j:choose>
+      <div class="repeated-chunk__header repeated-chunk__header--no-handle">
+        <d:invokeBody/>
+      </div>
     </d:tag>
     <d:tag name="body">
-      <local:blockWrapper>
+      <div>
         <j:set var="help" value="${descriptor.helpFile}"/>
+        <div class="help-sibling">
           <local:row>
-            <local:td>
-              <div>
-                <b>${descriptor.displayName}</b>
-              </div>
-            </local:td>
+            ${descriptor.displayName}
             <f:helpLink url="${help}"/>
           </local:row>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
             <f:helpArea/>
           </j:if>
+        </div>
 
-        <d:invokeBody/>
+        <div class="jenkins-repeated-chunk__content">
+          <d:invokeBody/>
+        </div>
 
         <f:class-entry descriptor="${descriptor}"/>
-        <f:block>
-          <div align="right">
-            <f:repeatableDeleteButton value="${attrs.deleteCaption}"/>
-          </div>
-        </f:block>
-      </local:blockWrapper>
+        <f:repeatableDeleteButton value="${attrs.deleteCaption}"/>
+      </div>
     </d:tag>
   </d:taglib>
 
@@ -154,12 +108,12 @@ THE SOFTWARE.
           thus we get the section headers in the menu (but disabled) and the entries are added to their respective
           sections
         -->
-        <div name="${attrs.field}" class="repeated-chunk trait-section"
+        <template name="${attrs.field}" class="repeated-chunk trait-section"
              descriptorId="!fake@section/[${descriptorsLoop.index}]">
           <span class="trait-section-header">
             <span>${descriptors.getName()}</span>
           </span>
-        </div>
+        </template>
       </j:if>
       <j:forEach var="i" items="${instances}">
         <j:if test="${descriptors.contains(i.descriptor)}">
@@ -174,7 +128,7 @@ THE SOFTWARE.
       </j:forEach>
     </j:forEach>
 
-    <div class="repeatable-insertion-point"/>
+    <template class="repeatable-insertion-point"/>
 
     <div class="prototypes to-be-removed">
       <j:forEach var="descriptors" items="${descriptorLists}" varStatus="descriptorsLoop">
@@ -196,7 +150,7 @@ THE SOFTWARE.
                  descriptorId="${descriptor.id}">
               <j:set var="capture" value="${attrs.capture?:''}"/>
               <local:body deleteCaption="${attrs.deleteCaption}">
-                <l:renderOnDemand tag="${divBasedFormLayout ? 'div' : 'tr'}" clazz="config-page" capture="descriptor,it,instance,${capture}">
+                <l:renderOnDemand tag="div" clazz="config-page" capture="descriptor,it,instance,${capture}">
                   <l:ajax>
                     <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
                   </l:ajax>
