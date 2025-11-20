@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import jenkins.scm.api.SCM2;
+import hudson.scm.SCM;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.SCMRevision;
@@ -64,7 +64,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.xml.sax.SAXException;
 
-public class MockSCM extends SCM2 implements Serializable {
+public class MockSCM extends SCM implements Serializable {
     private final String controllerId;
     private final String repository;
     private final SCMHead head;
