@@ -25,6 +25,10 @@
 
 package jenkins.scm.api;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,52 +42,66 @@ import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import jenkins.util.NonLocalizable;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.localizer.Localizable;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+class SCMCategoryTest {
 
-public class SCMCategoryTest {
     @Test
-    public void toDisplayName() throws Exception {
-        assertThat(SCMCategory.toDisplayName(UncategorizedSCMHeadCategory.DEFAULT, ChangeRequestSCMHeadCategory.DEFAULT,
-                TagSCMHeadCategory.DEFAULT).toString(
-                Locale.ENGLISH), is("Branches / Change requests / Tags"));
-        assertThat(SCMCategory.toDisplayName(UncategorizedSCMHeadCategory.DEFAULT,
-                TagSCMHeadCategory.DEFAULT).toString(
-                Locale.ENGLISH), is("Branches / Tags"));
-        assertThat(SCMCategory.toDisplayName(UncategorizedSCMHeadCategory.DEFAULT).toString(
-                Locale.ENGLISH), is("Branches"));
+    void toDisplayName() {
+        assertThat(
+                SCMCategory.toDisplayName(
+                                UncategorizedSCMHeadCategory.DEFAULT,
+                                ChangeRequestSCMHeadCategory.DEFAULT,
+                                TagSCMHeadCategory.DEFAULT)
+                        .toString(Locale.ENGLISH),
+                is("Branches / Change requests / Tags"));
+        assertThat(
+                SCMCategory.toDisplayName(UncategorizedSCMHeadCategory.DEFAULT, TagSCMHeadCategory.DEFAULT)
+                        .toString(Locale.ENGLISH),
+                is("Branches / Tags"));
+        assertThat(
+                SCMCategory.toDisplayName(UncategorizedSCMHeadCategory.DEFAULT).toString(Locale.ENGLISH),
+                is("Branches"));
     }
 
     @Test
-    public void toDisplayName1() throws Exception {
-        assertThat(SCMCategory.toDisplayName(Arrays.asList(ChangeRequestSCMHeadCategory.DEFAULT,
-                TagSCMHeadCategory.DEFAULT, UncategorizedSCMHeadCategory.DEFAULT)).toString(
-                Locale.ENGLISH), is("Branches / Change requests / Tags"));
-
+    void toDisplayName1() {
+        assertThat(
+                SCMCategory.toDisplayName(Arrays.asList(
+                                ChangeRequestSCMHeadCategory.DEFAULT,
+                                TagSCMHeadCategory.DEFAULT,
+                                UncategorizedSCMHeadCategory.DEFAULT))
+                        .toString(Locale.ENGLISH),
+                is("Branches / Change requests / Tags"));
     }
 
     @Test
-    public void toShortUrl() throws Exception {
-        assertThat(SCMCategory.toShortUrl(UncategorizedSCMHeadCategory.DEFAULT, ChangeRequestSCMHeadCategory.DEFAULT,
-                TagSCMHeadCategory.DEFAULT), is("change-requests_default_tags"));
-
+    void toShortUrl() {
+        assertThat(
+                SCMCategory.toShortUrl(
+                        UncategorizedSCMHeadCategory.DEFAULT,
+                        ChangeRequestSCMHeadCategory.DEFAULT,
+                        TagSCMHeadCategory.DEFAULT),
+                is("change-requests_default_tags"));
     }
 
     @Test
-    public void toShortUrl1() throws Exception {
-        assertThat(SCMCategory.toShortUrl(Arrays.asList(ChangeRequestSCMHeadCategory.DEFAULT,
-                TagSCMHeadCategory.DEFAULT, UncategorizedSCMHeadCategory.DEFAULT)), is("change-requests_default_tags"));
-        assertThat(SCMCategory.toShortUrl(Arrays.asList(TagSCMHeadCategory.DEFAULT, UncategorizedSCMHeadCategory.DEFAULT)), is("default_tags"));
+    void toShortUrl1() {
+        assertThat(
+                SCMCategory.toShortUrl(Arrays.asList(
+                        ChangeRequestSCMHeadCategory.DEFAULT,
+                        TagSCMHeadCategory.DEFAULT,
+                        UncategorizedSCMHeadCategory.DEFAULT)),
+                is("change-requests_default_tags"));
+        assertThat(
+                SCMCategory.toShortUrl(Arrays.asList(TagSCMHeadCategory.DEFAULT, UncategorizedSCMHeadCategory.DEFAULT)),
+                is("default_tags"));
         assertThat(SCMCategory.toShortUrl(Collections.singletonList(TagSCMHeadCategory.DEFAULT)), is("tags"));
-
     }
 
     @Test
-    public void group() throws Exception {
+    void group() {
         UncategorizedSCMHeadCategory u1 = UncategorizedSCMHeadCategory.DEFAULT;
         UncategorizedSCMHeadCategory u2 = new UncategorizedSCMHeadCategory(new NonLocalizable("foo"));
         ChangeRequestSCMHeadCategory c1 = ChangeRequestSCMHeadCategory.DEFAULT;
@@ -91,12 +109,12 @@ public class SCMCategoryTest {
         ChangeRequestSCMHeadCategory c3 = new ChangeRequestSCMHeadCategory(new NonLocalizable("manchu"));
         Map<String, List<SCMHeadCategory>> result = SCMCategory.group(u1, c1, c2, c3, u2);
         assertThat(result.entrySet(), hasSize(2));
-        assertThat(result.get("default"), Matchers.<SCMCategory>containsInAnyOrder(u1, u2));
-        assertThat(result.get("change-requests"), Matchers.<SCMCategory>containsInAnyOrder(c1, c2, c3));
+        assertThat(result.get("default"), Matchers.containsInAnyOrder(u1, u2));
+        assertThat(result.get("change-requests"), Matchers.containsInAnyOrder(c1, c2, c3));
     }
 
     @Test
-    public void group1() throws Exception {
+    void group1() {
         UncategorizedSCMHeadCategory u1 = UncategorizedSCMHeadCategory.DEFAULT;
         UncategorizedSCMHeadCategory u2 = new UncategorizedSCMHeadCategory(new NonLocalizable("foo"));
         ChangeRequestSCMHeadCategory c1 = ChangeRequestSCMHeadCategory.DEFAULT;
@@ -105,30 +123,39 @@ public class SCMCategoryTest {
         TagSCMHeadCategory t1 = new TagSCMHeadCategory(new NonLocalizable("foomanchu"));
         Map<String, List<SCMHeadCategory>> result = SCMCategory.group(Arrays.asList(u1, c1, t1, c2, c3, u2));
         assertThat(result.entrySet(), hasSize(3));
-        assertThat(result.get("default"), Matchers.<SCMCategory>containsInAnyOrder(u1, u2));
-        assertThat(result.get("change-requests"), Matchers.<SCMCategory>containsInAnyOrder(c1, c2, c3));
-        assertThat(result.get("tags"), Matchers.<SCMCategory>contains(t1));
-
+        assertThat(result.get("default"), Matchers.containsInAnyOrder(u1, u2));
+        assertThat(result.get("change-requests"), Matchers.containsInAnyOrder(c1, c2, c3));
+        assertThat(result.get("tags"), Matchers.contains(t1));
     }
 
     @Test
-    public void getName() throws Exception {
-        assertThat(new MySCMCategory("foomanchu", new NonLocalizable("Fu Manchu"), new NonLocalizable("Fu Manchu")).getName(), is("foomanchu"));
+    void getName() {
+        assertThat(
+                new MySCMCategory("foomanchu", new NonLocalizable("Fu Manchu"), new NonLocalizable("Fu Manchu"))
+                        .getName(),
+                is("foomanchu"));
     }
 
     @Test
-    public void getDisplayName() throws Exception {
-        assertThat(new MySCMCategory("foomanchu", new NonLocalizable("Fu Manchu"), new NonLocalizable("Fu Manchu")).getDisplayName().toString(Locale.ENGLISH), is("Fu Manchu"));
+    void getDisplayName() {
+        assertThat(
+                new MySCMCategory("foomanchu", new NonLocalizable("Fu Manchu"), new NonLocalizable("Fu Manchu"))
+                        .getDisplayName()
+                        .toString(Locale.ENGLISH),
+                is("Fu Manchu"));
     }
 
     @Test
-    public void defaultDisplayName() throws Exception {
-        assertThat(new MySCMCategory("foomanchu", null, new NonLocalizable("Fu Manchu"))
-                .getDisplayName().toString(Locale.ENGLISH), is("Fu Manchu"));
+    void defaultDisplayName() {
+        assertThat(
+                new MySCMCategory("foomanchu", null, new NonLocalizable("Fu Manchu"))
+                        .getDisplayName()
+                        .toString(Locale.ENGLISH),
+                is("Fu Manchu"));
     }
 
     @Test
-    public void isMatch() throws Exception {
+    void isMatch() {
         UncategorizedSCMHeadCategory u = UncategorizedSCMHeadCategory.DEFAULT;
         ChangeRequestSCMHeadCategory c = ChangeRequestSCMHeadCategory.DEFAULT;
         TagSCMHeadCategory t = TagSCMHeadCategory.DEFAULT;
@@ -173,12 +200,11 @@ public class SCMCategoryTest {
         assertThat(t.isMatch(mh, Arrays.asList(u, c, t)), is(false));
         assertThat(t.isMatch(ch, Arrays.asList(c, u, t)), is(false));
         assertThat(t.isMatch(th, Arrays.asList(c, u, t)), is(true));
-
     }
 
     private static class MySCMCategory extends SCMCategory<Object> {
 
-        private NonLocalizable defaultDisplayName;
+        private final NonLocalizable defaultDisplayName;
 
         public MySCMCategory(String name, NonLocalizable displayName, NonLocalizable defaultDisplayName) {
             super(name, displayName);
