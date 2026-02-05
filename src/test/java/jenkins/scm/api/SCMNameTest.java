@@ -24,53 +24,55 @@
 
 package jenkins.scm.api;
 
-import org.junit.Test;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-public class SCMNameTest {
+import org.junit.jupiter.api.Test;
+
+class SCMNameTest {
+
     @Test
-    public void given__url_without_hostname__when__naming__then__no_name_inferred() throws Exception {
+    void given__url_without_hostname__when__naming__then__no_name_inferred() {
         assertThat(SCMName.fromUrl("file:///some/random/file"), is(nullValue()));
     }
 
     @Test
-    public void given__url_with_hostname__when__naming__then__public_tld_removed() throws Exception {
+    void given__url_with_hostname__when__naming__then__public_tld_removed() {
         assertThat(SCMName.fromUrl("http://scm.example.com"), is("scm example"));
     }
 
     @Test
-    public void given__url_with_hostname__when__naming__then__public_sld_removed() throws Exception {
+    void given__url_with_hostname__when__naming__then__public_sld_removed() {
         assertThat(SCMName.fromUrl("http://scm.example.co.uk"), is("scm example"));
     }
 
     @Test
-    public void given__url_with_hostname__when__naming__then__prefix_is_removed() throws Exception {
+    void given__url_with_hostname__when__naming__then__prefix_is_removed() {
         assertThat(SCMName.fromUrl("http://scm.example.ie", "scm"), is("example"));
     }
 
     @Test
-    public void given__url_with_punycode__when__naming__then__hostname_is_decoded() throws Exception {
-        assertThat(SCMName.fromUrl("http://xn--e1afmkfd.xn--p1ai/"),
+    void given__url_with_punycode__when__naming__then__hostname_is_decoded() {
+        assertThat(
+                SCMName.fromUrl("http://xn--e1afmkfd.xn--p1ai/"),
                 is("\u043F\u0440\u0438\u043C\u0435\u0440" /*пример*/));
     }
 
     @Test
-    public void given__url_with_idn__when__naming__then__punycode_is_roundtripped() throws Exception {
-        assertThat(SCMName.fromUrl("http://\u043F\u0440\u0438\u043C\u0435\u0440.\u0440\u0444" /*пример.рф*/),
+    void given__url_with_idn__when__naming__then__punycode_is_roundtripped() {
+        assertThat(
+                SCMName.fromUrl("http://\u043F\u0440\u0438\u043C\u0435\u0440.\u0440\u0444" /*пример.рф*/),
                 is("\u043F\u0440\u0438\u043C\u0435\u0440" /*пример*/));
     }
 
     @Test
-    public void given__url_with_idn__when__naming__then__punycode_is_roundtripped2() throws Exception {
+    void given__url_with_idn__when__naming__then__punycode_is_roundtripped2() {
         assertThat(SCMName.fromUrl("http://\u4F8B\u5B50.\u4E2D\u56FD/"), is("\u4F8B\u5B50"));
     }
 
     @Test
-    public void given__url_with_ipv4address__when__naming__then__no_name_inferred() throws Exception {
+    void given__url_with_ipv4address__when__naming__then__no_name_inferred() {
         assertThat(SCMName.fromUrl("http://127.0.0.1/scm"), is(nullValue()));
     }
-
 }

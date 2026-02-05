@@ -25,23 +25,24 @@
 
 package jenkins.scm.impl;
 
-import jenkins.scm.api.SCMSource;
-import org.junit.Test;
-import org.mockito.InOrder;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
-public class NoOpProjectObserverTest {
+import jenkins.scm.api.SCMSource;
+import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
+
+class NoOpProjectObserverTest {
+
     @Test
-    public void instance() throws Exception {
+    void instance() {
         assertThat(NoOpProjectObserver.instance(), notNullValue());
     }
 
     @Test
-    public void addSource() throws Exception {
+    void addSource() {
         SCMSource source = mock(SCMSource.class);
         InOrder seq = inOrder(source);
         NoOpProjectObserver.instance().addSource(source);
@@ -49,13 +50,12 @@ public class NoOpProjectObserverTest {
     }
 
     @Test
-    public void addAttribute() throws Exception {
+    void addAttribute() {
         NoOpProjectObserver.instance().addAttribute("key", "value");
     }
 
     @Test
-    public void complete() throws Exception {
+    void complete() throws Exception {
         NoOpProjectObserver.instance().complete();
     }
-
 }

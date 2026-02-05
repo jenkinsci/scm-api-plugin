@@ -24,6 +24,14 @@
 
 package jenkins.scm.impl.avatars;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
+
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.util.HttpResponses;
@@ -38,26 +46,17 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.startsWith;
-
-public class AvatarCacheTest {
-    @ClassRule
-    public static JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class AvatarCacheTest {
 
     @Test
-    public void fakeUrl() throws Exception {
+    void fakeUrl(JenkinsRule r) throws Exception {
         // start by adding a block of tasks to the worker so we can prevent the image from being fetched
         CountDownLatch requestsPending = new CountDownLatch(AvatarCache.CONCURRENT_REQUEST_LIMIT + 1);
         CountDownLatch blockReady = new CountDownLatch(AvatarCache.CONCURRENT_REQUEST_LIMIT);
@@ -67,7 +66,7 @@ public class AvatarCacheTest {
         blockReady.await(10, TimeUnit.SECONDS);
 
         // now we generate the URL
-        String url = callBuildUrl("about:blank", "32x32");
+        String url = callBuildUrl(r, "about:blank", "32x32");
         assertThat(url, is(r.getURL().toString() + "avatar-cache/0ffc09cf03c14f063afa7f03a5f4b074.png?size=32x32"));
 
         // now we can test the pending responses
@@ -116,7 +115,7 @@ public class AvatarCacheTest {
     }
 
     @Test
-    public void realUrl() throws Exception {
+    void realUrl(JenkinsRule r) throws Exception {
         // start by adding a block of tasks to the worker so we can prevent the image from being fetched
         CountDownLatch requestsPending = new CountDownLatch(AvatarCache.CONCURRENT_REQUEST_LIMIT + 1);
         CountDownLatch blockReady = new CountDownLatch(AvatarCache.CONCURRENT_REQUEST_LIMIT);
@@ -126,7 +125,7 @@ public class AvatarCacheTest {
         blockReady.await(10, TimeUnit.SECONDS);
 
         // now we generate the URL
-        String url = callBuildUrl(r.getURL().toString() + "plugin/scm-api/test-avatar.png", "32x32");
+        String url = callBuildUrl(r, r.getURL().toString() + "plugin/scm-api/test-avatar.png", "32x32");
         assertThat(url, allOf(startsWith(r.getURL().toString() + "avatar-cache/"), endsWith(".png?size=32x32")));
 
         // now we can test the pending responses
@@ -183,14 +182,11 @@ public class AvatarCacheTest {
     private List<Callable<Void>> fakeWork(final CountDownLatch latch, final CountDownLatch running) {
         final List<Callable<Void>> tasks = new ArrayList<>();
         for (int i = 0; i < AvatarCache.CONCURRENT_REQUEST_LIMIT; i++) {
-            tasks.add(new Callable<>() {
-                @Override
-                public Void call() throws Exception {
-                    running.countDown();
-                    latch.countDown();
-                    latch.await(10, TimeUnit.SECONDS);
-                    return null;
-                }
+            tasks.add(() -> {
+                running.countDown();
+                latch.countDown();
+                latch.await(10, TimeUnit.SECONDS);
+                return null;
             });
         }
         return tasks;
@@ -199,12 +195,13 @@ public class AvatarCacheTest {
     /**
      * Invokes {@link AvatarCache#buildUrl(String, String)} from a request thread.
      *
+     * @param r    the jenkins rule.
      * @param url  the url.
      * @param size the size.
      * @return the response
      * @throws IOException if there is an error.
      */
-    public String callBuildUrl(String url, String size) throws IOException {
+    public String callBuildUrl(JenkinsRule r, String url, String size) throws IOException {
         ProbeAction a = ExtensionList.lookup(UnprotectedRootAction.class).get(ProbeAction.class);
         assertThat(a, notNullValue());
         synchronized (a) {
@@ -214,7 +211,8 @@ public class AvatarCacheTest {
                     (HttpURLConnection) new URL(r.getURL().toString() + a.getUrlName() + "/").openConnection();
             try {
                 c.connect();
-                return IOUtils.toString(c.getInputStream(), StandardCharsets.UTF_8).trim();
+                return IOUtils.toString(c.getInputStream(), StandardCharsets.UTF_8)
+                        .trim();
             } finally {
                 c.disconnect();
             }
@@ -246,5 +244,4 @@ public class AvatarCacheTest {
             return HttpResponses.text(AvatarCache.buildUrl(url, size));
         }
     }
-
 }
