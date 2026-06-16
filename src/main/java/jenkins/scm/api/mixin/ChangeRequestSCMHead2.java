@@ -31,5 +31,5 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Use {@see ChangeRequestSCMHead} instead.
  * @since 2.2.0
  */
-@Restricted(NoExternalUse.class)
+@Deprecated
 public interface ChangeRequestSCMHead2 extends ChangeRequestSCMHead {}
