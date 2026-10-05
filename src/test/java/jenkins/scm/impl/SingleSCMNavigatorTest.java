@@ -25,14 +25,6 @@
 
 package jenkins.scm.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
-import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.SCMSourceObserver;
-import org.junit.Test;
-import org.mockito.InOrder;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyCollectionOf;
@@ -45,9 +37,18 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-public class SingleSCMNavigatorTest {
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Random;
+import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.SCMSourceObserver;
+import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
+
+class SingleSCMNavigatorTest {
+
     @Test
-    public void getName() throws Exception {
+    void getName() {
         Random entropy = new Random();
         String name = "foo-" + entropy.nextLong();
         SingleSCMNavigator instance = new SingleSCMNavigator(name, Collections.emptyList());
@@ -55,28 +56,27 @@ public class SingleSCMNavigatorTest {
     }
 
     @Test
-    public void getSources_empty() throws Exception {
-        assertThat(new SingleSCMNavigator("foo", Collections.emptyList()).getSources(), emptyCollectionOf(SCMSource.class));
+    void getSources_empty() {
+        assertThat(
+                new SingleSCMNavigator("foo", Collections.emptyList()).getSources(),
+                emptyCollectionOf(SCMSource.class));
     }
 
     @Test
-    public void getSources_one() throws Exception {
+    void getSources_one() {
         SCMSource s1 = mock(SCMSource.class);
-        assertThat(new SingleSCMNavigator("foo", Collections.singletonList(s1)).getSources(),
-                contains(s1));
+        assertThat(new SingleSCMNavigator("foo", Collections.singletonList(s1)).getSources(), contains(s1));
     }
 
     @Test
-    public void getSources_two() throws Exception {
+    void getSources_two() {
         SCMSource s1 = mock(SCMSource.class);
         SCMSource s2 = mock(SCMSource.class);
-        assertThat(new SingleSCMNavigator("foo", Arrays.asList(s1, s2)).getSources(),
-                contains(s1, s2));
-
+        assertThat(new SingleSCMNavigator("foo", Arrays.asList(s1, s2)).getSources(), contains(s1, s2));
     }
 
     @Test
-    public void visitSources_empty() throws Exception {
+    void visitSources_empty() throws Exception {
         SCMSourceObserver mock = mock(SCMSourceObserver.class);
         SCMSourceObserver.ProjectObserver observer = mock(SCMSourceObserver.ProjectObserver.class);
         InOrder seq = inOrder(mock, observer);
@@ -90,7 +90,7 @@ public class SingleSCMNavigatorTest {
     }
 
     @Test
-    public void visitSources_one() throws Exception {
+    void visitSources_one() throws Exception {
         SCMSource s1 = mock(SCMSource.class);
         SCMSourceObserver mock = mock(SCMSourceObserver.class);
         SCMSourceObserver.ProjectObserver observer = mock(SCMSourceObserver.ProjectObserver.class);
@@ -105,7 +105,7 @@ public class SingleSCMNavigatorTest {
     }
 
     @Test
-    public void visitSources_two() throws Exception {
+    void visitSources_two() throws Exception {
         SCMSource s1 = mock(SCMSource.class);
         SCMSource s2 = mock(SCMSource.class);
         SCMSourceObserver mock = mock(SCMSourceObserver.class);
@@ -120,5 +120,4 @@ public class SingleSCMNavigatorTest {
         seq.verify(observer, times(1)).complete();
         seq.verifyNoMoreInteractions();
     }
-
 }
