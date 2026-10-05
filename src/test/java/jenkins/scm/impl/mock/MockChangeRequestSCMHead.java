@@ -29,9 +29,9 @@ import java.util.Locale;
 import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 
-public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2 {
+public class MockChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
     private final String target;
     private final Integer number;
     private final SCMHeadOrigin origin;
