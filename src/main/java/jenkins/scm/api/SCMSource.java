@@ -243,6 +243,15 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
+     * Create and set {@link SimpleSCMSourceOwner} as {@link owner} for credentials lookup.
+     *
+     * @param item the context item for credentials lookup
+     */
+    public final void setupCredentialsContext(@NonNull Item item) {
+        setOwner(new SimpleSCMSourceOwner(this, item));
+    }
+
+    /**
      * Returns the branch criteria.
      *
      * @return the branch criteria.
