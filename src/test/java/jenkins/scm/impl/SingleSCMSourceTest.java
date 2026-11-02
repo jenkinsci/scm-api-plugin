@@ -24,6 +24,20 @@
 
 package jenkins.scm.impl;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
@@ -42,56 +56,26 @@ import jenkins.scm.api.SCMSourceOwner;
 import jenkins.scm.impl.mock.MockSCM;
 import jenkins.scm.impl.mock.MockSCMController;
 import jenkins.scm.impl.mock.MockSCMHead;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.mockito.InOrder;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
-
-public class SingleSCMSourceTest {
-
-    @ClassRule
-    public static JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class SingleSCMSourceTest {
 
     @Test
-    public void configRoundtrip() throws Exception {
+    void configRoundtrip(JenkinsRule r) throws Exception {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
-            SingleSCMSource source = new SingleSCMSource(
-                    "the-name",
-                    new MockSCM(
-                            c,
-                            "foo",
-                            new MockSCMHead("master"),
-                            null
-                    )
-            );
+            SingleSCMSource source =
+                    new SingleSCMSource("the-name", new MockSCM(c, "foo", new MockSCMHead("master"), null));
             source.setId("the-id");
             SCMSourceBuilder builder = new SCMSourceBuilder(source);
-            SingleSCMSource expected = new SingleSCMSource(
-                    "the-name",
-                    new MockSCM(
-                            c,
-                            "foo",
-                            new MockSCMHead("master"),
-                            null
-                    )
-            );
+            SingleSCMSource expected =
+                    new SingleSCMSource("the-name", new MockSCM(c, "foo", new MockSCMHead("master"), null));
             expected.setId("the-id");
             SCMSource actual = r.configRoundtrip(builder).scm;
             System.out.printf("expected=%s%nactual=%s%n", expected, actual);
@@ -100,67 +84,52 @@ public class SingleSCMSourceTest {
     }
 
     @Test
-    public void given_instance_when_fetch_then_revisionObserved() throws Exception {
+    void given_instance_when_fetch_then_revisionObserved(JenkinsRule r) throws Exception {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             SCMHeadObserver observer = mock(SCMHeadObserver.class);
-            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            SingleSCMSource instance =
+                    new SingleSCMSource("the-id", "the-name", new MockSCM(c, "foo", new MockSCMHead("master"), null));
             instance.fetch(null, observer, null);
-            verify(observer).observe(
-                    argThat(
-                            allOf(
-                                    instanceOf(SCMHead.class),
-                                    hasProperty("name", is("the-name"))
-                            )
-                    ),
-                    argThat(
-                            allOf(
+            verify(observer)
+                    .observe(
+                            argThat(allOf(instanceOf(SCMHead.class), hasProperty("name", is("the-name")))),
+                            argThat(allOf(
                                     instanceOf(SCMRevision.class),
                                     hasProperty("head", hasProperty("name", is("the-name"))),
-                                    hasProperty("deterministic", is(false))
-                            )
-                    )
-            );
+                                    hasProperty("deterministic", is(false)))));
         }
     }
 
     @Test
-    public void given_instance_when_fetchWithCriteria_then_criteriaIgnoredAndRevisionObserved() throws Exception {
+    void given_instance_when_fetchWithCriteria_then_criteriaIgnoredAndRevisionObserved(JenkinsRule r) throws Exception {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             SCMHeadObserver observer = mock(SCMHeadObserver.class);
             SCMSourceCriteria criteria = mock(SCMSourceCriteria.class);
             InOrder seq = inOrder(observer, criteria);
-            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            SingleSCMSource instance =
+                    new SingleSCMSource("the-id", "the-name", new MockSCM(c, "foo", new MockSCMHead("master"), null));
             instance.fetch(criteria, observer, null);
-            seq.verify(observer).observe(
-                    argThat(
-                            allOf(
-                                    instanceOf(SCMHead.class),
-                                    hasProperty("name", is("the-name"))
-                            )
-                    ),
-                    argThat(
-                            allOf(
+            seq.verify(observer)
+                    .observe(
+                            argThat(allOf(instanceOf(SCMHead.class), hasProperty("name", is("the-name")))),
+                            argThat(allOf(
                                     instanceOf(SCMRevision.class),
                                     hasProperty("head", hasProperty("name", is("the-name"))),
-                                    hasProperty("deterministic", is(false))
-                            )
-                    )
-            );
+                                    hasProperty("deterministic", is(false)))));
             seq.verifyNoMoreInteractions();
         }
     }
 
     @Test
-    public void given_instance_when_fetchingObservedHead_then_scmReturned() throws Exception {
+    void given_instance_when_fetchingObservedHead_then_scmReturned(JenkinsRule r) throws Exception {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
-            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
-            Map<SCMHead, SCMRevision> result = instance.fetch(SCMHeadObserver.collect(), null).result();
+            SingleSCMSource instance =
+                    new SingleSCMSource("the-id", "the-name", new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            Map<SCMHead, SCMRevision> result =
+                    instance.fetch(SCMHeadObserver.collect(), null).result();
             assertThat(result.entrySet(), hasSize(1));
             Map.Entry<SCMHead, SCMRevision> entry = result.entrySet().iterator().next();
             assertThat(instance.build(entry.getKey(), entry.getValue()), instanceOf(MockSCM.class));
@@ -168,22 +137,23 @@ public class SingleSCMSourceTest {
     }
 
     @Test
-    public void given_instance_when_fetchingNonObservedHead_then_nullScmReturned() throws Exception {
+    void given_instance_when_fetchingNonObservedHead_then_nullScmReturned(JenkinsRule r) throws Exception {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
-            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            SingleSCMSource instance =
+                    new SingleSCMSource("the-id", "the-name", new MockSCM(c, "foo", new MockSCMHead("master"), null));
             assertThat(instance.build(new SCMHead("foo"), mock(SCMRevision.class)), instanceOf(NullSCM.class));
         }
     }
 
     @Test
-    public void scmRevisionImpl() throws Exception {
+    void scmRevisionImpl(JenkinsRule r) throws Exception {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
-            SingleSCMSource instance = new SingleSCMSource("the-id", "the-name",
-                    new MockSCM(c, "foo", new MockSCMHead("master"), null));
-            Map<SCMHead, SCMRevision> result = instance.fetch(SCMHeadObserver.collect(), null).result();
+            SingleSCMSource instance =
+                    new SingleSCMSource("the-id", "the-name", new MockSCM(c, "foo", new MockSCMHead("master"), null));
+            Map<SCMHead, SCMRevision> result =
+                    instance.fetch(SCMHeadObserver.collect(), null).result();
             SCMRevision revision = result.values().iterator().next();
             assertThat(revision.isDeterministic(), is(false));
             assertThat(revision.equals(revision), is(true));
@@ -193,20 +163,20 @@ public class SingleSCMSourceTest {
     }
 
     @Test
-    public void getSCMDescriptors() throws Exception {
+    void getSCMDescriptors(JenkinsRule r) {
         TopLevelItemDescriptor descriptor = mock(TopLevelItemDescriptor.class);
         TopLevelSCMOwner owner = mock(TopLevelSCMOwner.class);
         when(owner.getDescriptor()).thenReturn(descriptor);
         when(descriptor.isApplicable(any(Descriptor.class))).thenReturn(true);
-        assertThat(SingleSCMSource.DescriptorImpl.getSCMDescriptors(owner),
+        assertThat(
+                SingleSCMSource.DescriptorImpl.getSCMDescriptors(owner),
                 hasItem(instanceOf(MockSCM.DescriptorImpl.class)));
     }
 
-    public interface TopLevelSCMOwner extends TopLevelItem, SCMSourceOwner {
-    }
+    public interface TopLevelSCMOwner extends TopLevelItem, SCMSourceOwner {}
 
     /**
-     * Helper for {@link #configRoundtrip()}.
+     * Helper for configRoundtrip().
      */
     public static class SCMSourceBuilder extends Builder {
 
@@ -226,14 +196,10 @@ public class SingleSCMSourceTest {
                 return "SCMSourceBuilder";
             }
 
-            @SuppressWarnings("rawtypes")
             @Override
             public boolean isApplicable(Class<? extends AbstractProject> jobType) {
                 return true;
             }
-
         }
-
     }
-
 }

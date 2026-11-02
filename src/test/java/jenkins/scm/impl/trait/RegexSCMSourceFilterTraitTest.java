@@ -24,6 +24,9 @@
 
 package jenkins.scm.impl.trait;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.TaskListener;
@@ -38,19 +41,15 @@ import jenkins.scm.api.SCMSourceOwner;
 import jenkins.scm.impl.NoOpProjectObserver;
 import jenkins.scm.impl.mock.MockSCMController;
 import jenkins.scm.impl.mock.MockSCMNavigator;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-
-public class RegexSCMSourceFilterTraitTest {
-    @ClassRule
-    public static JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class RegexSCMSourceFilterTraitTest {
 
     @Test
-    public void given_navigatorWithIncludeRegexRule_when_scanning_then_ruleApplied() throws Exception {
+    void given_navigatorWithIncludeRegexRule_when_scanning_then_ruleApplied(JenkinsRule r) throws Exception {
         try (MockSCMController c = MockSCMController.create()) {
             c.createRepository("foo");
             c.createRepository("bar");
@@ -65,8 +64,7 @@ public class RegexSCMSourceFilterTraitTest {
     private static class SimpleSCMSourceObserver extends SCMSourceObserver {
         Set<String> names = new HashSet<>();
         LogTaskListener listener =
-                new LogTaskListener(Logger.getLogger(WildcardSCMSourceFilterTrait.class.getName()),
-                        Level.INFO);
+                new LogTaskListener(Logger.getLogger(RegexSCMSourceFilterTrait.class.getName()), Level.INFO);
 
         @NonNull
         @Override
@@ -90,8 +88,7 @@ public class RegexSCMSourceFilterTraitTest {
 
         @Override
         public void addAttribute(@NonNull String key, @Nullable Object value)
-                throws IllegalArgumentException, ClassCastException {
-        }
+                throws IllegalArgumentException, ClassCastException {}
 
         public Set<String> getNames() {
             return names;

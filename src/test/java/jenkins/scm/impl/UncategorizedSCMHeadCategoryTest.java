@@ -25,39 +25,43 @@
 
 package jenkins.scm.impl;
 
-import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
-import jenkins.scm.impl.mock.MockSCMHead;
-import jenkins.scm.impl.mock.MockTagSCMHead;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@RunWith(Theories.class)
-public class UncategorizedSCMHeadCategoryTest {
+import java.util.stream.Stream;
+import jenkins.scm.impl.mock.MockChangeRequestSCMHead;
+import jenkins.scm.impl.mock.MockSCMHead;
+import jenkins.scm.impl.mock.MockTagSCMHead;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-    @DataPoint
-    public static UncategorizedSCMHeadCategory defInstance = UncategorizedSCMHeadCategory.DEFAULT;
+class UncategorizedSCMHeadCategoryTest {
 
-    @DataPoint
-    public static UncategorizedSCMHeadCategory custInstance = new UncategorizedSCMHeadCategory(Messages._UncategorizedSCMHeadCategory_DisplayName());
+    static Stream<Arguments> instance() {
+        return Stream.of(
+                Arguments.of(Named.of("default", UncategorizedSCMHeadCategory.DEFAULT)),
+                Arguments.of(Named.of(
+                        "custom",
+                        new UncategorizedSCMHeadCategory(Messages._UncategorizedSCMHeadCategory_DisplayName()))));
+    }
 
-    @Theory
-    public void given_tagHead_when_isMatch_then_confirmMatch(UncategorizedSCMHeadCategory instance) throws Exception {
+    @ParameterizedTest
+    @MethodSource("instance")
+    void given_tagHead_when_isMatch_then_confirmMatch(UncategorizedSCMHeadCategory instance) {
         assertThat(instance.isMatch(new MockTagSCMHead("1.0", 0L)), is(true));
     }
 
-    @Theory
-    public void given_regularHead_when_isMatch_then_confirmMatch(UncategorizedSCMHeadCategory instance) throws Exception {
+    @ParameterizedTest
+    @MethodSource("instance")
+    void given_regularHead_when_isMatch_then_confirmMatch(UncategorizedSCMHeadCategory instance) {
         assertThat(instance.isMatch(new MockSCMHead("master")), is(true));
     }
 
-    @Theory
-    public void given_changeRequestHead_when_isMatch_then_confirmMatch(UncategorizedSCMHeadCategory instance) throws Exception {
+    @ParameterizedTest
+    @MethodSource("instance")
+    void given_changeRequestHead_when_isMatch_then_confirmMatch(UncategorizedSCMHeadCategory instance) {
         assertThat(instance.isMatch(new MockChangeRequestSCMHead(1, "master")), is(true));
     }
-
 }
