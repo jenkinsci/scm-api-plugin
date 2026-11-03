@@ -1003,14 +1003,14 @@ public class MySCMRevision extends SCMRevision {
 * Change request like things are special. For one, the actual strategy used to determine what to build can be different from a regular head. The change request may be built against the original baseline revision, or it mat be built against the current revision of the original baseline branch.
 +
 You should consider whether it makes sense for change request like things to extend the same base class you used for branch and tag like thing or whether you should extend from `SCMHead` directly.
-In either case you should implement the `ChangeRequestSCMHead2` mix-in interface.
+In either case you should implement the `ChangeRequestSCMHead` mix-in interface.
 +
 Another important concern with change request like things is where the change request can originate from untrusted users.
 Implementers should always make it configurable whether change request like things will be excluded from the `SCMSource` and also where possible to differentiate between trusted and untrusted users.
 +
 [source,java]
 ----
-public class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2 {
+public class MyChangeRequestSCMHead extends SCMHead implements ChangeRequestSCMHead {
     private static final long serialVersionUID = 1L;
 
     private final String id;
