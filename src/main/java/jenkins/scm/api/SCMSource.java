@@ -243,6 +243,32 @@ public abstract class SCMSource extends AbstractDescribableImpl<SCMSource>
     }
 
     /**
+     * The context for looking up things such as credentials.
+     */
+    @GuardedBy("this")
+    @CheckForNull
+    private transient Item credentialsContext;
+
+    /**
+     * Sets the credentialsContext.
+     *
+     * @param credentialsContext the credentialsContext.
+     */
+    public final synchronized void setCredentialsContext(@CheckForNull Item credentialsContext) {
+        this.credentialsContext = credentialsContext;
+    }
+
+    /**
+     * Gets the credentialsContext.
+     *
+     * @return the credentialsContext.
+     */
+    @CheckForNull
+    public final synchronized Item getCredentialsContext() {
+        return credentialsContext;
+    }
+
+    /**
      * Returns the branch criteria.
      *
      * @return the branch criteria.
