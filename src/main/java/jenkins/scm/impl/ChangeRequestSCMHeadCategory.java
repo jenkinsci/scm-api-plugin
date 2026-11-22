@@ -68,4 +68,9 @@ public final class ChangeRequestSCMHeadCategory extends SCMHeadCategory {
     public boolean isMatch(@NonNull SCMHead instance) {
         return instance instanceof ChangeRequestSCMHead;
     }
+
+    @Override
+    public String getIconFileName() {
+        return "symbol-git-pull-request-outline plugin-ionicons-api";
+    }
 }

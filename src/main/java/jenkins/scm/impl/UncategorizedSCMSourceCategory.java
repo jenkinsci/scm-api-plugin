@@ -77,4 +77,9 @@ public final class UncategorizedSCMSourceCategory extends SCMSourceCategory {
     public boolean isMatch(@NonNull SCMSource instance) {
         return true;
     }
+
+    @Override
+    public String getIconFileName() {
+        return "symbol-git-network-outline plugin-ionicons-api";
+    }
 }

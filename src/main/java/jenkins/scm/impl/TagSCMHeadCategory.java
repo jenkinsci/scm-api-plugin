@@ -69,4 +69,9 @@ public final class TagSCMHeadCategory extends SCMHeadCategory {
     public boolean isMatch(@NonNull SCMHead instance) {
         return instance instanceof TagSCMHead;
     }
+
+    @Override
+    public String getIconFileName() {
+        return "symbol-pricetag-outline plugin-ionicons-api";
+    }
 }
