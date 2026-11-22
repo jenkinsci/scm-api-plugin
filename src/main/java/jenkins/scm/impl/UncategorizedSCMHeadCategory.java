@@ -74,4 +74,9 @@ public final class UncategorizedSCMHeadCategory extends SCMHeadCategory {
     public boolean isMatch(@NonNull SCMHead instance) {
         return true;
     }
+
+    @Override
+    public String getIconFileName() {
+        return "symbol-git-branch-outline plugin-ionicons-api";
+    }
 }

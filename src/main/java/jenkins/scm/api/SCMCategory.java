@@ -303,6 +303,11 @@ public abstract class SCMCategory<T> {
      */
     public abstract boolean isMatch(@NonNull T instance);
 
+    @CheckForNull
+    public String getIconFileName() {
+        return null;
+    }
+
     /**
      * Checks if the supplied instance is a match for this {@link SCMCategory}.
      *
