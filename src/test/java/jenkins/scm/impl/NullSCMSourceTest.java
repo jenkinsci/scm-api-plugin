@@ -25,14 +25,6 @@
 
 package jenkins.scm.impl;
 
-import hudson.scm.NullSCM;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMHeadObserver;
-import jenkins.scm.api.SCMRevision;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
@@ -43,37 +35,34 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
-public class NullSCMSourceTest {
+import hudson.scm.NullSCM;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadObserver;
+import jenkins.scm.api.SCMRevision;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-    @ClassRule
-    public static JenkinsRule r = new JenkinsRule();
+@WithJenkins
+class NullSCMSourceTest {
 
     @Test
-    public void given_instance_when_fetch_then_noRevisionObserved() throws Exception {
+    void given_instance_when_fetch_then_noRevisionObserved(JenkinsRule r) throws Exception {
         SCMHeadObserver observer = mock(SCMHeadObserver.class);
         NullSCMSource instance = new NullSCMSource();
         instance.fetch(null, observer, null);
-        verify(observer, never()).observe(
-                argThat(
-                        allOf(
-                                instanceOf(SCMHead.class),
-                                hasProperty("name", is("the-name"))
-                        )
-                ),
-                argThat(
-                        allOf(
+        verify(observer, never())
+                .observe(
+                        argThat(allOf(instanceOf(SCMHead.class), hasProperty("name", is("the-name")))),
+                        argThat(allOf(
                                 instanceOf(SCMRevision.class),
                                 hasProperty("head", hasProperty("name", is("the-name"))),
-                                hasProperty("deterministic", is(false))
-                        )
-                )
-        );
+                                hasProperty("deterministic", is(false)))));
     }
 
     @Test
-    public void given_instance_when_fetchingNonObservedHead_then_nullScmReturned() throws Exception {
+    void given_instance_when_fetchingNonObservedHead_then_nullScmReturned(JenkinsRule r) {
         NullSCMSource instance = new NullSCMSource();
         assertThat(instance.build(new SCMHead("foo"), mock(SCMRevision.class)), instanceOf(NullSCM.class));
     }
-
 }

@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
-import static jenkins.scm.impl.mock.AbstractSampleRepoRule.run;
 
 /**
  * Rule tailored to a DVCS which may be initialized and cloned from a local directory.
