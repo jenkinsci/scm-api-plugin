@@ -44,7 +44,7 @@ import jenkins.scm.api.SCMProbe;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
-import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead;
 import jenkins.scm.api.mixin.SCMHeadMixin;
 
 /**
@@ -465,14 +465,14 @@ public abstract class SCMSourceRequest implements Closeable {
      * A lambda that produces an intermediate summary used to drive creation of the {@link SCMSourceCriteria.Probe}
      * and {@link SCMRevision} instances.
      * <p>
-     * Some {@link SCMRevision} instances may be expensive to instantiate, for example a {@link ChangeRequestSCMHead2}
+     * Some {@link SCMRevision} instances may be expensive to instantiate, for example a {@link ChangeRequestSCMHead}
      * may need to get the effective merge revision in order to comply with the equality and "offline" requirement
      * of a {@link SCMRevision} which could require either asking the remote server or performing a local trial merge.
      * As this type of operation is only required if the {@link SCMHead} actually meets the {@link SCMSourceCriteria}
      * it may be preferred to delay instantiation of the {@link SCMRevision} and instead create the
      * {@link SCMSourceCriteria.Probe} from some intermediate. For example the {@link SCMSourceCriteria} may
-     * only be checking the existence of files, if the file is present in both the {@link ChangeRequestSCMHead2}
-     * and its {@link ChangeRequestSCMHead2#getTarget()} then it will also be present in the merge revision and hence
+     * only be checking the existence of files, if the file is present in both the {@link ChangeRequestSCMHead}
+     * and its {@link ChangeRequestSCMHead#getTarget()} then it will also be present in the merge revision and hence
      * the computation of the merge revision can be avoided completely.
      *
      * @param <I> the type of intermediate value or {@link Void} if no intermediate is required.
